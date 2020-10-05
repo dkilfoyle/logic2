@@ -309,7 +309,12 @@ export default {
       this.$nextTick(() => {
         document.getElementById(id).addEventListener("lumino:activated", this.onWidgetActivated);
         document.getElementById(id).addEventListener("lumino:deleted", this.onWidgetDeleted);
+        document.getElementById(id).addEventListener("lumino:resize", this.onWidgetResize);
       });
+    },
+
+    onWidgetResize(customEvent) {
+      console.log("widget resize: ", customEvent);
     },
 
     /**

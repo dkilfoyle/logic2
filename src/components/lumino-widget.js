@@ -27,24 +27,23 @@ import { Widget } from "@lumino/widgets";
  * listeners much be attached to the DOM element with the widget ID.
  */
 export default class LuminoWidget extends Widget {
-
   /**
    * Create a LuminoWidget object.
    * @param id {string} unique ID of the widget
    * @param name {string} text displayed in the widget tab
    * @param closable {boolean} flag that controls whether the tab can be closed or not
    */
-  constructor (id, name, closable = true) {
-    super({ node: LuminoWidget.createNode(id) })
-    this.id = id
-    this.name = name
-    this.closable = closable
+  constructor(id, name, closable = true) {
+    super({ node: LuminoWidget.createNode(id) });
+    this.id = id;
+    this.name = name;
+    this.closable = closable;
     // classes and flags
-    this.setFlag(Widget.Flag.DisallowLayout)
-    this.addClass('content')
+    this.setFlag(Widget.Flag.DisallowLayout);
+    this.addClass("content");
     // tab title
-    this.title.label = name
-    this.title.closable = closable
+    this.title.label = name;
+    this.title.closable = closable;
   }
 
   /**
@@ -52,27 +51,35 @@ export default class LuminoWidget extends Widget {
    * @param {string} id - widget id
    * @return HTMLElement
    */
-  static createNode (id) {
-    const div = document.createElement('div')
-    div.setAttribute('id', id)
-    div.setAttribute('class', 'fill-height')
-    return div
+  static createNode(id) {
+    const div = document.createElement("div");
+    div.setAttribute("id", id);
+    div.setAttribute("class", "fill-height");
+    return div;
   }
 
-  onActivateRequest (msg) {
+  onResize(msg) {
     // Emit an event so that the Vue component knows that it was activated
-    const event = new CustomEvent('lumino:activated', this._getEventDetails())
-    document.getElementById(this.id).dispatchEvent(event)
+    const event = new CustomEvent("lumino:resize", this._getEventDetails(msg));
+    document.getElementById(this.id).dispatchEvent(event);
     // call super method
-    super.onActivateRequest(msg)
+    super.onResize(msg);
   }
 
-  onCloseRequest (msg) {
-    // Emit an event so that the Vue component knows that it needs to be removed too
-    const event = new CustomEvent('lumino:deleted', this._getEventDetails())
-    document.getElementById(this.id).dispatchEvent(event)
+  onActivateRequest(msg) {
+    // Emit an event so that the Vue component knows that it was activated
+    const event = new CustomEvent("lumino:activated", this._getEventDetails());
+    document.getElementById(this.id).dispatchEvent(event);
     // call super method
-    super.onCloseRequest(msg)
+    super.onActivateRequest(msg);
+  }
+
+  onCloseRequest(msg) {
+    // Emit an event so that the Vue component knows that it needs to be removed too
+    const event = new CustomEvent("lumino:deleted", this._getEventDetails());
+    document.getElementById(this.id).dispatchEvent(event);
+    // call super method
+    super.onCloseRequest(msg);
   }
 
   /**
@@ -82,13 +89,14 @@ export default class LuminoWidget extends Widget {
    * @returns {{closable: boolean, name: string, id: string}}
    * @private
    */
-  _getEventDetails () {
+  _getEventDetails(msg) {
     return {
       detail: {
         id: this.id,
         name: this.name,
-        closable: this.closable
-      }
-    }
+        closable: this.closable,
+        msg,
+      },
+    };
   }
 }
