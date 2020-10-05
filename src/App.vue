@@ -1,28 +1,30 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <Lumino>
+      <HelloWorld id="home-test1" msg="A" />
+      <HelloWorld id="home-test2" msg="B" />
+      <HelloWorld id="home-test3" msg="C" />
+    </Lumino>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Lumino from "./components/Lumino";
+import HelloWorld from "./components/HelloWorld.vue";
+import "@lumino/default-theme/style/index.css";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    HelloWorld
-  }
-}
+    Lumino,
+    HelloWorld,
+  },
+};
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+body {
+  margin: 0px;
+  font-size: 14pt;
 }
 </style>
