@@ -2,9 +2,12 @@
 
 <template>
   <div>
-    <div ref="shell"></div>
-    <div v-show="false">
-      <slot></slot>
+    <div ref="screen"></div>
+    <div id="workflow-panel">
+      <div ref="main" id="main" class="pa-4 fill-height"></div>
+      <div v-show="false">
+        <slot></slot>
+      </div>
     </div>
   </div>
 </template>
@@ -12,17 +15,7 @@
 <script>
 import { CommandRegistry } from "@lumino/commands";
 import LuminoWidget from "@/components/lumino-widget";
-import SideBarHandler from "./SideBar";
-import PanelHandler from "./PanelHandler";
-import {
-  BoxPanel,
-  DockPanel,
-  BoxLayout,
-  SplitPanel,
-  Widget,
-  Menu,
-  MenuBar,
-} from "@lumino/widgets";
+import { BoxPanel, DockPanel, Widget, Menu, MenuBar } from "@lumino/widgets";
 
 export default {
   name: "Lumino",
@@ -36,89 +29,47 @@ export default {
 
   data() {
     return {
-      shellWidget: new Widget(),
-      rootLayout: new BoxLayout(),
-      topHandler: new PanelHandler(),
-      hboxPanel: new BoxPanel(),
-      leftHandler: new SideBarHandler(),
-      hsplitPanel: new SplitPanel(),
-      dockPanel: new DockPanel(),
-      bottomPanel: new BoxPanel(),
+      // create a box panel, which holds the dock panel, and controls its layout
+      main: new BoxPanel({ direction: "left-to-right", spacing: 0 }),
+      // create dock panel, which holds the widgets
+      dock: new DockPanel(),
       widgets: [],
       commands: new CommandRegistry(),
-      mainMenu: new MenuBar(),
     };
   },
 
-  // rootLayout
-  // -- topHandler.panel (jp-top-panel)
-  // -- hboxPanel (jp-main-content-panel)
-  // ------ leftHandler.sideBar
-  // ------ hsplitPanel (jp-main-split-panel)
-  // ---------- lefHandler.stackedPanel (jp-left-stack)
-  // ---------- dockPanel (jp-main-dock-panel)
-  // -- bottomPanel (jp-bottom-panel)
-
   created() {
-    this.shellWidget.addClass("jp-LabShell");
-    this.shellWidget.id = "main";
-
-    this.topHandler.panel.id = "jp-top-panel";
-    this.hboxPanel.id = "jp-main-content-panel";
-    this.dockPanel.id = "jp-main-dock-panel";
-    this.hsplitPanel.id = "jp-main-split-panel";
-    this.bottomPanel.id = "jp-bottom-panel";
-
-    this.leftHandler.sideBar.addClass("jp-SideBar");
-    this.leftHandler.sideBar.addClass("jp-mod-left");
-    this.leftHandler.stackedPanel.id = "jp-left-stack";
-
-    this.hboxPanel.spacing = 0;
-    this.dockPanel.spacing = 5;
-    this.hsplitPanel.spacing = 1;
-
-    this.hboxPanel.direction = "left-to-right";
-    this.hsplitPanel.orientation = "horizontal";
-    this.bottomPanel.direction = "bottom-to-top";
-
-    SplitPanel.setStretch(this.leftHandler.stackedPanel, 0);
-    SplitPanel.setStretch(this.dockPanel, 1);
-
-    BoxPanel.setStretch(this.leftHandler.sideBar, 0);
-    BoxPanel.setStretch(this.hsplitPanel, 1);
-
-    this.hsplitPanel.addWidget(this.leftHandler.stackedPanel);
-    this.hsplitPanel.addWidget(this.dockPanel);
-
-    this.hboxPanel.addWidget(this.leftHandler.sideBar);
-    this.hboxPanel.addWidget(this.hsplitPanel);
-
-    this.rootLayout.direction = "top-to-bottom";
-    this.rootLayout.spacing = 0;
-
-    this.hsplitPanel.setRelativeSizes([1, 2.5]);
-
-    BoxLayout.setStretch(this.topHandler.panel, 0);
-    BoxLayout.setStretch(this.hboxPanel, 1);
-    BoxLayout.setStretch(this.bottomPanel, 0);
-
-    this.shellWidget.layout = this.rootLayout;
-    this.rootLayout.addWidget(this.topHandler.panel);
-    this.rootLayout.addWidget(this.hboxPanel);
-    this.rootLayout.addWidget(this.bottomPanel);
-
-    this.bottomPanel.hide();
-
+    this.dock.id = "dock";
+    this.main.id = "main";
+    this.main.addWidget(this.dock);
     window.onresize = () => {
-      this.shellWidget.update();
+      this.main.update();
     };
+    BoxPanel.setStretch(this.dock, 1);
 
     this.createCommands();
-    this.createMainMenu();
+    let menu1 = this.createMenu();
+    menu1.title.label = "File";
+    menu1.title.mnemonic = 0;
 
+    let menu2 = this.createMenu();
+    menu2.title.label = "Edit";
+    menu2.title.mnemonic = 0;
+
+    let menu3 = this.createMenu();
+    menu3.title.label = "View";
+    menu3.title.mnemonic = 0;
+
+    let bar = new MenuBar();
+    bar.addMenu(menu1);
+    bar.addMenu(menu2);
+    bar.addMenu(menu3);
+    bar.id = "menuBar";
+
+    const vm = this;
     this.$nextTick(() => {
-      // Widget.attach(bar, this.$refs.screen);
-      Widget.attach(this.shellWidget, this.$refs.shell);
+      Widget.attach(bar, vm.$refs.screen);
+      Widget.attach(vm.main, vm.$refs.main);
       this.syncWidgets();
     });
   },
@@ -162,28 +113,6 @@ export default {
       root.addItem({ command: "example:close" });
 
       return root;
-    },
-
-    createMainMenu() {
-      let menu1 = this.createMenu();
-      menu1.title.label = "File";
-      menu1.title.mnemonic = 0;
-
-      let menu2 = this.createMenu();
-      menu2.title.label = "Edit";
-      menu2.title.mnemonic = 0;
-
-      let menu3 = this.createMenu();
-      menu3.title.label = "View";
-      menu3.title.mnemonic = 0;
-
-      this.mainMenu.addMenu(menu1);
-      this.mainMenu.addMenu(menu2);
-      this.mainMenu.addMenu(menu3);
-
-      this.mainMenu.id = "jp-MainMenu";
-      this.mainMenu.addClass("jp-scrollbar-tiny");
-      this.topHandler.addWidget(this.mainMenu);
     },
 
     createCommands() {
@@ -367,25 +296,17 @@ export default {
           const name = newChild.$attrs[tabTitleProp]
             ? newChild.$attrs[tabTitleProp]
             : newChild.$options.name;
-          const area = newChild.$attrs.area ? newChild.$attrs.area : "dock";
-          const options = newChild.$attrs.options
-            ? newChild.$attrs.options
-            : {};
-          this.addWidget(id, name, area, options);
+          this.addWidget(id, name);
           this.$nextTick(() => {
             document.getElementById(id).appendChild(newChild.$el);
           });
         });
     },
 
-    addWidget(id, name, area, options) {
+    addWidget(id, name, dockOptions) {
       this.widgets.push(id);
-      const luminoWidget = new LuminoWidget(id, name, options);
-      if (area == "dock") {
-        this.dockPanel.addWidget(luminoWidget, options);
-      } else {
-        this.leftHandler.addWidget(luminoWidget, options);
-      }
+      const luminoWidget = new LuminoWidget(id, name, /* closable */ true);
+      this.dock.addWidget(luminoWidget, dockOptions);
       // give time for Lumino's widget DOM element to be created
       this.$nextTick(() => {
         document
@@ -445,43 +366,28 @@ export default {
 };
 </script>
 
-<style>
-@import url("~@lumino/widgets/style/index.css");
-@import "../assets/materialcolors.css";
-@import "../assets/variables.css";
-@import "../assets/base.css";
-
-.lm-TabBar-tabIcon,
-.lm-TabBar-tabLabel,
-.lm-TabBar-tabCloseIcon {
-  display: inline-block;
-}
-
-.lm-TabBar-tab.lm-mod-closable > .lm-TabBar-tabCloseIcon {
-  margin-left: 4px;
-}
-
-.lm-TabBar-tab.lm-mod-closable > .lm-TabBar-tabCloseIcon:before {
-  content: "\f00d";
-  font-family: FontAwesome;
-}
-
-.fileBrowserIcon {
-  align-self: center;
-}
-
-.fileBrowserIcon:before {
-  content: "\f00d";
-  font-family: FontAwesome;
-}
-
-.jp-FileBrowser {
-  display: flex;
-  flex-direction: column;
-  color: var(--jp-ui-font-color1);
-  background: var(--jp-layout-color1);
-  /* This is needed so that all font sizing of children done in ems is
-   * relative to this base size */
-  font-size: var(--jp-ui-font-size1);
+<style lang="scss">
+$font-size-root: 16px;
+#workflow-panel {
+  #main {
+    display: flex;
+    min-height: calc(100vh - 40px);
+    padding: 4px;
+    .content {
+      min-width: 300px;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      padding: 8px;
+      border: 1px solid #c0c0c0;
+      border-top: none;
+      background: white;
+      position: relative;
+      overflow: auto;
+    }
+    .p-BoxPanel {
+      flex: 1 1 auto;
+    }
+  }
 }
 </style>

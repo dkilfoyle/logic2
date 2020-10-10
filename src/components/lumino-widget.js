@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Widget } from "@lumino/widgets";
+import { Widget, Panel } from "@lumino/widgets";
 
 /**
  * This is a valid Lumino widget, that contains only a dummy div
@@ -26,24 +26,34 @@ import { Widget } from "@lumino/widgets";
  * Events in the widget will be propagated to the Vue component. Event
  * listeners much be attached to the DOM element with the widget ID.
  */
-export default class LuminoWidget extends Widget {
+export default class LuminoWidget extends Panel {
   /**
    * Create a LuminoWidget object.
    * @param id {string} unique ID of the widget
    * @param name {string} text displayed in the widget tab
    * @param closable {boolean} flag that controls whether the tab can be closed or not
    */
-  constructor(id, name, closable = true) {
+  constructor(id, name, myoptions) {
+    const defaults = {
+      titleLabel: name,
+      titleIconClass: undefined,
+      closable: true,
+    };
+    let options = { ...defaults, ...myoptions };
+    console.log(id, name, myoptions, options);
+
     super({ node: LuminoWidget.createNode(id) });
     this.id = id;
     this.name = name;
-    this.closable = closable;
+
+    this.title.label = options.titleLabel;
+    this.title.iconClass = options.titleIconClass;
+    this.closable = options.closable;
+    this.title.closable = options.closable;
+
     // classes and flags
     this.setFlag(Widget.Flag.DisallowLayout);
     this.addClass("content");
-    // tab title
-    this.title.label = name;
-    this.title.closable = closable;
   }
 
   /**
@@ -60,10 +70,10 @@ export default class LuminoWidget extends Widget {
 
   onResize(msg) {
     // Emit an event so that the Vue component knows that it was activated
+    super.onResize(msg);
     const event = new CustomEvent("lumino:resize", this._getEventDetails(msg));
     document.getElementById(this.id).dispatchEvent(event);
     // call super method
-    super.onResize(msg);
   }
 
   onActivateRequest(msg) {
