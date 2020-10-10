@@ -1,21 +1,41 @@
 <template>
   <div id="app">
     <Lumino>
-      <FileTree
-        id="sidebar-hello"
-        class="jp-FileBrowser"
+      <HelloWorld
+        id="fileTree"
         area="sidebar"
-        :options="{titleLabel:undefined, titleIconClass: 'fileBrowserIcon', closable: false}"
+        class="jp-FileBrowser"
+        icon="fileBrowserIcon"
+        msg="File Browser"
       />
-      <HelloWorld id="home-test2" area="dock" />
-      <HelloWorld id="home-test3" area="dock" />
+      <HelloWorld
+        id="ed1"
+        area="dock"
+        title="Editor1"
+        closable
+        msg="Editor 1"
+      />
+      <HelloWorld
+        id="ed2"
+        area="dock"
+        title="Editor2"
+        closable
+        msg="Editor 2"
+      />
+      <HelloWorld
+        id="terminal"
+        area="dock"
+        title="Terminal"
+        dock-ref="ed1"
+        dock-mode="split-bottom"
+        msg="Term 1"
+      />
     </Lumino>
   </div>
 </template>
 
 <script>
 import Lumino from "./components/Lumino";
-import FileTree from "./components/FileTree.vue";
 import HelloWorld from "./components/HelloWorld.vue";
 // import "@lumino/default-theme/style/index.css";
 
@@ -23,7 +43,6 @@ export default {
   name: "App",
   components: {
     Lumino,
-    FileTree,
     HelloWorld,
   },
 };

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Widget, Panel } from "@lumino/widgets";
+import { Widget } from "@lumino/widgets";
 
 /**
  * This is a valid Lumino widget, that contains only a dummy div
@@ -26,28 +26,20 @@ import { Widget, Panel } from "@lumino/widgets";
  * Events in the widget will be propagated to the Vue component. Event
  * listeners much be attached to the DOM element with the widget ID.
  */
-export default class LuminoWidget extends Panel {
+export default class LuminoWidget extends Widget {
   /**
    * Create a LuminoWidget object.
    * @param id {string} unique ID of the widget
    * @param name {string} text displayed in the widget tab
    * @param closable {boolean} flag that controls whether the tab can be closed or not
    */
-  constructor(id, name, myoptions) {
-    const defaults = {
-      titleLabel: name,
-      titleIconClass: undefined,
-      closable: true,
-    };
-    let options = { ...defaults, ...myoptions };
-    console.log(id, name, myoptions, options);
-
+  constructor(id, options) {
     super({ node: LuminoWidget.createNode(id) });
     this.id = id;
-    this.name = name;
+    this.name = options.title;
 
-    this.title.label = options.titleLabel;
-    this.title.iconClass = options.titleIconClass;
+    this.title.label = options.title;
+    this.title.iconClass = options.icon;
     this.closable = options.closable;
     this.title.closable = options.closable;
 

@@ -359,28 +359,29 @@ export default {
     },
 
     syncWidgets() {
-      const tabTitleProp = this.$props.tabTitleProp;
       this.$children
         .filter((child) => !this.widgets.includes(child.$attrs.id))
         .forEach((newChild) => {
+          console.log(newChild.$attrs);
           const id = `${newChild.$attrs.id}`;
-          const name = newChild.$attrs[tabTitleProp]
-            ? newChild.$attrs[tabTitleProp]
-            : newChild.$options.name;
-          const area = newChild.$attrs.area ? newChild.$attrs.area : "dock";
-          const options = newChild.$attrs.options
-            ? newChild.$attrs.options
-            : {};
-          this.addWidget(id, name, area, options);
+          const title = newChild.$attrs.title || undefined;
+          const icon = newChild.$attrs.icon || undefined;
+          const area = newChild.$attrs.area || "dock";
+          const closable = "closable" in newChild.$attrs || false;
+          const refName = newChild.$attrs["dock-ref"] || undefined;
+          const mode = newChild.$attrs["dock-mode"] || undefined;
+          const ref = this.widgets.find((x) => x.id == refName);
+
+          this.addWidget(id, area, { title, icon, closable, ref, mode });
           this.$nextTick(() => {
             document.getElementById(id).appendChild(newChild.$el);
           });
         });
     },
 
-    addWidget(id, name, area, options) {
-      this.widgets.push(id);
-      const luminoWidget = new LuminoWidget(id, name, options);
+    addWidget(id, area, options) {
+      const luminoWidget = new LuminoWidget(id, options);
+      this.widgets.push(luminoWidget);
       if (area == "dock") {
         this.dockPanel.addWidget(luminoWidget, options);
       } else {
