@@ -1,13 +1,17 @@
 <template>
   <div id="app">
     <Lumino @resize="onLuminoResize">
-      <HelloWorld
-        id="fileTree"
+                  <liquor-tree
+                          id="fileTree"
         area="sidebar"
         class="jp-FileBrowser"
         icon="fileBrowserIcon"
         msg="File Browser"
-      />
+              :data="sourceTree"
+              :options="{ nodeIndent: 14 }"
+              @node:selected="onCodeTreeSelection"
+            ></liquor-tree>
+
       <Editor
         id="ed1"
         ref="ed1"
@@ -39,6 +43,7 @@
 import Lumino from "./components/Lumino";
 import HelloWorld from "./components/HelloWorld.vue";
 import Editor from "./components/Editor.vue"
+import LiquorTree from "liquor-tree";
 // import "@lumino/default-theme/style/index.css";
 
 export default {
@@ -46,12 +51,22 @@ export default {
   components: {
     Lumino,
     HelloWorld,
-    Editor
+    Editor,
+    LiquorTree
+  },
+  data () {
+    return {
+            sourceFiles: require("./files").SourceFiles,
+      sourceTree: require("./files").SourceTree,
+    }
   },
   methods: {
     onLuminoResize(e) {
       console.log("onLuminoResize: ", e);
       this.$refs.ed1.onResize();
+    },
+    onCodeTreeSelection(e) {
+      console.log(e)
     }
   }
 };
@@ -66,5 +81,15 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+}
+
+.jp-SideBar .lm-TabBar-tabIcon  {
+  align-self: center;
+  font-size:18pt
+}
+
+.fileBrowserIcon:before {
+  content: "\f07b";
+  font-family: FontAwesome;
 }
 </style>

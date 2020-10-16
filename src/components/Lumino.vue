@@ -405,14 +405,7 @@ export default {
   font-family: FontAwesome;
 }
 
-.fileBrowserIcon {
-  align-self: center;
-}
 
-.fileBrowserIcon:before {
-  content: "\f00d";
-  font-family: FontAwesome;
-}
 
 .jp-FileBrowser {
   display: flex;
