@@ -128,58 +128,37 @@ export default {
   },
 
   methods: {
-    createMenu() {
-      let sub1 = new Menu({ commands: this.commands });
-      sub1.title.label = "More...";
-      sub1.title.mnemonic = 0;
-      sub1.addItem({ command: "example:one" });
-      sub1.addItem({ command: "example:two" });
-      sub1.addItem({ command: "example:three" });
-      sub1.addItem({ command: "example:four" });
-
-      let sub2 = new Menu({ commands: this.commands });
-      sub2.title.label = "More...";
-      sub2.title.mnemonic = 0;
-      sub2.addItem({ command: "example:one" });
-      sub2.addItem({ command: "example:two" });
-      sub2.addItem({ command: "example:three" });
-      sub2.addItem({ command: "example:four" });
-      sub2.addItem({ type: "submenu", submenu: sub1 });
-
-      let root = new Menu({ commands: this.commands });
-      root.addItem({ command: "example:copy" });
-      root.addItem({ command: "example:cut" });
-      root.addItem({ command: "example:paste" });
-      root.addItem({ type: "separator" });
-      root.addItem({ command: "example:new-tab" });
-      root.addItem({ command: "example:close-tab" });
-      root.addItem({ command: "example:save-on-exit" });
-      root.addItem({ type: "separator" });
-      root.addItem({ command: "example:open-task-manager" });
-      root.addItem({ type: "separator" });
-      root.addItem({ type: "submenu", submenu: sub2 });
-      root.addItem({ type: "separator" });
-      root.addItem({ command: "example:close" });
-
-      return root;
-    },
-
     createMainMenu() {
-      let menu1 = this.createMenu();
-      menu1.title.label = "File";
-      menu1.title.mnemonic = 0;
+      let fileMenu = new Menu({commands: this.commands});
+      fileMenu.title.label = "File"
+      fileMenu.addItem({command: "file:new-tab"})
+      fileMenu.addItem({type: "separator"})
+      fileMenu.addItem({command: "file:compile"})
+      fileMenu.addItem({command: "file:simulate"})
 
-      let menu2 = this.createMenu();
-      menu2.title.label = "Edit";
-      menu2.title.mnemonic = 0;
+      let editMenu = new Menu({commands: this.commands});
+      editMenu.title.label = "Edit"
+      editMenu.addItem({command: "edit:undo"})
+      editMenu.addItem({command: "edit:redo"})
+      editMenu.addItem({type: "separator"})
+      editMenu.addItem({command: "edit:cut"})
+      editMenu.addItem({command: "edit:copy"})
+      editMenu.addItem({command: "edit:paste"})
+      editMenu.addItem({type: "separator"})
+      editMenu.addItem({command: "edit:find"})
+      editMenu.addItem({command: "edit:replace"})
+      editMenu.addItem({type: "separator"})
+      editMenu.addItem({command: "edit:toggle-comment"})
 
-      let menu3 = this.createMenu();
-      menu3.title.label = "View";
-      menu3.title.mnemonic = 0;
+      let viewMenu = new Menu({commands: this.commands})
+      viewMenu.title.label = "View"
+      viewMenu.addItem({command: "view:gates"})
+      viewMenu.addItem({command: "view:schematic"})
+      viewMenu.addItem({command: "view:terminal"})
 
-      this.mainMenu.addMenu(menu1);
-      this.mainMenu.addMenu(menu2);
-      this.mainMenu.addMenu(menu3);
+      this.mainMenu.addMenu(fileMenu);
+      this.mainMenu.addMenu(editMenu);
+      this.mainMenu.addMenu(viewMenu);
 
       this.mainMenu.id = "jp-MainMenu";
       this.mainMenu.addClass("jp-scrollbar-tiny");
@@ -187,7 +166,34 @@ export default {
     },
 
     createCommands() {
-      this.commands.addCommand("example:cut", {
+
+      this.commands.addCommand("file:new-tab", {
+        label: "New Tab",
+        mnemonic: 0,
+        caption: "Open a new tab",
+        execute: () => {
+          console.log("New Tab");
+        },
+      });
+      this.commands.addCommand("file:compile", {
+        label: "Compile",
+        mnemonic: 0,
+        caption: "Compile current file",
+        execute: () => {
+          console.log("Compile");
+        },
+      });
+      this.commands.addCommand("file:simulate", {
+        label: "Simulate",
+        mnemonic: 0,
+        caption: "Simulate current file",
+        execute: () => {
+          console.log("Simulate");
+        },
+      });
+
+
+      this.commands.addCommand("edit:cut", {
         label: "Cut",
         mnemonic: 1,
         iconClass: "fa fa-cut",
@@ -196,8 +202,8 @@ export default {
         },
       });
 
-      this.commands.addCommand("example:copy", {
-        label: "Copy File",
+      this.commands.addCommand("edit:copy", {
+        label: "Copy",
         mnemonic: 0,
         iconClass: "fa fa-copy",
         execute: () => {
@@ -205,7 +211,7 @@ export default {
         },
       });
 
-      this.commands.addCommand("example:paste", {
+      this.commands.addCommand("edit:paste", {
         label: "Paste",
         mnemonic: 0,
         iconClass: "fa fa-paste",
@@ -214,148 +220,79 @@ export default {
         },
       });
 
-      this.commands.addCommand("example:new-tab", {
-        label: "New Tab",
-        mnemonic: 0,
-        caption: "Open a new tab",
+      this.commands.addCommand("edit:find", {
+        label: "Find",
+        mnemonic: 1,
+        iconClass: "fa fa-cut",
         execute: () => {
-          console.log("New Tab");
+          console.log("find");
         },
       });
 
-      this.commands.addCommand("example:close-tab", {
-        label: "Close Tab",
+      this.commands.addCommand("edit:replace", {
+        label: "Replace",
+        mnemonic: 0,
+        iconClass: "fa fa-copy",
+        execute: () => {
+          console.log("replace");
+        },
+      });
+
+      this.commands.addCommand("edit:toggle-comment", {
+        label: "Toggle Comment",
+        mnemonic: 0,
+        iconClass: "fa fa-paste",
+        execute: () => {
+          console.log("Paste");
+        },
+      });
+
+
+
+      this.commands.addCommand("view:gates", {
+        label: "View Gates",
         mnemonic: 2,
-        caption: "Close the current tab",
+        caption: "View Gates",
         execute: () => {
-          console.log("Close Tab");
+          console.log("view gates");
+        },
+      });
+      this.commands.addCommand("view:schematic", {
+        label: "View Schematic",
+        mnemonic: 2,
+        caption: "View Schematic",
+        execute: () => {
+          console.log("view schematic");
+        },
+      });
+      this.commands.addCommand("view:terminal", {
+        label: "View Terminal",
+        mnemonic: 2,
+        caption: "View Terminal",
+        execute: () => {
+          console.log("view terminal");
         },
       });
 
-      this.commands.addCommand("example:save-on-exit", {
-        label: "Save on Exit",
-        mnemonic: 0,
-        caption: "Toggle the save on exit flag",
-        execute: () => {
-          console.log("Save on Exit");
-        },
-      });
-
-      this.commands.addCommand("example:open-task-manager", {
-        label: "Task Manager",
-        mnemonic: 5,
-        isEnabled: () => false,
-        execute: () => {},
-      });
-
-      this.commands.addCommand("example:close", {
-        label: "Close",
-        mnemonic: 0,
-        iconClass: "fa fa-close",
-        execute: () => {
-          console.log("Close");
-        },
-      });
-
-      this.commands.addCommand("example:one", {
-        label: "One",
-        execute: () => {
-          console.log("One");
-        },
-      });
-
-      this.commands.addCommand("example:two", {
-        label: "Two",
-        execute: () => {
-          console.log("Two");
-        },
-      });
-
-      this.commands.addCommand("example:three", {
-        label: "Three",
-        execute: () => {
-          console.log("Three");
-        },
-      });
-
-      this.commands.addCommand("example:four", {
-        label: "Four",
-        execute: () => {
-          console.log("Four");
-        },
-      });
-
-      this.commands.addCommand("example:black", {
-        label: "Black",
-        execute: () => {
-          console.log("Black");
-        },
-      });
-
-      this.commands.addCommand("example:clear-cell", {
-        label: "Clear Cell",
-        execute: () => {
-          console.log("Clear Cell");
-        },
-      });
-
-      this.commands.addCommand("example:cut-cells", {
-        label: "Cut Cell(s)",
-        execute: () => {
-          console.log("Cut Cell(s)");
-        },
-      });
-
-      this.commands.addCommand("example:run-cell", {
-        label: "Run Cell",
-        execute: () => {
-          console.log("Run Cell");
-        },
-      });
-
-      this.commands.addCommand("example:cell-test", {
-        label: "Cell Test",
-        execute: () => {
-          console.log("Cell Test");
-        },
-      });
-
-      this.commands.addCommand("notebook:new", {
-        label: "New Notebook",
-        execute: () => {
-          console.log("New Notebook");
-        },
-      });
 
       this.commands.addKeyBinding({
         keys: ["Accel X"],
         selector: "body",
-        command: "example:cut",
+        command: "edit:cut",
       });
 
       this.commands.addKeyBinding({
         keys: ["Accel C"],
         selector: "body",
-        command: "example:copy",
+        command: "edit:copy",
       });
 
       this.commands.addKeyBinding({
         keys: ["Accel V"],
         selector: "body",
-        command: "example:paste",
+        command: "edit:paste",
       });
 
-      this.commands.addKeyBinding({
-        keys: ["Accel J", "Accel J"],
-        selector: "body",
-        command: "example:new-tab",
-      });
-
-      this.commands.addKeyBinding({
-        keys: ["Accel M"],
-        selector: "body",
-        command: "example:open-task-manager",
-      });
     },
 
     syncWidgets() {
@@ -403,6 +340,7 @@ export default {
 
     onWidgetResize(customEvent) {
       console.log("widget resize: ", customEvent);
+      this.$emit("resize", customEvent)
     },
 
     /**

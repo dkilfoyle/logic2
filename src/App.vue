@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Lumino>
+    <Lumino @resize="onLuminoResize">
       <HelloWorld
         id="fileTree"
         area="sidebar"
@@ -8,8 +8,9 @@
         icon="fileBrowserIcon"
         msg="File Browser"
       />
-      <HelloWorld
+      <Editor
         id="ed1"
+        ref="ed1"
         area="dock"
         title="Editor1"
         closable
@@ -37,6 +38,7 @@
 <script>
 import Lumino from "./components/Lumino";
 import HelloWorld from "./components/HelloWorld.vue";
+import Editor from "./components/Editor.vue"
 // import "@lumino/default-theme/style/index.css";
 
 export default {
@@ -44,7 +46,14 @@ export default {
   components: {
     Lumino,
     HelloWorld,
+    Editor
   },
+  methods: {
+    onLuminoResize(e) {
+      console.log("onLuminoResize: ", e);
+      this.$refs.ed1.onResize();
+    }
+  }
 };
 </script>
 
@@ -52,5 +61,10 @@ export default {
 body {
   margin: 0px;
   font-size: 14pt;
+}
+.editor {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 </style>
