@@ -16,7 +16,7 @@ class vlgErrorListener extends error.ErrorListener {
       startColumn: column,
       endColumn: column + (offendingSymbol.stop - offendingSymbol.start) + 2, //Let's suppose the length of the error is only 1 char for simplicity
       msg,
-      severity: "error", // This the error code you can customize them as you want
+      severity: "error" // This the error code you can customize them as you want
     });
     console.log("Error: ", this.errors[this.errors.length - 1]);
   }

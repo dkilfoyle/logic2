@@ -5,13 +5,16 @@ export default class SideBarHandler {
     this.sideBar = new TabBar({
       insertBehaviour: "none",
       removeBehaviour: "none",
-      allowDeselect: true,
+      allowDeselect: true
     });
     this.sideBar.addClass("jp-SideBar");
     this.sideBar.addClass("jp-mod-left");
     this.sideBar.hide();
     this.sideBar.currentChanged.connect(this.onCurrentChanged, this);
-    this.sideBar.tabActivateRequested.connect(this.onTabActivateRequested, this);
+    this.sideBar.tabActivateRequested.connect(
+      this.onTabActivateRequested,
+      this
+    );
 
     this.stackedPanel = new StackedPanel();
     this.stackedPanel.hide();
@@ -23,7 +26,8 @@ export default class SideBarHandler {
   }
 
   expand() {
-    const previous = this.lastCurrent || (this.items.length > 0 && this.items[0].widget);
+    const previous =
+      this.lastCurrent || (this.items.length > 0 && this.items[0].widget);
     if (previous) {
       this.activate(previous.id);
     }
@@ -60,8 +64,12 @@ export default class SideBarHandler {
 
   onCurrentChanged(sender, args) {
     console.log("SideBar.onCurrentChanged: ", sender, args);
-    const oldWidget = args.previousTitle ? this.findWidgetByTitle(args.previousTitle) : null;
-    const newWidget = args.currentTitle ? this.findWidgetByTitle(args.currentTitle) : null;
+    const oldWidget = args.previousTitle
+      ? this.findWidgetByTitle(args.previousTitle)
+      : null;
+    const newWidget = args.currentTitle
+      ? this.findWidgetByTitle(args.currentTitle)
+      : null;
     if (oldWidget) {
       oldWidget.hide();
     }
@@ -88,16 +96,16 @@ export default class SideBarHandler {
   }
 
   findWidgetIndex(widget) {
-    return this.items.findIndex((x) => x.widget === widget);
+    return this.items.findIndex(x => x.widget === widget);
   }
 
   findWidgetByTitle(title) {
-    const item = this.items.find((x) => x.widget.title === title);
+    const item = this.items.find(x => x.widget.title === title);
     return item ? item.widget : null;
   }
 
   findWidgetByID(id) {
-    const item = this.tems.find((x) => x.widget.id === id);
+    const item = this.tems.find(x => x.widget.id === id);
     return item ? item.widget : null;
   }
 }

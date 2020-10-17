@@ -21,7 +21,7 @@ import {
   SplitPanel,
   Widget,
   Menu,
-  MenuBar,
+  MenuBar
 } from "@lumino/widgets";
 
 export default {
@@ -30,8 +30,8 @@ export default {
   props: {
     tabTitleProp: {
       type: String,
-      default: "name",
-    },
+      default: "name"
+    }
   },
 
   data() {
@@ -45,8 +45,9 @@ export default {
       dockPanel: new DockPanel(),
       bottomPanel: new BoxPanel(),
       widgets: [],
+      widgetIDs: [],
       commands: new CommandRegistry(),
-      mainMenu: new MenuBar(),
+      mainMenu: new MenuBar()
     };
   },
 
@@ -96,7 +97,7 @@ export default {
     this.rootLayout.direction = "top-to-bottom";
     this.rootLayout.spacing = 0;
 
-    this.hsplitPanel.setRelativeSizes([1, 2.5]);
+    this.hsplitPanel.setRelativeSizes([1, 3.5]);
 
     BoxLayout.setStretch(this.topHandler.panel, 0);
     BoxLayout.setStretch(this.hboxPanel, 1);
@@ -129,32 +130,32 @@ export default {
 
   methods: {
     createMainMenu() {
-      let fileMenu = new Menu({commands: this.commands});
-      fileMenu.title.label = "File"
-      fileMenu.addItem({command: "file:new-tab"})
-      fileMenu.addItem({type: "separator"})
-      fileMenu.addItem({command: "file:compile"})
-      fileMenu.addItem({command: "file:simulate"})
+      let fileMenu = new Menu({ commands: this.commands });
+      fileMenu.title.label = "File";
+      fileMenu.addItem({ command: "file:new-tab" });
+      fileMenu.addItem({ type: "separator" });
+      fileMenu.addItem({ command: "file:compile" });
+      fileMenu.addItem({ command: "file:simulate" });
 
-      let editMenu = new Menu({commands: this.commands});
-      editMenu.title.label = "Edit"
-      editMenu.addItem({command: "edit:undo"})
-      editMenu.addItem({command: "edit:redo"})
-      editMenu.addItem({type: "separator"})
-      editMenu.addItem({command: "edit:cut"})
-      editMenu.addItem({command: "edit:copy"})
-      editMenu.addItem({command: "edit:paste"})
-      editMenu.addItem({type: "separator"})
-      editMenu.addItem({command: "edit:find"})
-      editMenu.addItem({command: "edit:replace"})
-      editMenu.addItem({type: "separator"})
-      editMenu.addItem({command: "edit:toggle-comment"})
+      let editMenu = new Menu({ commands: this.commands });
+      editMenu.title.label = "Edit";
+      editMenu.addItem({ command: "edit:undo" });
+      editMenu.addItem({ command: "edit:redo" });
+      editMenu.addItem({ type: "separator" });
+      editMenu.addItem({ command: "edit:cut" });
+      editMenu.addItem({ command: "edit:copy" });
+      editMenu.addItem({ command: "edit:paste" });
+      editMenu.addItem({ type: "separator" });
+      editMenu.addItem({ command: "edit:find" });
+      editMenu.addItem({ command: "edit:replace" });
+      editMenu.addItem({ type: "separator" });
+      editMenu.addItem({ command: "edit:toggle-comment" });
 
-      let viewMenu = new Menu({commands: this.commands})
-      viewMenu.title.label = "View"
-      viewMenu.addItem({command: "view:gates"})
-      viewMenu.addItem({command: "view:schematic"})
-      viewMenu.addItem({command: "view:terminal"})
+      let viewMenu = new Menu({ commands: this.commands });
+      viewMenu.title.label = "View";
+      viewMenu.addItem({ command: "view:gates" });
+      viewMenu.addItem({ command: "view:schematic" });
+      viewMenu.addItem({ command: "view:terminal" });
 
       this.mainMenu.addMenu(fileMenu);
       this.mainMenu.addMenu(editMenu);
@@ -166,14 +167,13 @@ export default {
     },
 
     createCommands() {
-
       this.commands.addCommand("file:new-tab", {
         label: "New Tab",
         mnemonic: 0,
         caption: "Open a new tab",
         execute: () => {
           console.log("New Tab");
-        },
+        }
       });
       this.commands.addCommand("file:compile", {
         label: "Compile",
@@ -181,7 +181,7 @@ export default {
         caption: "Compile current file",
         execute: () => {
           console.log("Compile");
-        },
+        }
       });
       this.commands.addCommand("file:simulate", {
         label: "Simulate",
@@ -189,9 +189,8 @@ export default {
         caption: "Simulate current file",
         execute: () => {
           console.log("Simulate");
-        },
+        }
       });
-
 
       this.commands.addCommand("edit:cut", {
         label: "Cut",
@@ -199,7 +198,7 @@ export default {
         iconClass: "fa fa-cut",
         execute: () => {
           console.log("Cut");
-        },
+        }
       });
 
       this.commands.addCommand("edit:copy", {
@@ -208,7 +207,7 @@ export default {
         iconClass: "fa fa-copy",
         execute: () => {
           console.log("Copy");
-        },
+        }
       });
 
       this.commands.addCommand("edit:paste", {
@@ -217,7 +216,7 @@ export default {
         iconClass: "fa fa-paste",
         execute: () => {
           console.log("Paste");
-        },
+        }
       });
 
       this.commands.addCommand("edit:find", {
@@ -226,7 +225,7 @@ export default {
         iconClass: "fa fa-cut",
         execute: () => {
           console.log("find");
-        },
+        }
       });
 
       this.commands.addCommand("edit:replace", {
@@ -235,7 +234,7 @@ export default {
         iconClass: "fa fa-copy",
         execute: () => {
           console.log("replace");
-        },
+        }
       });
 
       this.commands.addCommand("edit:toggle-comment", {
@@ -244,10 +243,8 @@ export default {
         iconClass: "fa fa-paste",
         execute: () => {
           console.log("Paste");
-        },
+        }
       });
-
-
 
       this.commands.addCommand("view:gates", {
         label: "View Gates",
@@ -255,7 +252,7 @@ export default {
         caption: "View Gates",
         execute: () => {
           console.log("view gates");
-        },
+        }
       });
       this.commands.addCommand("view:schematic", {
         label: "View Schematic",
@@ -263,7 +260,7 @@ export default {
         caption: "View Schematic",
         execute: () => {
           console.log("view schematic");
-        },
+        }
       });
       this.commands.addCommand("view:terminal", {
         label: "View Terminal",
@@ -271,43 +268,44 @@ export default {
         caption: "View Terminal",
         execute: () => {
           console.log("view terminal");
-        },
+        }
       });
-
 
       this.commands.addKeyBinding({
         keys: ["Accel X"],
         selector: "body",
-        command: "edit:cut",
+        command: "edit:cut"
       });
 
       this.commands.addKeyBinding({
         keys: ["Accel C"],
         selector: "body",
-        command: "edit:copy",
+        command: "edit:copy"
       });
 
       this.commands.addKeyBinding({
         keys: ["Accel V"],
         selector: "body",
-        command: "edit:paste",
+        command: "edit:paste"
       });
-
     },
 
     syncWidgets() {
+      console.log(this.$children);
       this.$children
-        .filter((child) => !this.widgets.includes(child.$attrs.id))
-        .forEach((newChild) => {
+        .filter(child => !this.widgetIDs.includes(child.$attrs.id))
+        .forEach(newChild => {
           console.log(newChild.$attrs);
           const id = `${newChild.$attrs.id}`;
           const title = newChild.$attrs.title || undefined;
           const icon = newChild.$attrs.icon || undefined;
           const area = newChild.$attrs.area || "dock";
-          const closable = "closable" in newChild.$attrs || false;
+          const closable =
+            ("closable" in newChild.$attrs && newChild.$attrs.closable) ||
+            false;
           const refName = newChild.$attrs["dock-ref"] || undefined;
           const mode = newChild.$attrs["dock-mode"] || undefined;
-          const ref = this.widgets.find((x) => x.id == refName);
+          const ref = this.widgets.find(x => x.id == refName);
 
           this.addWidget(id, area, { title, icon, closable, ref, mode });
           this.$nextTick(() => {
@@ -319,6 +317,7 @@ export default {
     addWidget(id, area, options) {
       const luminoWidget = new LuminoWidget(id, options);
       this.widgets.push(luminoWidget);
+      this.widgetIDs.push(id);
       if (area == "dock") {
         this.dockPanel.addWidget(luminoWidget, options);
       } else {
@@ -340,7 +339,7 @@ export default {
 
     onWidgetResize(customEvent) {
       console.log("widget resize: ", customEvent);
-      this.$emit("resize", customEvent)
+      this.$emit("resize", customEvent);
     },
 
     /**
@@ -371,7 +370,9 @@ export default {
      */
     onWidgetDeleted(customEvent) {
       const id = customEvent.detail.id;
-      this.widgets.splice(this.widgets.indexOf(id), 1);
+      const index = this.widgetIDs.indexOf(id);
+      this.widgets.splice(index, 1);
+      this.widgetIDs.splice(index, 1);
       document
         .getElementById(id)
         .removeEventListener("lumino:deleted", this.onWidgetDeleted);
@@ -379,8 +380,8 @@ export default {
         .getElementById(id)
         .removeEventListener("lumino:activated", this.onWidgetActivated);
       this.$emit("lumino:deleted", customEvent.detail);
-    },
-  },
+    }
+  }
 };
 </script>
 
@@ -390,7 +391,7 @@ export default {
 @import "../assets/variables.css";
 @import "../assets/base.css";
 
-.lm-TabBar-tabIcon,
+/* .lm-TabBar-tabIcon,
 .lm-TabBar-tabLabel,
 .lm-TabBar-tabCloseIcon {
   display: inline-block;
@@ -398,22 +399,10 @@ export default {
 
 .lm-TabBar-tab.lm-mod-closable > .lm-TabBar-tabCloseIcon {
   margin-left: 4px;
-}
+} */
 
 .lm-TabBar-tab.lm-mod-closable > .lm-TabBar-tabCloseIcon:before {
   content: "\f00d";
   font-family: FontAwesome;
-}
-
-
-
-.jp-FileBrowser {
-  display: flex;
-  flex-direction: column;
-  color: var(--jp-ui-font-color1);
-  background: var(--jp-layout-color1);
-  /* This is needed so that all font sizing of children done in ems is
-   * relative to this base size */
-  font-size: var(--jp-ui-font-size1);
 }
 </style>

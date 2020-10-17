@@ -19,7 +19,7 @@ import MonacoEditor from "vue-monaco";
 import parse from "../lib/vlgAntlrParser.js"; // parsec parser
 import walk from "../lib/vlgAntlrListener.js"; // parsec parser
 
-String.prototype.regexIndexOf = function (regex, startpos) {
+String.prototype.regexIndexOf = function(regex, startpos) {
   var indexOf = this.substring(startpos || 0).search(regex);
   return indexOf >= 0 ? indexOf + (startpos || 0) : indexOf;
 };
@@ -29,19 +29,19 @@ export default {
   props: {
     value: {
       type: String,
-      default: () => "// source code",
-    },
+      default: () => "// source code"
+    }
   },
   components: {
-    MonacoEditor,
+    MonacoEditor
   },
   data() {
     return {
       lintDecorations: [],
       monacoOptions: {
         glyphMargin: true,
-        fontSize: 14,
-      },
+        fontSize: 14
+      }
     };
   },
   computed: {
@@ -50,7 +50,7 @@ export default {
     },
     monaco() {
       return this.$refs["editor"].monaco;
-    },
+    }
   },
   methods: {
     onChange(val) {
@@ -76,10 +76,10 @@ export default {
         brackets: [
           ["(", ")"],
           ["begin", "end"],
-          ["module", "endmodule"],
+          ["module", "endmodule"]
         ],
         comments: {
-          lineComment: "//",
+          lineComment: "//"
         },
         folding: {
           offSide: false,
@@ -89,9 +89,9 @@ export default {
             ),
             end: new RegExp(
               "^(?:\\s*|.*(?!\\/[\\/\\*])[^\\w])(?:end|endmodule)\\b"
-            ),
-          },
-        },
+            )
+          }
+        }
       };
       monaco.languages.setLanguageConfiguration(
         "miniVerilog",
@@ -110,7 +110,7 @@ export default {
           "output",
           "endmodule",
           "test",
-          "assign",
+          "assign"
         ],
         typeKeywords: [
           "and",
@@ -122,7 +122,7 @@ export default {
           "buffer",
           "wire",
           "control",
-          "response",
+          "response"
         ],
         operators: ["=", "&", "|", "~", "^"],
         symbols: /[=><!~?:&|+\-*/^%]+/,
@@ -139,9 +139,9 @@ export default {
                   "@declarations": { token: "keyword.decl", bracket: "@open" },
                   "@typeKeywords": "type.identifier",
                   "@keywords": "keyword",
-                  "@default": "identifier",
-                },
-              },
+                  "@default": "identifier"
+                }
+              }
             ],
 
             // whitespace
@@ -151,7 +151,7 @@ export default {
             [/[{}()]/, "@brackets"],
             [
               /@symbols/,
-              { cases: { "@operators": "operator", "@default": "" } },
+              { cases: { "@operators": "operator", "@default": "" } }
             ],
 
             // @ annotations.
@@ -159,7 +159,7 @@ export default {
             // Note: message are supressed during the first load -- change some lines to see them.
             [
               /@\s*[a-zA-Z_$][\w$]*/,
-              { token: "annotation", log: "annotation token: $0" },
+              { token: "annotation", log: "annotation token: $0" }
             ],
 
             // numbers
@@ -177,29 +177,29 @@ export default {
             // characters
             [/'[^\\']'/, "string"],
             [/(')(@escapes)(')/, ["string", "string.escape", "string"]],
-            [/'/, "string.invalid"],
+            [/'/, "string.invalid"]
           ],
 
           comment: [
             [/[^/*]+/, "comment"],
             [/\/\*/, "comment", "@push"], // nested comment
             ["\\*/", "comment", "@pop"],
-            [/[/*]/, "comment"],
+            [/[/*]/, "comment"]
           ],
 
           string: [
             [/[^\\"]+/, "string"],
             [/@escapes/, "string.escape"],
             [/\\./, "string.escape.invalid"],
-            [/"/, { token: "string.quote", bracket: "@close", next: "@pop" }],
+            [/"/, { token: "string.quote", bracket: "@close", next: "@pop" }]
           ],
 
           whitespace: [
             [/[ \t\r\n]+/, "white"],
             [/\/\*/, "comment", "@comment"],
-            [/\/\/.*$/, "comment"],
-          ],
-        },
+            [/\/\/.*$/, "comment"]
+          ]
+        }
       });
 
       // Define a new theme that contains only rules that match this language
@@ -210,8 +210,8 @@ export default {
           { token: "custom-info", foreground: "808080" },
           { token: "custom-error", foreground: "ff0000", fontStyle: "bold" },
           { token: "custom-notice", foreground: "FFA500" },
-          { token: "custom-date", foreground: "008800" },
-        ],
+          { token: "custom-date", foreground: "008800" }
+        ]
       });
 
       // Register a completion item provider for the new language
@@ -221,14 +221,14 @@ export default {
             {
               label: "simpleText",
               kind: monaco.languages.CompletionItemKind.Text,
-              insertText: "simpleText",
+              insertText: "simpleText"
             },
             {
               label: "testing",
               kind: monaco.languages.CompletionItemKind.Keyword,
               insertText: "testing(${1:condition})",
               insertTextRules:
-                monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
             },
             {
               label: "ifelse",
@@ -238,15 +238,15 @@ export default {
                 "\t$0",
                 "} else {",
                 "\t",
-                "}",
+                "}"
               ].join("\n"),
               insertTextRules:
                 monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-              documentation: "If-Else Statement",
-            },
+              documentation: "If-Else Statement"
+            }
           ];
           return { suggestions: suggestions };
-        },
+        }
       });
     },
     lint(text) {
@@ -254,7 +254,7 @@ export default {
       if (text.length == 0) return [];
       const parseResult = parse(text);
 
-      let newDecorations = parseResult.errors.map((e) => ({
+      let newDecorations = parseResult.errors.map(e => ({
         range: new this.monaco.Range(
           e.startLine,
           e.startColumn,
@@ -267,15 +267,15 @@ export default {
             e.severity == "error"
               ? "fas fa-exclamation-triangle marginError"
               : "fas fa-exclamation-circle marginWarning",
-          glyphMarginHoverMessage: { value: e.msg },
-        },
+          glyphMarginHoverMessage: { value: e.msg }
+        }
       }));
 
       let walkResult = { errors: [] };
       if (parseResult.errors.length == 0) {
         walkResult = walk(parseResult.ast);
         newDecorations = newDecorations.concat(
-          walkResult.errors.map((e) => ({
+          walkResult.errors.map(e => ({
             range: new this.monaco.Range(
               e.startLine,
               e.startColumn,
@@ -288,8 +288,8 @@ export default {
                 e.severity == "error"
                   ? "fas fa-exclamation-triangle marginError"
                   : "fas fa-exclamation-circle marginWarning",
-              glyphMarginHoverMessage: { value: e.msg },
-            },
+              glyphMarginHoverMessage: { value: e.msg }
+            }
           }))
         );
 
@@ -307,8 +307,8 @@ export default {
           this.$emit("passLint", { parseResult, walkResult })
         );
       }
-    },
-  },
+    }
+  }
 };
 </script>
 

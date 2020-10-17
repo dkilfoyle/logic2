@@ -10,34 +10,34 @@ import RippleCounter from "./ripplecounter.v";
 export const SourceTree = [
   {
     text: "Templates",
-    children: [{ text: "Scratch", value: Scratch }],
+    children: [{ text: "Scratch", value: Scratch }]
   },
   {
     text: "Mux",
     children: [
       { text: "Mux2_1", value: Mux2_1 },
-      { text: "DeMux", value: DeMux },
-    ],
+      { text: "DeMux", value: DeMux }
+    ]
   },
   {
     text: "Decoders",
-    children: [{ text: "OneHot", value: OneHotDecoder }],
+    children: [{ text: "OneHot", value: OneHotDecoder }]
   },
   {
     text: "Encoders",
-    children: [{ text: "SevenSeg", value: SevenSeg }],
+    children: [{ text: "SevenSeg", value: SevenSeg }]
   },
   {
     text: "Memory",
-    children: [{ text: "DFF", covaluede: DFF }],
+    children: [{ text: "DFF", covaluede: DFF }]
   },
   {
     text: "Math",
     children: [
       { text: "BitAdder", value: BitAdder },
-      { text: "RippleCounter", value: RippleCounter },
-    ],
-  },
+      { text: "RippleCounter", value: RippleCounter }
+    ]
+  }
 ];
 
 export const SourceFiles = {
@@ -48,5 +48,5 @@ export const SourceFiles = {
   SevenSeg,
   Mux2_1,
   DeMux,
-  RippleCounter,
+  RippleCounter
 };

@@ -13,11 +13,11 @@ export default {
       sideBar: new TabBar({
         insertBehaviour: "none",
         removeBehaviour: "none",
-        allowDeselect: true,
+        allowDeselect: true
       }),
       stackedPanel: new StackedPanel(),
       lastCurrent: null,
-      items: [],
+      items: []
     };
   },
   created() {
@@ -96,20 +96,19 @@ export default {
       this.refreshVisibility();
     },
     findWidgetIndex(widget) {
-      return this.items.findIndex((x) => x.widget === widget);
+      return this.items.findIndex(x => x.widget === widget);
     },
     findWidgetByTitle(title) {
-      const item = this.items.find((x) => x.widget.title === title);
+      const item = this.items.find(x => x.widget.title === title);
       return item ? item.widget : null;
     },
     findWidgetByID(id) {
-      const item = this.tems.find((x) => x.widget.id === id);
+      const item = this.tems.find(x => x.widget.id === id);
       return item ? item.widget : null;
-    },
-  },
+    }
+  }
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-</style>
+<style scoped></style>

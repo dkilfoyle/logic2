@@ -97,8 +97,8 @@ export default class LuminoWidget extends Widget {
         id: this.id,
         name: this.name,
         closable: this.closable,
-        msg,
-      },
+        msg
+      }
     };
   }
 }

@@ -23,8 +23,8 @@ export default {
   props: {
     tabTitleProp: {
       type: String,
-      default: "name",
-    },
+      default: "name"
+    }
   },
 
   data() {
@@ -34,7 +34,7 @@ export default {
       // create dock panel, which holds the widgets
       dock: new DockPanel(),
       widgets: [],
-      commands: new CommandRegistry(),
+      commands: new CommandRegistry()
     };
   },
 
@@ -122,7 +122,7 @@ export default {
         iconClass: "fa fa-cut",
         execute: () => {
           console.log("Cut");
-        },
+        }
       });
 
       this.commands.addCommand("example:copy", {
@@ -131,7 +131,7 @@ export default {
         iconClass: "fa fa-copy",
         execute: () => {
           console.log("Copy");
-        },
+        }
       });
 
       this.commands.addCommand("example:paste", {
@@ -140,7 +140,7 @@ export default {
         iconClass: "fa fa-paste",
         execute: () => {
           console.log("Paste");
-        },
+        }
       });
 
       this.commands.addCommand("example:new-tab", {
@@ -149,7 +149,7 @@ export default {
         caption: "Open a new tab",
         execute: () => {
           console.log("New Tab");
-        },
+        }
       });
 
       this.commands.addCommand("example:close-tab", {
@@ -158,7 +158,7 @@ export default {
         caption: "Close the current tab",
         execute: () => {
           console.log("Close Tab");
-        },
+        }
       });
 
       this.commands.addCommand("example:save-on-exit", {
@@ -167,14 +167,14 @@ export default {
         caption: "Toggle the save on exit flag",
         execute: () => {
           console.log("Save on Exit");
-        },
+        }
       });
 
       this.commands.addCommand("example:open-task-manager", {
         label: "Task Manager",
         mnemonic: 5,
         isEnabled: () => false,
-        execute: () => {},
+        execute: () => {}
       });
 
       this.commands.addCommand("example:close", {
@@ -183,115 +183,115 @@ export default {
         iconClass: "fa fa-close",
         execute: () => {
           console.log("Close");
-        },
+        }
       });
 
       this.commands.addCommand("example:one", {
         label: "One",
         execute: () => {
           console.log("One");
-        },
+        }
       });
 
       this.commands.addCommand("example:two", {
         label: "Two",
         execute: () => {
           console.log("Two");
-        },
+        }
       });
 
       this.commands.addCommand("example:three", {
         label: "Three",
         execute: () => {
           console.log("Three");
-        },
+        }
       });
 
       this.commands.addCommand("example:four", {
         label: "Four",
         execute: () => {
           console.log("Four");
-        },
+        }
       });
 
       this.commands.addCommand("example:black", {
         label: "Black",
         execute: () => {
           console.log("Black");
-        },
+        }
       });
 
       this.commands.addCommand("example:clear-cell", {
         label: "Clear Cell",
         execute: () => {
           console.log("Clear Cell");
-        },
+        }
       });
 
       this.commands.addCommand("example:cut-cells", {
         label: "Cut Cell(s)",
         execute: () => {
           console.log("Cut Cell(s)");
-        },
+        }
       });
 
       this.commands.addCommand("example:run-cell", {
         label: "Run Cell",
         execute: () => {
           console.log("Run Cell");
-        },
+        }
       });
 
       this.commands.addCommand("example:cell-test", {
         label: "Cell Test",
         execute: () => {
           console.log("Cell Test");
-        },
+        }
       });
 
       this.commands.addCommand("notebook:new", {
         label: "New Notebook",
         execute: () => {
           console.log("New Notebook");
-        },
+        }
       });
 
       this.commands.addKeyBinding({
         keys: ["Accel X"],
         selector: "body",
-        command: "example:cut",
+        command: "example:cut"
       });
 
       this.commands.addKeyBinding({
         keys: ["Accel C"],
         selector: "body",
-        command: "example:copy",
+        command: "example:copy"
       });
 
       this.commands.addKeyBinding({
         keys: ["Accel V"],
         selector: "body",
-        command: "example:paste",
+        command: "example:paste"
       });
 
       this.commands.addKeyBinding({
         keys: ["Accel J", "Accel J"],
         selector: "body",
-        command: "example:new-tab",
+        command: "example:new-tab"
       });
 
       this.commands.addKeyBinding({
         keys: ["Accel M"],
         selector: "body",
-        command: "example:open-task-manager",
+        command: "example:open-task-manager"
       });
     },
 
     syncWidgets() {
       const tabTitleProp = this.$props.tabTitleProp;
       this.$children
-        .filter((child) => !this.widgets.includes(child.$attrs.id))
-        .forEach((newChild) => {
+        .filter(child => !this.widgets.includes(child.$attrs.id))
+        .forEach(newChild => {
           const id = `${newChild.$attrs.id}`;
           const name = newChild.$attrs[tabTitleProp]
             ? newChild.$attrs[tabTitleProp]
@@ -361,8 +361,8 @@ export default {
         .getElementById(id)
         .removeEventListener("lumino:activated", this.onWidgetActivated);
       this.$emit("lumino:deleted", customEvent.detail);
-    },
-  },
+    }
+  }
 };
 </script>
 

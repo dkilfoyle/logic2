@@ -2,14 +2,14 @@ const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 
 module.exports = {
   configureWebpack: {
-    devtool: "source-map",
+    devtool: "source-map"
   },
-  chainWebpack: (config) => {
+  chainWebpack: config => {
     config.plugin("monaco-editor").use(MonacoWebpackPlugin, [
       {
         // Languages are loaded on demand at runtime
-        languages: ["json", "javascript", "html", "xml"],
-      },
+        languages: ["json", "javascript", "html", "xml"]
+      }
     ]);
     config.module
       .rule("v")
@@ -22,7 +22,7 @@ module.exports = {
   pluginOptions: {
     "style-resources-loader": {
       preProcessor: "stylus",
-      patterns: [],
-    },
-  },
+      patterns: []
+    }
+  }
 };
