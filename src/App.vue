@@ -40,6 +40,7 @@
           v-model="openFile.code"
           :closable="openFile.name !== 'Scratch'"
           @passLint="onPassLint"
+          @onDidChangeCursorPosition="onChangeCursorPosition"
           @onDidChangeModelContent="onChangeEditorModelContent"
         />
       </template>
@@ -53,7 +54,15 @@
         msg="Term 1"
       />
 
-      <span id="statusbar-compile" area="statusbar">Hello</span>
+      <span id="statusbar-edpos" area="statusbar" align="right">
+        Ln {{ cursorPosition.lineNumber }}, Col {{ cursorPosition.column }}
+      </span>
+      <span id="statusbar-filename" area="statusbar" align="right">{{
+        $store.state.currentFileTab
+      }}</span>
+      <span id="statusbar-compile" area="statusbar">{{
+        $store.getters.currentFile.state
+      }}</span>
     </Lumino>
   </div>
 </template>
@@ -81,13 +90,18 @@ export default {
     return {
       sourceFiles: require("./files").SourceFiles,
       sourceTree: require("./files").SourceTree,
-      sourceCounter: 0
+      sourceCounter: 0,
+      cursorPosition: { lineNumber: "", column: "" }
     };
   },
   created() {
     this.addFileTab("Scratch");
   },
+
   methods: {
+    onChangeCursorPosition(pos) {
+      this.cursorPosition = pos;
+    },
     addFileTab(sourceName) {
       const newSourceName = Object.keys(this.$store.state.openFiles).includes(
         sourceName

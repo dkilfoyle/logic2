@@ -228,8 +228,6 @@ export default {
     },
 
     syncWidgets() {
-      console.log(this.$children);
-      console.log(this.$slots);
       this.$slots.default
         .filter(child => !this.widgetIDs.includes(child.data.attrs.id))
         .forEach(newChild => {
@@ -243,9 +241,19 @@ export default {
             false;
           const refName = newChild.data.attrs["dock-ref"] || undefined;
           const mode = newChild.data.attrs["dock-mode"] || undefined;
+          const align = newChild.data.attrs["align"] || undefined;
+          const rank = newChild.data.attrs["rank"] || undefined;
           const ref = this.widgets.find(x => x.id == refName);
 
-          this.addWidget(id, area, { title, icon, closable, ref, mode });
+          this.addWidget(id, area, {
+            title,
+            icon,
+            closable,
+            ref,
+            mode,
+            align,
+            rank
+          });
           this.$nextTick(() => {
             document.getElementById(id).appendChild(newChild.elm); //newChild.$el);
           });
@@ -368,5 +376,9 @@ export default {
   text-overflow: ellipsis;
   padding-left: 6px;
   padding-right: 6px;
+  font-family: var(--jp-ui-font-family);
+  color: var(--jp-ui-font-color1);
+  font-size: var(--jp-ui-font-size1);
+  line-height: 24px;
 }
 </style>

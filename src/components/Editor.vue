@@ -62,6 +62,9 @@ export default {
       this.editor.layout();
     },
     onEditorDidMount(editor) {
+      editor.onDidChangeCursorPosition(e =>
+        this.$emit("onDidChangeCursorPosition", e.position)
+      );
       // console.log("editorDidMount");
       this.lint(editor.getValue());
       // this.onChange(editor.getValue());
