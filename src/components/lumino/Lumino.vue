@@ -11,18 +11,9 @@
 
 <script>
 import { CommandRegistry } from "@lumino/commands";
-import LuminoWidget from "@/components/lumino-widget";
-import SideBarHandler from "./SideBar";
-import PanelHandler from "./PanelHandler";
-import {
-  BoxPanel,
-  DockPanel,
-  BoxLayout,
-  SplitPanel,
-  Widget,
-  Menu,
-  MenuBar
-} from "@lumino/widgets";
+import { Widget, Menu, MenuBar } from "@lumino/widgets";
+import LuminoWidget from "@/components/lumino/lumino-widget";
+import ShellWidget from "@/components/lumino/shell-widget";
 
 export default {
   name: "Lumino",
@@ -36,18 +27,11 @@ export default {
 
   data() {
     return {
-      shellWidget: new Widget(),
-      rootLayout: new BoxLayout(),
-      topHandler: new PanelHandler(),
-      hboxPanel: new BoxPanel(),
-      leftHandler: new SideBarHandler(),
-      hsplitPanel: new SplitPanel(),
-      dockPanel: new DockPanel(),
-      bottomPanel: new BoxPanel(),
       widgets: [],
       widgetIDs: [],
       commands: new CommandRegistry(),
-      mainMenu: new MenuBar()
+      mainMenu: new MenuBar(),
+      shellWidget: null
     };
   },
 
@@ -61,54 +45,7 @@ export default {
   // -- bottomPanel (jp-bottom-panel)
 
   created() {
-    this.shellWidget.addClass("jp-LabShell");
-    this.shellWidget.id = "main";
-
-    this.topHandler.panel.id = "jp-top-panel";
-    this.hboxPanel.id = "jp-main-content-panel";
-    this.dockPanel.id = "jp-main-dock-panel";
-    this.hsplitPanel.id = "jp-main-split-panel";
-    this.bottomPanel.id = "jp-bottom-panel";
-
-    this.leftHandler.sideBar.addClass("jp-SideBar");
-    this.leftHandler.sideBar.addClass("jp-mod-left");
-    this.leftHandler.stackedPanel.id = "jp-left-stack";
-
-    this.hboxPanel.spacing = 0;
-    this.dockPanel.spacing = 5;
-    this.hsplitPanel.spacing = 1;
-
-    this.hboxPanel.direction = "left-to-right";
-    this.hsplitPanel.orientation = "horizontal";
-    this.bottomPanel.direction = "bottom-to-top";
-
-    SplitPanel.setStretch(this.leftHandler.stackedPanel, 0);
-    SplitPanel.setStretch(this.dockPanel, 1);
-
-    BoxPanel.setStretch(this.leftHandler.sideBar, 0);
-    BoxPanel.setStretch(this.hsplitPanel, 1);
-
-    this.hsplitPanel.addWidget(this.leftHandler.stackedPanel);
-    this.hsplitPanel.addWidget(this.dockPanel);
-
-    this.hboxPanel.addWidget(this.leftHandler.sideBar);
-    this.hboxPanel.addWidget(this.hsplitPanel);
-
-    this.rootLayout.direction = "top-to-bottom";
-    this.rootLayout.spacing = 0;
-
-    this.hsplitPanel.setRelativeSizes([1, 3.5]);
-
-    BoxLayout.setStretch(this.topHandler.panel, 0);
-    BoxLayout.setStretch(this.hboxPanel, 1);
-    BoxLayout.setStretch(this.bottomPanel, 0);
-
-    this.shellWidget.layout = this.rootLayout;
-    this.rootLayout.addWidget(this.topHandler.panel);
-    this.rootLayout.addWidget(this.hboxPanel);
-    this.rootLayout.addWidget(this.bottomPanel);
-
-    this.bottomPanel.hide();
+    this.shellWidget = new ShellWidget();
 
     window.onresize = () => {
       this.shellWidget.update();
@@ -163,7 +100,7 @@ export default {
 
       this.mainMenu.id = "jp-MainMenu";
       this.mainMenu.addClass("jp-scrollbar-tiny");
-      this.topHandler.addWidget(this.mainMenu);
+      this.shellWidget.topHandler.addWidget(this.mainMenu);
     },
 
     createCommands() {
@@ -292,36 +229,50 @@ export default {
 
     syncWidgets() {
       console.log(this.$children);
-      this.$children
-        .filter(child => !this.widgetIDs.includes(child.$attrs.id))
+      console.log(this.$slots);
+      this.$slots.default
+        .filter(child => !this.widgetIDs.includes(child.data.attrs.id))
         .forEach(newChild => {
-          console.log(newChild.$attrs);
-          const id = `${newChild.$attrs.id}`;
-          const title = newChild.$attrs.title || undefined;
-          const icon = newChild.$attrs.icon || undefined;
-          const area = newChild.$attrs.area || "dock";
+          const id = `${newChild.data.attrs.id}`;
+          const title = newChild.data.attrs.title || undefined;
+          const icon = newChild.data.attrs.icon || undefined;
+          const area = newChild.data.attrs.area || "dock";
           const closable =
-            ("closable" in newChild.$attrs && newChild.$attrs.closable) ||
+            ("closable" in newChild.data.attrs &&
+              newChild.data.attrs.closable) ||
             false;
-          const refName = newChild.$attrs["dock-ref"] || undefined;
-          const mode = newChild.$attrs["dock-mode"] || undefined;
+          const refName = newChild.data.attrs["dock-ref"] || undefined;
+          const mode = newChild.data.attrs["dock-mode"] || undefined;
           const ref = this.widgets.find(x => x.id == refName);
 
           this.addWidget(id, area, { title, icon, closable, ref, mode });
           this.$nextTick(() => {
-            document.getElementById(id).appendChild(newChild.$el);
+            document.getElementById(id).appendChild(newChild.elm); //newChild.$el);
           });
         });
     },
 
     addWidget(id, area, options) {
+      console.log("Lumino.vue addWidget: ", id, area, options);
       const luminoWidget = new LuminoWidget(id, options);
       this.widgets.push(luminoWidget);
       this.widgetIDs.push(id);
-      if (area == "dock") {
-        this.dockPanel.addWidget(luminoWidget, options);
-      } else {
-        this.leftHandler.addWidget(luminoWidget, options);
+      switch (area) {
+        case "dock":
+          this.shellWidget.dockPanel.addWidget(luminoWidget, options);
+          break;
+        case "statusbar":
+          this.shellWidget.statusBar.registerStatusItem(id, {
+            item: luminoWidget,
+            ...options
+          });
+          break;
+        case "sidebar":
+          this.shellWidget.leftHandler.addWidget(luminoWidget, options);
+          break;
+        default:
+          console.log("addWidget: invalid area option = ", area);
+          break;
       }
       // give time for Lumino's widget DOM element to be created
       this.$nextTick(() => {
@@ -338,36 +289,15 @@ export default {
     },
 
     onWidgetResize(customEvent) {
-      console.log("widget resize: ", customEvent);
-      this.$emit("resize", customEvent);
+      // console.log("widget resize: ", customEvent);
+      this.$emit("resize", customEvent.detail);
     },
 
-    /**
-     * React to a deleted event.
-     *
-     * @param customEvent {
-     *   detail: {
-     *     id: string,
-     *     name: string,
-     *     closable: boolean
-     *   }
-     * }}
-     */
     onWidgetActivated(customEvent) {
-      this.$emit("lumino:activated", customEvent.detail);
+      // console.log("Lumino.vue: onWidgetActivated: ", customEvent);
+      this.$emit("activated", customEvent.detail);
     },
 
-    /**
-     * React to a deleted event.
-     *
-     * @param customEvent {
-     *   detail: {
-     *     id: string,
-     *     name: string,
-     *     closable: boolean
-     *   }
-     * }}
-     */
     onWidgetDeleted(customEvent) {
       const id = customEvent.detail.id;
       const index = this.widgetIDs.indexOf(id);
@@ -387,9 +317,9 @@ export default {
 
 <style>
 @import url("~@lumino/widgets/style/index.css");
-@import "../assets/materialcolors.css";
-@import "../assets/variables.css";
-@import "../assets/base.css";
+@import "../../assets/materialcolors.css";
+@import "../../assets/variables.css";
+@import "../../assets/base.css";
 
 /* .lm-TabBar-tabIcon,
 .lm-TabBar-tabLabel,
@@ -404,5 +334,39 @@ export default {
 .lm-TabBar-tab.lm-mod-closable > .lm-TabBar-tabCloseIcon:before {
   content: "\f00d";
   font-family: FontAwesome;
+}
+
+.jp-statusbar {
+  background: var(--jp-layout-color2);
+  min-height: 24px;
+  justify-content: space-between;
+  padding-left: 10px;
+  padding-right: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.jp-statusbar-side {
+  display: flex;
+  align-items: center;
+}
+
+.jp-statusbar-left {
+  flex-direction: row;
+}
+
+.jp-statusbar-right {
+  flex-direction: row-reverse;
+}
+
+.jp-statusbar-item {
+  max-height: 24px;
+  margin-left: 2px;
+  margin-right: 2px;
+  height: 24px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-left: 6px;
+  padding-right: 6px;
 }
 </style>

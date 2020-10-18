@@ -63,7 +63,7 @@ export default class SideBarHandler {
   }
 
   onCurrentChanged(sender, args) {
-    console.log("SideBar.onCurrentChanged: ", sender, args);
+    // console.log("SideBar.onCurrentChanged: ", sender, args);
     const oldWidget = args.previousTitle
       ? this.findWidgetByTitle(args.previousTitle)
       : null;
@@ -81,7 +81,7 @@ export default class SideBarHandler {
   }
 
   onTabActivateRequested(sender, args) {
-    console.log("SideBar.onTabActivateRequested: ", sender, args);
+    // console.log("SideBar.onTabActivateRequested: ", sender, args);
     args.title.owner.activate();
   }
 

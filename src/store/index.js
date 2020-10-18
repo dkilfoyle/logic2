@@ -21,6 +21,9 @@ export default new Vuex.Store({
     setSelectedInstanceID(state, id) {
       state.selectedInstanceID = id;
     },
+    setCurrentFileTab(state, payload) {
+      state.currentFileTab = payload;
+    },
     openFile(state, payload) {
       Vue.set(state.openFiles, payload.newSourceName, {
         name: payload.newSourceName,

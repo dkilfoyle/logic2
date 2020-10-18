@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Lumino @resize="onLuminoResize">
+    <Lumino @resize="onLuminoResize" @activated="onLuminoActivated">
       <liquor-tree
         id="fileTree"
         area="sidebar"
@@ -52,12 +52,14 @@
         dock-mode="split-bottom"
         msg="Term 1"
       />
+
+      <span id="statusbar-compile" area="statusbar">Hello</span>
     </Lumino>
   </div>
 </template>
 
 <script>
-import Lumino from "./components/Lumino";
+import Lumino from "./components/lumino/Lumino";
 import HelloWorld from "./components/HelloWorld.vue";
 import Editor from "./components/Editor.vue";
 import LiquorTree from "liquor-tree";
@@ -118,6 +120,13 @@ export default {
         this.$refs[ref][0].onResize();
       });
     },
+    onLuminoActivated(e) {
+      console.log("onLuminoActivated: ", e);
+      if (e.id.endsWith("_editor")) {
+        this.$refs[e.id][0].onResize();
+        this.$store.commit("setCurrentFileTab", e.id);
+      }
+    },
     onPassLint(e) {
       this.currentFile.parseResult = { ...e.parseResult };
       this.currentFile.walkResult = { ...e.walkResult };
@@ -150,14 +159,14 @@ body {
   overflow: hidden;
 }
 
-.jp-SideBar .lm-TabBar-tabIcon {
-  align-self: center;
-  font-size: 18pt;
-}
-
 .fileBrowserIcon::before {
   content: "\f07b";
   font-family: FontAwesome;
+}
+
+.jp-SideBar .lm-TabBar-tabIcon {
+  align-self: center;
+  font-size: 18pt;
 }
 
 .jp-FileBrowser {
