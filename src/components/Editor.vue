@@ -1,15 +1,37 @@
 <template>
-  <MonacoEditor
-    ref="editor"
-    :value="value"
-    :options="monacoOptions"
-    @change="onChange"
-    @editorWillMount="onEditorWillMount"
-    @editorDidMount="onEditorDidMount"
-    class="editor"
-    language="miniVerilog"
-    theme="myCoolTheme"
-  />
+  <div class="editorContainer">
+    <div class="dktoolbar">
+      <div class="buttons has-addons">
+        <button class="button is-small">
+          <span class="icon is-small">
+            <i class="fa fa-cut"></i>
+          </span>
+        </button>
+        <button class="button is-small">
+          <span class="icon is-small">
+            <i class="fa fa-copy"></i>
+          </span>
+        </button>
+        <button class="button is-small">
+          <span class="icon is-small">
+            <i class="fa fa-paste"></i>
+          </span>
+        </button>
+      </div>
+      <button class="button is-primary is-small">4</button>
+    </div>
+    <MonacoEditor
+      ref="editor"
+      :value="value"
+      :options="monacoOptions"
+      @change="onChange"
+      @editorWillMount="onEditorWillMount"
+      @editorDidMount="onEditorDidMount"
+      class="editor"
+      language="miniVerilog"
+      theme="myCoolTheme"
+    />
+  </div>
 </template>
 
 <script>
@@ -18,6 +40,8 @@ import MonacoEditor from "vue-monaco";
 // import vlgParser from "../lib/vlgParser.js"; // parsec parser
 import parse from "../lib/vlgAntlrParser.js"; // parsec parser
 import walk from "../lib/vlgAntlrListener.js"; // parsec parser
+
+// import "bulma/css/bulma.css";
 
 String.prototype.regexIndexOf = function(regex, startpos) {
   var indexOf = this.substring(startpos || 0).search(regex);
@@ -317,6 +341,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
+.editorContainer {
+  width: 100%;
+  height: 100%;
+}
 .marginError {
   color: indianred;
   margin-left: 5px;
@@ -333,5 +361,21 @@ export default {
   color: indianred !important;
   /* cursor: pointer; */
   text-decoration: darksalmon underline wavy;
+}
+
+.dktoolbar {
+  display: flex;
+  width: 100%;
+  background: #333333;
+  gap: 5px;
+  padding: 5px;
+}
+
+.dktoolbar .buttons:not(:last-child) {
+  margin-bottom: 0px;
+}
+
+.dktoolbar .buttons button {
+  margin-bottom: 0px;
 }
 </style>

@@ -32,13 +32,13 @@
 
       <template v-for="openFile in $store.state.openFiles">
         <Editor
-          :key="openFile.name"
           :id="openFile.name + '_editor'"
-          :ref="openFile.name + '_editor'"
-          :title="openFile.name"
+          :key="openFile.name"
           area="dock"
-          v-model="openFile.code"
           :closable="openFile.name !== 'Scratch'"
+          :title="openFile.name"
+          :ref="openFile.name + '_editor'"
+          v-model="openFile.code"
           @passLint="onPassLint"
           @onDidChangeCursorPosition="onChangeCursorPosition"
           @onDidChangeModelContent="onChangeEditorModelContent"
@@ -68,6 +68,7 @@
 </template>
 
 <script>
+import "bulma/css/bulma.css";
 import Lumino from "./components/lumino/Lumino";
 import HelloWorld from "./components/HelloWorld.vue";
 import Editor from "./components/Editor.vue";
@@ -112,8 +113,8 @@ export default {
         newSourceName,
         code: this.sourceFiles[newSourceName]
       });
-
-      this.currentFileTab = newSourceName;
+      this.$store.commit("setCurrentFileTab", newSourceName);
+      // this.currentFileTab = newSourceName;
     },
 
     onChangeEditorModelContent() {
@@ -136,9 +137,15 @@ export default {
     },
     onLuminoActivated(e) {
       console.log("onLuminoActivated: ", e);
-      if (e.id.endsWith("_editor")) {
-        this.$refs[e.id][0].onResize();
-        this.$store.commit("setCurrentFileTab", e.id);
+      if (e.id.endsWith("_editor_wrapper")) {
+        const editorid = e.id.replace("_wrapper", ""); //substring(0, e.id.indexOf("_wrapper"));
+        console.log(this.$refs[editorid][0]);
+        this.$refs[editorid][0].onResize();
+        this.$refs[editorid][0].editor.focus();
+        this.$store.commit(
+          "setCurrentFileTab",
+          e.id.substring(0, e.id.indexOf("_editor"))
+        );
       }
     },
     onPassLint(e) {
@@ -163,6 +170,9 @@ export default {
 </script>
 
 <style>
+html {
+  background: var(--jp-layout-color3);
+}
 body {
   margin: 0px;
   font-size: 14pt;
@@ -188,7 +198,7 @@ body {
   flex-direction: column;
   color: var(--jp-ui-font-color1);
   background: var(--jp-layout-color1);
-  font-size: 14pt; /*var(--jp-ui-font-size1);*/
+  font-size: var(--jp-ui-font-size1);
   height: 100%;
 }
 

@@ -8,11 +8,13 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@jupyterlab/ui-components": "^2.2.3",
     "@lumino/commands": "^1.11.3",
     "@lumino/default-theme": "^0.5.0",
     "@lumino/polling": "^1.3.3",
     "@lumino/widgets": "^1.14.0",
     "antlr4": "^4.8.0",
+    "bulma": "^0.9.1",
     "core-js": "^3.6.5",
     "liquor-tree": "^0.2.70",
     "monaco-editor-webpack-plugin": "^1.9.0",

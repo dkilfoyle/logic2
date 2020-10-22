@@ -45,7 +45,7 @@ export default class LuminoWidget extends Widget {
 
     // classes and flags
     this.setFlag(Widget.Flag.DisallowLayout);
-    this.addClass("content");
+    this.addClass("jp-MainAreaWidget");
   }
 
   /**

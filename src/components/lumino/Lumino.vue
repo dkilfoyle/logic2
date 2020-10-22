@@ -13,7 +13,9 @@
 import { CommandRegistry } from "@lumino/commands";
 import { Widget, Menu, MenuBar } from "@lumino/widgets";
 import LuminoWidget from "@/components/lumino/lumino-widget";
-import ShellWidget from "@/components/lumino/shell-widget";
+// import ShellWidget from "@/components/lumino/shell-widget";
+import { LabShell } from "@/components/lumino/Shell.js";
+import { StatusBar } from "@/components/lumino/StatusBar.js";
 
 export default {
   name: "Lumino",
@@ -31,7 +33,8 @@ export default {
       widgetIDs: [],
       commands: new CommandRegistry(),
       mainMenu: new MenuBar(),
-      shellWidget: null
+      shellWidget: null,
+      statusBar: null
     };
   },
 
@@ -45,7 +48,11 @@ export default {
   // -- bottomPanel (jp-bottom-panel)
 
   created() {
-    this.shellWidget = new ShellWidget();
+    // this.shellWidget = new ShellWidget();
+    this.shellWidget = new LabShell();
+    this.statusBar = new StatusBar();
+    this.statusBar.id = "jp-statusbar";
+    this.shellWidget.add(this.statusBar, "bottom");
 
     window.onresize = () => {
       this.shellWidget.update();
@@ -100,7 +107,8 @@ export default {
 
       this.mainMenu.id = "jp-MainMenu";
       this.mainMenu.addClass("jp-scrollbar-tiny");
-      this.shellWidget.topHandler.addWidget(this.mainMenu);
+      // this.shellWidget.topHandler.addWidget(this.mainMenu);
+      this.shellWidget.add(this.mainMenu, "top");
     },
 
     createCommands() {
@@ -229,9 +237,11 @@ export default {
 
     syncWidgets() {
       this.$slots.default
-        .filter(child => !this.widgetIDs.includes(child.data.attrs.id))
+        .filter(
+          child => !this.widgetIDs.includes(child.data.attrs.id + "_wrapper")
+        )
         .forEach(newChild => {
-          const id = `${newChild.data.attrs.id}`;
+          const id = `${newChild.data.attrs.id}_wrapper`;
           const title = newChild.data.attrs.title || undefined;
           const icon = newChild.data.attrs.icon || undefined;
           const area = newChild.data.attrs.area || "dock";
@@ -243,45 +253,57 @@ export default {
           const mode = newChild.data.attrs["dock-mode"] || undefined;
           const align = newChild.data.attrs["align"] || undefined;
           const rank = newChild.data.attrs["rank"] || undefined;
+          const activate = newChild.data.attrs["activate"] || undefined;
+          console.log(this.widgets);
           const ref = this.widgets.find(x => x.id == refName);
 
-          this.addWidget(id, area, {
-            title,
-            icon,
-            closable,
-            ref,
-            mode,
-            align,
-            rank
-          });
+          this.addWidget(
+            id,
+            area,
+            {
+              title,
+              icon,
+              closable,
+              ref,
+              mode,
+              align,
+              rank,
+              activate
+            },
+            newChild
+          );
           this.$nextTick(() => {
             document.getElementById(id).appendChild(newChild.elm); //newChild.$el);
           });
         });
     },
 
-    addWidget(id, area, options) {
-      console.log("Lumino.vue addWidget: ", id, area, options);
-      const luminoWidget = new LuminoWidget(id, options);
+    addWidget(id, area, options, parent) {
+      console.log("Lumino.vue addWidget: ", id, area, options, parent);
+      let luminoWidget = new LuminoWidget(id, options);
       this.widgets.push(luminoWidget);
       this.widgetIDs.push(id);
+
       switch (area) {
         case "dock":
-          this.shellWidget.dockPanel.addWidget(luminoWidget, options);
+          this.shellWidget.add(luminoWidget, "main", options);
           break;
         case "statusbar":
-          this.shellWidget.statusBar.registerStatusItem(id, {
+          luminoWidget = new LuminoWidget(id, options);
+          this.statusBar.registerStatusItem(id, {
             item: luminoWidget,
             ...options
           });
           break;
         case "sidebar":
-          this.shellWidget.leftHandler.addWidget(luminoWidget, options);
+          luminoWidget = new LuminoWidget(id, options);
+          this.shellWidget.add(luminoWidget, "left", options);
           break;
         default:
           console.log("addWidget: invalid area option = ", area);
-          break;
+          return;
       }
+
       // give time for Lumino's widget DOM element to be created
       this.$nextTick(() => {
         document
