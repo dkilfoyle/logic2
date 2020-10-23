@@ -1,25 +1,50 @@
 <template>
   <div class="editorContainer">
-    <div class="dktoolbar">
-      <div class="buttons has-addons">
-        <button class="button is-small">
-          <span class="icon is-small">
-            <i class="fa fa-cut"></i>
-          </span>
-        </button>
-        <button class="button is-small">
-          <span class="icon is-small">
-            <i class="fa fa-copy"></i>
-          </span>
-        </button>
-        <button class="button is-small">
-          <span class="icon is-small">
-            <i class="fa fa-paste"></i>
-          </span>
-        </button>
+    <nav class="level dktoolbar">
+      <div class="level-left">
+        <div class="level-item dkbuttongroup">
+          <button class="button is-small ">
+            <span class="icon is-small">
+              <i class="fa fa-cut"></i>
+            </span>
+          </button>
+          <button class="button is-small is-light">
+            <span class="icon is-small">
+              <i class="fa fa-copy"></i>
+            </span>
+          </button>
+          <button class="button is-small is-light">
+            <span class="icon is-small">
+              <i class="fa fa-paste"></i>
+            </span>
+          </button>
+        </div>
       </div>
-      <button class="button is-primary is-small">4</button>
-    </div>
+      <div class="level-right">
+        <div class="level-item dkbuttongroup">
+          <button class="button is-small is-info">
+            <span class="icon is-small">
+              <i class="fa fa-check"></i>
+            </span>
+            <span>Auto Compile</span>
+          </button>
+          <button
+            class="button is-primary is-small is-info"
+            @click="$emit('compile')"
+          >
+            <span class="icon is-small">
+              <i class="fa fa-refresh"></i>
+            </span>
+          </button>
+          <button class="button is-primary is-small" @click="$emit('simulate')">
+            <span class="icon is-small">
+              <i class="fa fa-play"></i>
+            </span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
     <MonacoEditor
       ref="editor"
       :value="value"
@@ -36,10 +61,8 @@
 
 <script>
 import MonacoEditor from "vue-monaco";
-// var lineColumn = require("line-column");
-// import vlgParser from "../lib/vlgParser.js"; // parsec parser
-import parse from "../lib/vlgAntlrParser.js"; // parsec parser
-import walk from "../lib/vlgAntlrListener.js"; // parsec parser
+import parse from "../lib/vlgAntlrParser.js";
+import walk from "../lib/vlgAntlrListener.js";
 
 // import "bulma/css/bulma.css";
 
@@ -364,18 +387,13 @@ export default {
 }
 
 .dktoolbar {
-  display: flex;
-  width: 100%;
   background: #333333;
-  gap: 5px;
   padding: 5px;
+  margin-bottom: 0px !important;
 }
 
-.dktoolbar .buttons:not(:last-child) {
-  margin-bottom: 0px;
-}
-
-.dktoolbar .buttons button {
-  margin-bottom: 0px;
+.dkbuttongroup {
+  display: inline-flex;
+  gap: 5px;
 }
 </style>

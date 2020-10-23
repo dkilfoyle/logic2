@@ -15,6 +15,7 @@
     "@lumino/widgets": "^1.14.0",
     "antlr4": "^4.8.0",
     "bulma": "^0.9.1",
+    "chalk": "^4.1.0",
     "core-js": "^3.6.5",
     "liquor-tree": "^0.2.70",
     "monaco-editor-webpack-plugin": "^1.9.0",

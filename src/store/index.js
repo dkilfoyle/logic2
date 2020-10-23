@@ -30,9 +30,21 @@ export default new Vuex.Store({
         code: payload.code,
         instances: [],
         gates: [],
+        parseResult: {},
+        walkResult: {},
+        compileResult: {},
         simulation: { ready: false, gates: {}, time: [], maxTime: 0 },
         state: "uncompiled"
       });
+    },
+    setParseResult(state, payload) {
+      state.openFiles[state.currentFileTab].parseResult = payload;
+    },
+    setWalkResult(state, payload) {
+      state.openFiles[state.currentFileTab].walkResult = payload;
+    },
+    setCompileResult(state, payload) {
+      state.openFiles[state.currentFileTab].compileResult = payload;
     }
   },
   actions: {},

@@ -42,6 +42,8 @@
           @passLint="onPassLint"
           @onDidChangeCursorPosition="onChangeCursorPosition"
           @onDidChangeModelContent="onChangeEditorModelContent"
+          @compile="compile"
+          @simulate="simulate"
         />
       </template>
 
@@ -74,10 +76,28 @@ import HelloWorld from "./components/HelloWorld.vue";
 import Editor from "./components/Editor.vue";
 import LiquorTree from "liquor-tree";
 
-// import vlgParse from "./lib/vlgAntlrParser.js"; // build ast
-// import vlgWalk from "./lib/vlgAntlrListener.js"; // convert ast into module definitions
+const Chalk = require("chalk");
+let options = { enabled: true, level: 2 };
+const chalk = new Chalk.Instance(options);
+
+const shortJoin = strs => {
+  const x = strs.join(", ");
+  if (x.length < 21) return x;
+  else return x.slice(0, 40) + "...";
+};
+
+const indexBy = (array, prop) =>
+  array.reduce((output, item) => {
+    output[item[prop]] = item;
+    return output;
+  }, {});
+
+const stripReactive = x => JSON.parse(JSON.stringify(x));
+
+import vlgParse from "./lib/vlgAntlrParser.js"; // build ast
+import vlgWalk from "./lib/vlgAntlrListener.js"; // convert ast into module definitions
 import vlgCompile from "./lib/vlgModuleCompiler.js"; // compiled modul definitions into instances and gates
-// import evaluateGates from "./lib/simulation.js";
+import evaluateGates from "./lib/simulation.js";
 
 export default {
   name: "App",
@@ -148,22 +168,166 @@ export default {
         );
       }
     },
+    termWriteln(x) {
+      console.log(x);
+    },
     onPassLint(e) {
-      this.currentFile.parseResult = { ...e.parseResult };
-      this.currentFile.walkResult = { ...e.walkResult };
+      // if simulate on pass lint
+      this.$store.commit("setParseResult", { ...e.parseResult });
+      this.$store.commit("setWalkResult", { ...e.walkResult });
 
       // compile turns [modules] into instances and gates
       // needed for updating of gates table and schematic
 
-      this.currentFile.compileResult = vlgCompile(
-        this.currentFile.walkResult.modules
+      const compileResult = vlgCompile(e.walkResult.modules);
+      this.$store.commit("setCompileResult", { ...compileResult });
+
+      console.log("app: onPassLint: ", this.$store.getters.currentFile);
+    },
+    compile() {
+      this.termWriteln(
+        chalk.bold.green("• Compiling: ") +
+          chalk.yellow(this.$store.state.currentFileTab)
       );
-      this.currentFile.instances = [
-        ...this.currentFile.compileResult.instances
-      ];
-      this.currentFile.gates = [...this.currentFile.compileResult.gates];
-      this.currentFile.state = "compiled " + Date.now();
-      console.log("app: onPassLint: ", this.currentFile);
+
+      const parseResult = vlgParse(this.$store.getters.currentFile.code);
+      this.$store.commit("setParseResult", { ...parseResult });
+      if (parseResult.errors.length > 0) {
+        // this.$store.commit("setParseState", te = "parseError";
+        this.termWriteln(
+          chalk.red("└── Syntax error(s): ") + parseResult.errors.length
+        );
+        return;
+      }
+
+      const walkResult = vlgWalk(parseResult.ast);
+      this.$store.commit("setWalkResult", { ...walkResult });
+      if (walkResult.errors.length > 0) {
+        // this.currentFile.state = "walkError";
+        this.termWriteln(
+          chalk.red("└── Semantic error(s): ") + walkResult.errors.length
+        );
+        return;
+      }
+
+      this.termWriteln(
+        chalk.green(
+          `├── Parsed ${walkResult.modules.length} modules: ${chalk.white(
+            walkResult.modules.map(x => x.id).join(", ")
+          )}`
+        )
+      );
+
+      const compileResult = vlgCompile(walkResult.modules);
+      this.$store.commit("setCompileResult", { ...compileResult });
+      // this.currentFile.state = "compiled";
+      console.log("Compiled: ", stripReactive(compileResult));
+
+      this.termWriteln(
+        chalk.green(
+          `├── Generated ${
+            compileResult.instances.length
+          } instances: ${chalk.white(
+            shortJoin(compileResult.instances.map(x => x.id))
+          )}`
+        )
+      );
+      this.termWriteln(
+        chalk.green(
+          `└── Generated ${compileResult.gates.length} gates: ${chalk.white(
+            shortJoin(compileResult.gates.map(x => x.id))
+          )}`
+        )
+      );
+
+      this.termWriteln(
+        chalk.green.inverse(" DONE ") + "  Compiled successfully"
+      );
+
+      // this.currentFile.timestamp = Date.now();
+      // this.currentFile.simulation = { ready: false };
+    },
+    simulate() {
+      this.showTerminal = true;
+      this.termWriteln(
+        chalk.bold.cyan("• Simulating: ") + chalk.yellow(this.currentFile.name)
+      );
+
+      const newSimulation = {
+        gates: {},
+        clock: [],
+        time: [],
+        ready: false
+      };
+
+      this.currentFile.gates.forEach(g => {
+        g.state = 0;
+        newSimulation.gates[g.id] = [];
+      });
+
+      var gatesLookup = indexBy(this.currentFile.gates, "id");
+      var instancesLookup = indexBy(this.currentFile.instances, "id");
+      var modulesLookup = indexBy(this.currentFile.walkResult.modules, "id");
+
+      const maxClock = modulesLookup.Main.clock.reduce(
+        (acc, val) => Math.max(val.time, acc),
+        0
+      );
+
+      if (gatesLookup["main_clock"]) gatesLookup["main_clock"].state = 0;
+
+      for (let clock = 0; clock <= maxClock; clock++) {
+        newSimulation.time.push(clock);
+        modulesLookup.Main.clock.forEach(c => {
+          if (c.time == clock) {
+            c.assignments.forEach(a => {
+              // can only assign values to control types
+              if (gatesLookup["main_" + a.id].logic == "control")
+                gatesLookup["main_" + a.id].state = a.value;
+            });
+          }
+        });
+
+        if (gatesLookup["main_clock"])
+          gatesLookup["main_clock"].state =
+            ~gatesLookup["main_clock"].state & 1; // tick-tock
+
+        for (let i = 0; i < this.EVALS_PER_STEP; i++) {
+          evaluateGates(this.currentFile.gates, gatesLookup);
+        }
+        this.currentFile.gates.forEach(g => {
+          newSimulation.gates[g.id].push(gatesLookup[g.id].state);
+        });
+
+        newSimulation.clock.push(clock % 2);
+
+        modulesLookup.Main.clock.forEach((x, index, all) => {
+          if (x.time != clock) return;
+
+          const lineChar = index == all.length - 1 ? "└" : "├";
+
+          this.termWriteln(
+            chalk.cyan(
+              `${lineChar}── Time ${clock.toString().padStart(3, "0")} :`
+            ) +
+              shortJoin(x.assignments.map(a => a.id + "=" + a.value)) +
+              chalk.cyan(" => ") +
+              shortJoin(
+                instancesLookup.main.gates
+                  .filter(gateId => gatesLookup[gateId].logic == "response")
+                  .map(o => this.getLocalId(o) + "=" + gatesLookup[o].state)
+              )
+          );
+        });
+      }
+      this.termWriteln(
+        chalk.cyan.inverse(" DONE ") + "  Simulated successfully"
+      );
+      newSimulation.maxTime = newSimulation.time[newSimulation.time.length - 1];
+      newSimulation.timestamp = Date.now();
+      newSimulation.ready = true;
+      this.currentFile.simulation = newSimulation;
+      console.log("Simulation: ", stripReactive(this.currentFile.simulation));
     }
   }
 };
@@ -191,6 +355,10 @@ body {
 .jp-SideBar .lm-TabBar-tabIcon {
   align-self: center;
   font-size: 18pt;
+}
+
+.lm-DockPanel-tabBar .lm-TabBar-tab.jp-mod-current:before {
+  height: 3px;
 }
 
 .jp-FileBrowser {
