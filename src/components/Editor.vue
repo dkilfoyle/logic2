@@ -353,10 +353,11 @@ export default {
       );
 
       if (parseResult.errors.length == 0 && walkResult.errors.length == 0) {
-        this.$nextTick(() =>
-          this.$emit("passLint", { parseResult, walkResult })
-        );
-      }
+        this.$nextTick(() => {
+          this.$store.commit("setStatus", "parsesuccess");
+          this.$emit("passLint", { parseResult, walkResult });
+        });
+      } else this.$store.commit("setStatus", "parsererror");
     }
   }
 };

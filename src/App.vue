@@ -6,7 +6,6 @@
         area="sidebar"
         class="jp-FileBrowser"
         icon="ion-md-folder-open"
-        msg="File Browser"
         :data="sourceTree"
         :options="{ nodeIndent: 14 }"
         @node:selected="onCodeTreeSelection"
@@ -30,6 +29,17 @@
         </span></liquor-tree
       >
 
+      <liquor-tree
+        id="outline"
+        ref="outline"
+        area="sidebar"
+        class="jp-FileBrowser"
+        icon="ion-md-menu"
+        :data="$store.getters.instanceTree"
+        :options="{ nodeIndent: 14 }"
+        @node:selected="onInstanceTreeSelection"
+      ></liquor-tree>
+
       <template v-for="openFile in $store.state.openFiles">
         <Editor
           :id="openFile.name + '_editor'"
@@ -47,13 +57,29 @@
         />
       </template>
 
-      <HelloWorld
-        id="terminal"
+      <TerminalView
+        id="terminalview"
+        class="console"
+        ref="terminal"
         area="dock"
         title="Terminal"
-        dock-ref="ed1"
+        dock-ref="Scratch_editor"
         dock-mode="split-bottom"
-        msg="Term 1"
+        :options="{
+          scrollback: 5000,
+          disableStdin: true,
+          useFlowControl: true
+        }"
+        dark-mode
+      />
+
+      <gates
+        id="gates"
+        area="dock"
+        ref="gates"
+        title="Gate Table"
+        dock-ref="Scratch_editor"
+        dock-mode="split-right"
       />
 
       <span id="statusbar-edpos" area="statusbar" align="right">
@@ -63,18 +89,21 @@
         $store.state.currentFileTab
       }}</span>
       <span id="statusbar-compile" area="statusbar">{{
-        $store.getters.currentFile.state
+        $store.getters.currentFile.status
       }}</span>
     </Lumino>
   </div>
 </template>
 
 <script>
-import "bulma/css/bulma.css";
+// import "bulma/css/bulma.css";
 import Lumino from "./components/lumino/Lumino";
-import HelloWorld from "./components/HelloWorld.vue";
 import Editor from "./components/Editor.vue";
+import Gates from "./components/Gates.vue";
 import LiquorTree from "liquor-tree";
+import TerminalView from "./components/TerminalView";
+
+import { mapGetters } from "vuex";
 
 const Chalk = require("chalk");
 let options = { enabled: true, level: 2 };
@@ -103,9 +132,10 @@ export default {
   name: "App",
   components: {
     Lumino,
-    HelloWorld,
+    TerminalView,
     Editor,
-    LiquorTree
+    LiquorTree,
+    Gates
   },
   data() {
     return {
@@ -118,7 +148,17 @@ export default {
   created() {
     this.addFileTab("Scratch");
   },
-
+  computed: {
+    ...mapGetters(["instanceTree"])
+  },
+  watch: {
+    instanceTree() {
+      this.$nextTick(() => this.$refs.outline.setModel(this.instanceTree));
+    },
+    currentFileTab() {
+      this.$store.commit("setSelectedInstanceID", "main");
+    }
+  },
   methods: {
     onChangeCursorPosition(pos) {
       this.cursorPosition = pos;
@@ -140,12 +180,13 @@ export default {
     onChangeEditorModelContent() {
       this.updateOutline();
     },
-    updateOutline() {
-      //this.$nextTick(() => this.$refs.outline.setModel(this.instanceTree));
-    },
 
     onCodeTreeSelection(node) {
       if (node.children.length == 0) this.addFileTab(node.text);
+    },
+
+    onInstanceTreeSelection(node) {
+      this.$store.commit("setSelectedInstanceID", node.data.id);
     },
     onLuminoResize() {
       // console.log("onLuminoResize: ", e);
@@ -154,6 +195,8 @@ export default {
         let ref = `${name}_editor`;
         this.$refs[ref][0].onResize();
       });
+
+      this.$refs.terminal.fit();
     },
     onLuminoActivated(e) {
       console.log("onLuminoActivated: ", e);
@@ -168,8 +211,8 @@ export default {
         );
       }
     },
-    termWriteln(x) {
-      console.log(x);
+    termWriteln(str) {
+      this.$refs.terminal.setContent(str);
     },
     onPassLint(e) {
       // if simulate on pass lint
@@ -181,6 +224,7 @@ export default {
 
       const compileResult = vlgCompile(e.walkResult.modules);
       this.$store.commit("setCompileResult", { ...compileResult });
+      this.$store.commit("setStatus", "compiled");
 
       console.log("app: onPassLint: ", this.$store.getters.currentFile);
     },
@@ -220,7 +264,7 @@ export default {
 
       const compileResult = vlgCompile(walkResult.modules);
       this.$store.commit("setCompileResult", { ...compileResult });
-      // this.currentFile.state = "compiled";
+      this.$store.commit("setStatus", "compiled");
       console.log("Compiled: ", stripReactive(compileResult));
 
       this.termWriteln(
@@ -335,7 +379,7 @@ export default {
 
 <style>
 html {
-  background: var(--jp-layout-color3);
+  background: var(--jp-layout-color3) !important;
 }
 body {
   margin: 0px;
@@ -345,6 +389,9 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+}
+
+.console {
 }
 
 .fileBrowserIcon::before {
