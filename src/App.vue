@@ -3,7 +3,7 @@
     <Lumino @resize="onLuminoResize" @activated="onLuminoActivated">
       <liquor-tree
         id="fileTree"
-        area="sidebar"
+        area="left"
         class="jp-FileBrowser"
         icon="ion-md-folder-open"
         :data="sourceTree"
@@ -32,7 +32,7 @@
       <liquor-tree
         id="outline"
         ref="outline"
-        area="sidebar"
+        area="right"
         class="jp-FileBrowser"
         icon="ion-md-menu"
         :data="$store.getters.instanceTree"
@@ -44,9 +44,10 @@
         <Editor
           :id="openFile.name + '_editor'"
           :key="openFile.name"
-          area="dock"
+          area="main"
           :closable="openFile.name !== 'Scratch'"
           :title="openFile.name"
+          icon="ion-md-document"
           :ref="openFile.name + '_editor'"
           v-model="openFile.code"
           @passLint="onPassLint"
@@ -61,8 +62,9 @@
         id="terminalview"
         class="console"
         ref="terminal"
-        area="dock"
-        title="Terminal"
+        area="main"
+        title="Console"
+        icon="fa fa-tab-bar fa-terminal"
         dock-ref="Scratch_editor"
         dock-mode="split-bottom"
         :options="{
@@ -75,12 +77,23 @@
 
       <gates
         id="gates"
-        area="dock"
+        area="main"
         ref="gates"
-        title="Gate Table"
-        dock-ref="Scratch_editor"
+        title="Gates"
+        icon="fa fa-tab-bar fa-table"
+        dock-ref="terminal"
         dock-mode="split-right"
       />
+
+      <traces
+        id="traces"
+        area="main"
+        ref="traces"
+        title="Traces"
+        icon="fa fa-tab-bar fa-line-chart"
+        dock-ref="gates"
+        dock-mode="tab-after"
+      ></traces>
 
       <span id="statusbar-edpos" area="statusbar" align="right">
         Ln {{ cursorPosition.lineNumber }}, Col {{ cursorPosition.column }}
@@ -100,6 +113,7 @@
 import Lumino from "./components/lumino/Lumino";
 import Editor from "./components/Editor.vue";
 import Gates from "./components/Gates.vue";
+import Traces from "./components/Traces.vue";
 import LiquorTree from "liquor-tree";
 import TerminalView from "./components/TerminalView";
 
@@ -115,18 +129,12 @@ const shortJoin = strs => {
   else return x.slice(0, 40) + "...";
 };
 
-const indexBy = (array, prop) =>
-  array.reduce((output, item) => {
-    output[item[prop]] = item;
-    return output;
-  }, {});
-
 const stripReactive = x => JSON.parse(JSON.stringify(x));
 
 import vlgParse from "./lib/vlgAntlrParser.js"; // build ast
 import vlgWalk from "./lib/vlgAntlrListener.js"; // convert ast into module definitions
-import vlgCompile from "./lib/vlgModuleCompiler.js"; // compiled modul definitions into instances and gates
-import evaluateGates from "./lib/simulation.js";
+import vlgCompile from "./lib/vlgModuleCompiler.js"; // compile module definitions into instances and gates
+import vlgSimulate from "./lib/vlgSimulator.js"; // run simulation over gate array
 
 export default {
   name: "App",
@@ -135,7 +143,8 @@ export default {
     TerminalView,
     Editor,
     LiquorTree,
-    Gates
+    Gates,
+    Traces
   },
   data() {
     return {
@@ -149,11 +158,11 @@ export default {
     this.addFileTab("Scratch");
   },
   computed: {
-    ...mapGetters(["instanceTree"])
+    ...mapGetters(["getInstanceTree"])
   },
   watch: {
-    instanceTree() {
-      this.$nextTick(() => this.$refs.outline.setModel(this.instanceTree));
+    getInstanceTree(tree) {
+      this.$nextTick(() => this.$refs.outline.setModel(tree));
     },
     currentFileTab() {
       this.$store.commit("setSelectedInstanceID", "main");
@@ -224,7 +233,7 @@ export default {
 
       const compileResult = vlgCompile(e.walkResult.modules);
       this.$store.commit("setCompileResult", { ...compileResult });
-      this.$store.commit("setStatus", "compiled");
+      this.$store.commit("setStatus", "Compile OK");
 
       console.log("app: onPassLint: ", this.$store.getters.currentFile);
     },
@@ -264,7 +273,7 @@ export default {
 
       const compileResult = vlgCompile(walkResult.modules);
       this.$store.commit("setCompileResult", { ...compileResult });
-      this.$store.commit("setStatus", "compiled");
+      this.$store.commit("setStatus", "Compile OK");
       console.log("Compiled: ", stripReactive(compileResult));
 
       this.termWriteln(
@@ -294,84 +303,24 @@ export default {
     simulate() {
       this.showTerminal = true;
       this.termWriteln(
-        chalk.bold.cyan("• Simulating: ") + chalk.yellow(this.currentFile.name)
+        chalk.bold.cyan("• Simulating: ") +
+          chalk.yellow(this.$store.getters.currentFile.name)
       );
 
-      const newSimulation = {
-        gates: {},
-        clock: [],
-        time: [],
-        ready: false
-      };
-
-      this.currentFile.gates.forEach(g => {
-        g.state = 0;
-        newSimulation.gates[g.id] = [];
-      });
-
-      var gatesLookup = indexBy(this.currentFile.gates, "id");
-      var instancesLookup = indexBy(this.currentFile.instances, "id");
-      var modulesLookup = indexBy(this.currentFile.walkResult.modules, "id");
-
-      const maxClock = modulesLookup.Main.clock.reduce(
-        (acc, val) => Math.max(val.time, acc),
-        0
+      const simulateResult = vlgSimulate(
+        this.$store.getters.currentFile.compileResult.gates,
+        this.$store.getters.currentFile.compileResult.instances,
+        this.$store.getters.currentFile.walkResult.modules,
+        this.termWriteln
       );
 
-      if (gatesLookup["main_clock"]) gatesLookup["main_clock"].state = 0;
-
-      for (let clock = 0; clock <= maxClock; clock++) {
-        newSimulation.time.push(clock);
-        modulesLookup.Main.clock.forEach(c => {
-          if (c.time == clock) {
-            c.assignments.forEach(a => {
-              // can only assign values to control types
-              if (gatesLookup["main_" + a.id].logic == "control")
-                gatesLookup["main_" + a.id].state = a.value;
-            });
-          }
-        });
-
-        if (gatesLookup["main_clock"])
-          gatesLookup["main_clock"].state =
-            ~gatesLookup["main_clock"].state & 1; // tick-tock
-
-        for (let i = 0; i < this.EVALS_PER_STEP; i++) {
-          evaluateGates(this.currentFile.gates, gatesLookup);
-        }
-        this.currentFile.gates.forEach(g => {
-          newSimulation.gates[g.id].push(gatesLookup[g.id].state);
-        });
-
-        newSimulation.clock.push(clock % 2);
-
-        modulesLookup.Main.clock.forEach((x, index, all) => {
-          if (x.time != clock) return;
-
-          const lineChar = index == all.length - 1 ? "└" : "├";
-
-          this.termWriteln(
-            chalk.cyan(
-              `${lineChar}── Time ${clock.toString().padStart(3, "0")} :`
-            ) +
-              shortJoin(x.assignments.map(a => a.id + "=" + a.value)) +
-              chalk.cyan(" => ") +
-              shortJoin(
-                instancesLookup.main.gates
-                  .filter(gateId => gatesLookup[gateId].logic == "response")
-                  .map(o => this.getLocalId(o) + "=" + gatesLookup[o].state)
-              )
-          );
-        });
-      }
       this.termWriteln(
         chalk.cyan.inverse(" DONE ") + "  Simulated successfully"
       );
-      newSimulation.maxTime = newSimulation.time[newSimulation.time.length - 1];
-      newSimulation.timestamp = Date.now();
-      newSimulation.ready = true;
-      this.currentFile.simulation = newSimulation;
-      console.log("Simulation: ", stripReactive(this.currentFile.simulation));
+
+      this.$store.commit("setSimulateResult", simulateResult);
+      this.$store.commit("setStatus", "Simulation OK");
+      console.log("Simulation: ", simulateResult);
     }
   }
 };
@@ -380,6 +329,7 @@ export default {
 <style>
 html {
   background: var(--jp-layout-color3) !important;
+  overflow: hidden !important;
 }
 body {
   margin: 0px;
@@ -419,5 +369,13 @@ body {
 
 .tree-root {
   margin-top: 4px;
+}
+
+.dkcontainer {
+  padding: 1rem;
+}
+
+.fa-tab-bar {
+  line-height: var(--jp-private-horixontal-tab-height);
 }
 </style>

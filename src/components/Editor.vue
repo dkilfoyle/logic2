@@ -354,10 +354,10 @@ export default {
 
       if (parseResult.errors.length == 0 && walkResult.errors.length == 0) {
         this.$nextTick(() => {
-          this.$store.commit("setStatus", "parsesuccess");
+          this.$store.commit("setStatus", "Parse OK");
           this.$emit("passLint", { parseResult, walkResult });
         });
-      } else this.$store.commit("setStatus", "parsererror");
+      } else this.$store.commit("setStatus", "Parse Error");
     }
   }
 };

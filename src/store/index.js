@@ -12,19 +12,27 @@ export default new Vuex.Store({
   getters: {
     currentFile: state =>
       state.currentFileTab != "" ? state.openFiles[state.currentFileTab] : {},
-    instances: (state, getters) =>
-      (getters.currentFile &&
-        getters.currentFile.status == "compiled" &&
-        getters.currentFile.compileResult.instances) ||
-      [],
-    gates: (state, getters) =>
-      (getters.currentFile &&
-        getters.currentFile.status == "compiled" &&
-        getters.currentFile.compileResult.gates) ||
-      [],
-    instanceTree: (state, getters) => {
+    isCompiled: (state, getters) => {
+      return (
+        getters.currentFile &&
+        ["Compile OK", "Simulation OK"].includes(getters.currentFile.status)
+      );
+    },
+    isSimulated: (state, getters) => {
+      return (
+        getters.currentFile &&
+        ["Simulation OK"].includes(getters.currentFile.status) &&
+        getters.currentFile.simulateResult.ready
+      );
+    },
+
+    getAllInstances: (state, getters) =>
+      getters.isCompiled ? getters.currentFile.compileResult.instances : [],
+    getAllGates: (state, getters) =>
+      getters.isCompiled ? getters.currentFile.compileResult.gates : [],
+    getInstanceTree: (state, getters) => {
       const buildNode = id => {
-        const instance = getters.instances.find(x => x.id == id);
+        const instance = getters.getInstance(id); // instances.find(x => x.id == id);
         const res = {
           text:
             instance.id.slice(instance.id.lastIndexOf("_") + 1) +
@@ -41,18 +49,20 @@ export default new Vuex.Store({
           res.children = instance.instances.map(ci => buildNode(ci));
         return res;
       };
-      if (getters.instances.length > 0) return [buildNode("main")];
+      if (getters.getAllInstances.length > 0) return [buildNode("main")];
       else return [];
     },
-    getGate: (state, getters) => id => {
-      return getters.gates.find(x => x.id == id);
+
+    getGate: (state, getters) => gateid => {
+      return getters.getAllGates.find(x => x.id == gateid);
     },
     getInstance: (state, getters) => instanceID => {
       const id = instanceID || state.selectedInstanceID;
-      return getters.instances.find(x => x.id == id);
+      return getters.getAllInstances.find(x => x.id == id);
     },
-    getInputs: (state, getters) => instanceID => {
-      const id = instanceID || state.selectedInstanceID;
+
+    getInstanceInputs: (state, getters) => id => {
+      if (!getters.isCompiled) return [];
       if (id == "main")
         return getters.currentFile.walkResult.modules
           .find(x => x.id == "Main")
@@ -60,8 +70,8 @@ export default new Vuex.Store({
           .map(x => "main_" + x.id);
       else return getters.getInstance(id).inputs;
     },
-    getOutputs: (state, getters) => instanceID => {
-      const id = instanceID || state.selectedInstanceID;
+    getInstanceOutputs: (state, getters) => id => {
+      if (!getters.isCompiled) return [];
       if (id == "main")
         return getters.currentFile.walkResult.modules
           .find(x => x.id == "Main")
@@ -71,51 +81,25 @@ export default new Vuex.Store({
         .getInstance(id)
         .outputs.map(x => x.substr(0, x.indexOf("-out")));
     },
-    getGates: (state, getters) => instanceID => {
-      const id = instanceID || state.selectedInstanceID;
+    getInstanceGates: (state, getters) => id => {
+      if (!getters.isCompiled) return null;
       return getters
         .getInstance(id)
         .gates.filter(x => getters.getGate(x).type == "gate");
     },
-    allInstanceGates: (state, getters) => {
-      return [
-        ...new Set([
-          ...getters.getInputs(),
-          ...getters.getGates(),
-          ...getters.getOutputs()
-        ])
-      ];
+
+    getSelectedInstanceInputs: (state, getters) =>
+      getters.getInstanceInputs(state.selectedInstanceID),
+    getSelectedInstanceOutputs: (state, getters) =>
+      getters.getInstanceOutputs(state.selectedInstanceID),
+    getSelectedInstanceGates: (state, getters) =>
+      getters.getInstanceGates(state.selectedInstanceID),
+
+    isInput: (state, getters) => (instanceid, gateid) => {
+      return getters.getInstanceInputs(instanceid).some(x => x == gateid);
     },
-    // isInput: function(instanceId, id) {
-    //   return (
-    //     this.getInputs(instanceId).some(x => x == id) ||
-    //     this.getGate(id).logic == "control"
-    //   );
-    // },
-    // isOutput: function(instanceId, id) {
-    //   return (
-    //     this.getOutputs(instanceId).some(x => x == id) ||
-    //     this.getGate(id).logic == "response"
-    //   );
-    // },
-    selectedGates: (state, getters) => showWhichGates => {
-      if (!getters.instances.length) return [];
-      switch (showWhichGates) {
-        case "all":
-          return getters.allInstanceGates;
-        case "wires":
-          return [...getters.getGates(state.selectedInstanceID)];
-        case "outputs":
-          return [...getters.getOutputs(state.selectedInstanceID)];
-        case "inputs":
-          return [...getters.getInputs(state.selectedInstanceID)];
-        case "ports":
-          return [
-            ...getters.getInputs(state.selectedInstanceID),
-            ...getters.getOutputs(state.selectedInstanceID)
-          ];
-      }
-      return [];
+    isOutput: (state, getters) => (instanceid, gateid) => {
+      return getters.getInstanceOutputs(instanceid).some(x => x == gateid);
     }
   },
   mutations: {
@@ -133,7 +117,7 @@ export default new Vuex.Store({
         walkResult: {},
         compileResult: {},
         simulation: { ready: false, gates: {}, time: [], maxTime: 0 },
-        status: "uncompiled"
+        status: "Parse Error"
       });
     },
     setParseResult(state, payload) {
@@ -144,6 +128,9 @@ export default new Vuex.Store({
     },
     setCompileResult(state, payload) {
       state.openFiles[state.currentFileTab].compileResult = payload;
+    },
+    setSimulateResult(state, payload) {
+      state.openFiles[state.currentFileTab].simulateResult = payload;
     },
     setStatus(state, payload) {
       state.openFiles[state.currentFileTab].status = payload;

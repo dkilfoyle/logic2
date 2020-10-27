@@ -237,11 +237,9 @@ export default {
 
     syncWidgets() {
       this.$slots.default
-        .filter(
-          child => !this.widgetIDs.includes(child.data.attrs.id + "_wrapper")
-        )
+        .filter(child => !this.widgetIDs.includes(child.data.attrs.id))
         .forEach(newChild => {
-          const id = `${newChild.data.attrs.id}_wrapper`;
+          const id = `${newChild.data.attrs.id}`;
           const title = newChild.data.attrs.title || undefined;
           const icon = newChild.data.attrs.icon || undefined;
           const area = newChild.data.attrs.area || "dock";
@@ -254,50 +252,45 @@ export default {
           const align = newChild.data.attrs["align"] || undefined;
           const rank = newChild.data.attrs["rank"] || undefined;
           const activate = newChild.data.attrs["activate"] || undefined;
-          console.log(this.widgets);
           const ref = this.widgets.find(x => x.id == refName);
 
-          this.addWidget(
-            id,
-            area,
-            {
-              title,
-              icon,
-              closable,
-              ref,
-              mode,
-              align,
-              rank,
-              activate
-            },
-            newChild
-          );
+          this.addWidget(id, area, {
+            title,
+            icon,
+            closable,
+            ref,
+            mode,
+            align,
+            rank,
+            activate
+          });
           this.$nextTick(() => {
             document.getElementById(id).appendChild(newChild.elm); //newChild.$el);
           });
         });
     },
 
-    addWidget(id, area, options, parent) {
-      console.log("Lumino.vue addWidget: ", id, area, options, parent);
+    addWidget(id, area, options) {
+      console.log("Lumino.vue addWidget: ", id, area, options);
       let luminoWidget = new LuminoWidget(id, options);
       this.widgets.push(luminoWidget);
       this.widgetIDs.push(id);
 
       switch (area) {
-        case "dock":
+        case "main":
           this.shellWidget.add(luminoWidget, "main", options);
           break;
         case "statusbar":
-          luminoWidget = new LuminoWidget(id, options);
           this.statusBar.registerStatusItem(id, {
             item: luminoWidget,
             ...options
           });
           break;
-        case "sidebar":
-          luminoWidget = new LuminoWidget(id, options);
+        case "left":
           this.shellWidget.add(luminoWidget, "left", options);
+          break;
+        case "right":
+          this.shellWidget.add(luminoWidget, "right", options);
           break;
         default:
           console.log("addWidget: invalid area option = ", area);

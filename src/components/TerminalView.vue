@@ -266,16 +266,22 @@ export default {
 .xterm-container {
   height: 100%;
   width: 100%;
-  overflow: hidden;
-  padding-left: 5px;
+
   background-color: #1e1e1e;
 }
 .xterm {
   height: 100%;
+  padding-left: 10px;
+  padding-top: 10px;
 }
 
 .xterm-viewport::-webkit-scrollbar {
   width: 14px;
-  display: "";
+  border-left: #4a4a4a 1px solid;
+}
+
+.xterm-viewport::-webkit-scrollbar-thumb {
+  background-color: #414141;
+  border-left: #4a4a4a 1px solid;
 }
 </style>

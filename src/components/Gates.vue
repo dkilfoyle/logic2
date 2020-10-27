@@ -1,6 +1,6 @@
 <template>
   <div class="dkcontainer">
-    <div class="columns">
+    <div v-if="$store.getters.isCompiled" class="columns">
       <div class="column">
         <nav class="breadcrumb is-centered">
           <ul>
@@ -49,7 +49,7 @@
           </thead>
 
           <tbody>
-            <tr v-for="g in selectedGates(showWhichGates)" :key="g">
+            <tr v-for="g in filteredInstanceGates" :key="g">
               <td>{{ g }}</td>
               <!-- <td>{{ g.instanceid }}</td> -->
               <td>
@@ -72,21 +72,20 @@
         </table>
       </div>
     </div>
+    <div v-else><h5>Compile File First</h5></div>
   </div>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
 import UtilsMixin from "../mixins/utils";
+import SelectionsMixin from "../mixins/selections";
 
 export default {
   data() {
     return { showWhichGates: "all" };
   },
-  mixins: [UtilsMixin],
-  computed: {
-    ...mapGetters(["selectedGates", "getGate"])
-  },
+  mixins: [UtilsMixin, SelectionsMixin],
+
   methods: {
     selectBreadcumb(node) {
       if (node == "main") {
@@ -105,8 +104,4 @@ export default {
 };
 </script>
 
-<style scoped>
-.dkcontainer {
-  padding: 1rem;
-}
-</style>
+<style scoped></style>
