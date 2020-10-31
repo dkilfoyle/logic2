@@ -76,7 +76,11 @@ export default {
   props: {
     value: {
       type: String,
-      default: () => "// source code"
+      default: () => "// source code\n"
+    },
+    size: {
+      type: Object,
+      default: () => ({ width: 100, height: 100 })
     }
   },
   components: {
@@ -91,6 +95,7 @@ export default {
       }
     };
   },
+
   computed: {
     editor() {
       return this.$refs["editor"].getEditor();
@@ -100,13 +105,13 @@ export default {
     }
   },
   methods: {
+    resize() {
+      this.editor.layout();
+    },
     onChange(val) {
       // console.log("onChange");
       this.lint(val);
       this.$emit("input", val);
-    },
-    onResize() {
-      this.editor.layout();
     },
     onEditorDidMount(editor) {
       editor.onDidChangeCursorPosition(e =>

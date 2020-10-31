@@ -5,7 +5,7 @@
 <script>
 import "xterm/css/xterm.css";
 import { Terminal } from "xterm";
-import { FitAddon } from "xterm-addon-fit";
+// import { FitAddon } from "xterm-addon-fit";
 
 const defaultTheme = {
   foreground: "#2c3e50",
@@ -50,7 +50,7 @@ export default {
     },
     autoSize: {
       type: Boolean,
-      default: false
+      default: true
     },
     options: {
       type: Object,
@@ -81,19 +81,11 @@ export default {
   },
 
   watch: {
-    cols(c) {
-      this.terminal.resize(c, this.rows);
-    },
-
-    rows(r) {
-      this.terminal.resize(this.cols, r);
-    },
-
     content: "setContent",
 
     darkMode(value, oldValue) {
       if (typeof oldValue === "undefined") {
-        console.log("darkmode watch");
+        // console.log("darkmode watch");
         // this.initTerminal();
       } else if (this.terminal) {
         this.terminal.setOption("theme", this.theme);
@@ -113,8 +105,8 @@ export default {
         theme: this.theme
         // ...this.options,
       });
-      this.fitAddon = new FitAddon();
-      this.terminal.loadAddon(this.fitAddon);
+      // this.fitAddon = new FitAddon();
+      // this.terminal.loadAddon(this.fitAddon);
       this.terminal.open(this.$el); //$refs.render);
 
       this.terminal._core.viewport.scrollBarWidth = 14;
@@ -128,6 +120,12 @@ export default {
       }
     },
 
+    truncate(x) {
+      // console.log(this.terminal.cols);
+      if (x.length < this.terminal.cols - 4) return x;
+      else return x.slice(0, this.terminal.cols - 4) + "...";
+    },
+
     setContent(value, ln = true) {
       if (!this.openedYet) {
         this.open();
@@ -139,7 +137,7 @@ export default {
         return;
       }
       if (typeof value === "string") {
-        this.terminal[ln ? "writeln" : "write"](value);
+        this.terminal[ln ? "writeln" : "write"](this.truncate(value));
       } else {
         this.terminal.writeln("");
       }
@@ -186,7 +184,7 @@ export default {
       await this.$nextTick();
       // this.fitAddon.fit();
       const dims = this.proposeDimensions();
-      console.log("Dims: ", dims);
+      // console.log("Dims: ", dims);
       this.terminal._core._renderService.clear();
       this.terminal.resize(dims.cols, dims.rows);
       this.terminal.element.style.display = "";
@@ -198,7 +196,7 @@ export default {
       const core = this.terminal._core;
       core._renderService._fullRefresh();
 
-      console.log(this.terminal);
+      // console.log(this.terminal);
 
       const parentElementStyle = window.getComputedStyle(
         this.terminal.element.parentElement
@@ -223,16 +221,16 @@ export default {
       const availableWidth =
         parentElementWidth - elementPaddingHor - core.viewport.scrollBarWidth;
 
-      console.log({
-        parentElementHeight,
-        parentElementWidth,
-        availableHeight,
-        availableWidth,
-        elementPaddingVer,
-        elementPaddingHor,
-        cellWidth: core._renderService.dimensions.actualCellWidth,
-        cellHeight: core._renderService.dimensions.actualCellHeight
-      });
+      // console.log({
+      //   parentElementHeight,
+      //   parentElementWidth,
+      //   availableHeight,
+      //   availableWidth,
+      //   elementPaddingVer,
+      //   elementPaddingHor,
+      //   cellWidth: core._renderService.dimensions.actualCellWidth,
+      //   cellHeight: core._renderService.dimensions.actualCellHeight
+      // });
 
       const geometry = {
         cols: Math.max(

@@ -45,7 +45,6 @@ export default class LuminoWidget extends Widget {
 
     // classes and flags
     this.setFlag(Widget.Flag.DisallowLayout);
-    this.addClass("jp-MainAreaWidget");
   }
 
   /**
@@ -55,7 +54,7 @@ export default class LuminoWidget extends Widget {
    */
   static createNode(id) {
     const div = document.createElement("div");
-    div.setAttribute("id", id);
+    div.setAttribute("id", id + "_content");
     div.setAttribute("class", "fill-height");
     return div;
   }

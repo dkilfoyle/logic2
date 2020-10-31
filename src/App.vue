@@ -92,7 +92,7 @@
         title="Traces"
         icon="fa fa-tab-bar fa-line-chart"
         dock-ref="gates"
-        dock-mode="tab-after"
+        dock-mode="split-bottom"
       ></traces>
 
       <span id="statusbar-edpos" area="statusbar" align="right">
@@ -122,12 +122,6 @@ import { mapGetters } from "vuex";
 const Chalk = require("chalk");
 let options = { enabled: true, level: 2 };
 const chalk = new Chalk.Instance(options);
-
-const shortJoin = strs => {
-  const x = strs.join(", ");
-  if (x.length < 21) return x;
-  else return x.slice(0, 40) + "...";
-};
 
 const stripReactive = x => JSON.parse(JSON.stringify(x));
 
@@ -197,23 +191,22 @@ export default {
     onInstanceTreeSelection(node) {
       this.$store.commit("setSelectedInstanceID", node.data.id);
     },
-    onLuminoResize() {
-      // console.log("onLuminoResize: ", e);
-      // resize all editors
-      Object.keys(this.$store.state.openFiles).forEach(name => {
-        let ref = `${name}_editor`;
-        this.$refs[ref][0].onResize();
-      });
+    onLuminoResize(e) {
+      console.log("onLuminoResize: ", e);
+      if (e.id.endsWith("_editor")) {
+        this.$refs[e.id][0].resize();
+      }
 
-      this.$refs.terminal.fit();
+      if (e.id == "terminalView") this.$refs.terminal.fit();
+      if (e.id == "traces") {
+        this.$refs.traces.resize(e.msg.width, e.msg.height);
+      }
     },
     onLuminoActivated(e) {
       console.log("onLuminoActivated: ", e);
-      if (e.id.endsWith("_editor_wrapper")) {
-        const editorid = e.id.replace("_wrapper", ""); //substring(0, e.id.indexOf("_wrapper"));
-        console.log(this.$refs[editorid][0]);
-        this.$refs[editorid][0].onResize();
-        this.$refs[editorid][0].editor.focus();
+      if (e.id.endsWith("_editor")) {
+        this.$refs[e.id][0].resize();
+        this.$refs[e.id][0].editor.focus();
         this.$store.commit(
           "setCurrentFileTab",
           e.id.substring(0, e.id.indexOf("_editor"))
@@ -281,14 +274,14 @@ export default {
           `├── Generated ${
             compileResult.instances.length
           } instances: ${chalk.white(
-            shortJoin(compileResult.instances.map(x => x.id))
+            compileResult.instances.map(x => x.id).join(", ")
           )}`
         )
       );
       this.termWriteln(
         chalk.green(
           `└── Generated ${compileResult.gates.length} gates: ${chalk.white(
-            shortJoin(compileResult.gates.map(x => x.id))
+            compileResult.gates.map(x => x.id).join(", ")
           )}`
         )
       );

@@ -19,15 +19,15 @@ export default {
   props: {
     data: {
       type: Array,
-      default: () => [],
+      default: () => []
     },
     options: {
-      type: Object,
+      type: Object
     },
     _updated: {
       type: Number,
-      default: 0,
-    },
+      default: 0
+    }
   },
   data() {
     return {
@@ -35,7 +35,10 @@ export default {
       needUpdate: false,
       needOptionsUpdate: false,
       defaultOptions: {
-        plugins: [new window.Dygraph.Plugins.Crosshair({ direction: "vertical" })],
+        legendFormatter: this.legendFormatter,
+        plugins: [
+          new window.Dygraph.Plugins.Crosshair({ direction: "vertical" })
+        ],
         animatedZooms: true,
         showLabelsOnHighlight: false,
         zoomCallback: this.handleZoom,
@@ -47,13 +50,13 @@ export default {
         rangeSelectorHeight: 20,
         axes: {
           x: {
-            drawGrid: false,
+            drawGrid: false
           },
           y: {
-            drawAxis: false,
-          },
-        },
-      },
+            drawAxis: false
+          }
+        }
+      }
     };
   },
   computed: {
@@ -65,11 +68,17 @@ export default {
       },
       set() {
         /*noop*/
-      },
-    },
+      }
+    }
   },
   mounted() {
-    this.graph = new window.Dygraph(this.$refs.container, this.getData(), this.graphOptions);
+    this.graph = new window.Dygraph(
+      this.$refs.container,
+      this.getData(),
+      this.graphOptions
+    );
+    this.graph.resizeHandler_ = null;
+
     this.render();
     this.$emit("created", this.graph);
   },
@@ -83,8 +92,8 @@ export default {
         console.log("data changed");
         this.scheduleUpdate(false);
       },
-      deep: true,
-    },
+      deep: true
+    }
   },
   methods: {
     render() {
@@ -102,7 +111,7 @@ export default {
         return this.data;
       }
       let idx = 0;
-      return this.data.map((x) => [idx++, x]);
+      return this.data.map(x => [idx++, x]);
     },
     scheduleUpdate(optionsUpdate) {
       this.needUpdate = true;
@@ -128,11 +137,9 @@ export default {
         // This happens when there's no selection and {legend: 'always'} is set.
         return (
           "" +
-          data.series
-            .map(function(series) {
-              return series.dashHTML + " " + series.labelHTML;
-            })
-            .join(" ")
+          data.series.map(function(series) {
+            return series.labelHTML;
+          })
         );
       }
       let html = this.graph.getLabels()[0] + ": " + data.xHTML;
@@ -142,14 +149,14 @@ export default {
         if (series.isHighlighted) {
           labeledData = "<b>" + labeledData + "</b>";
         }
-        html += "<br>" + series.dashHTML + " " + labeledData;
+        html += " " + labeledData;
       });
       return html;
     },
     handleClick: function(e, x, points) {
       this.$emit("clicked", {
         x: x,
-        points: points,
+        points: points
       });
     },
     handleZoom: function(minDate, maxDate, yRanges) {
@@ -157,16 +164,23 @@ export default {
         type: "zoom",
         minDate: Math.floor(minDate),
         maxDate: Math.floor(maxDate),
-        yRanges: yRanges,
+        yRanges: yRanges
       });
     },
-  },
+    resize(width, height) {
+      // console.log("dygraph resize:", width, this.graph.maindiv_.clientWidth);
+      // this.graph.resize(width - 40, 40);
+      // this.$refs.container.clientWidth = width;
+      this.graph.resize(width, height);
+      return;
+    }
+  }
 };
 </script>
 <style>
 .my-dygraphs {
   width: 100%;
-  height: 100px;
+  height: 100%;
 }
 .dygraph-axis-label {
   font-size: 12px;
@@ -178,5 +192,11 @@ export default {
   font-size: 16px;
   font-weight: normal;
   text-align: left;
+}
+.dygraph-legend {
+  left: 10px !important;
+  top: 10px !important;
+  color: #00000055;
+  background-color: transparent !important;
 }
 </style>

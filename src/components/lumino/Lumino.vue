@@ -107,7 +107,6 @@ export default {
 
       this.mainMenu.id = "jp-MainMenu";
       this.mainMenu.addClass("jp-scrollbar-tiny");
-      // this.shellWidget.topHandler.addWidget(this.mainMenu);
       this.shellWidget.add(this.mainMenu, "top");
     },
 
@@ -252,7 +251,9 @@ export default {
           const align = newChild.data.attrs["align"] || undefined;
           const rank = newChild.data.attrs["rank"] || undefined;
           const activate = newChild.data.attrs["activate"] || undefined;
-          const ref = this.widgets.find(x => x.id == refName);
+          const ref = refName; //this.widgets.find(x => x.id == refName);
+
+          console.log("syncWidgets: ", id, mode, ref);
 
           this.addWidget(id, area, {
             title,
@@ -278,6 +279,7 @@ export default {
 
       switch (area) {
         case "main":
+          luminoWidget.addClass("jp-MainAreaWidget");
           this.shellWidget.add(luminoWidget, "main", options);
           break;
         case "statusbar":

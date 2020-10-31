@@ -1,5 +1,5 @@
 <template>
-  <div class="dkcontainer">
+  <div class="dkcontainer" ref="container">
     <div v-if="isSimulated" class="columns">
       <div class="column">
         <nav class="breadcrumb is-centered">
@@ -36,19 +36,43 @@
           >
         </div>
 
-        <div class="columns mt-1" v-for="g in filteredInstanceGates" :key="g">
+        <template v-for="g in filteredInstanceGates">
+          <dygraph
+            class="dygraphtrace"
+            :key="g"
+            :id="'dygraph' + getLocalId(g)"
+            :data="tracedata(g)"
+            :options="traceOptions(g)"
+            ref="traces"
+          ></dygraph
+        ></template>
+
+        <dygraph
+          :data="clock"
+          id="dygraphclock"
+          :options="{
+            height: 50,
+            showRangeSelector: true,
+            rangeSelectorHeight: 40,
+            axes: { y: { axisLabelWidth: 5 } }
+          }"
+          ref="clock"
+        ></dygraph>
+
+        <!-- <div class="columns mt-1" v-for="g in filteredInstanceGates" :key="g">
           <div class="column is-1">
             <div class="text-caption">{{ getLocalId(g) }}</div>
           </div>
           <div class="column">
             <dygraph
+              :id="'dygraph' + getLocalId(g)"
               :data="tracedata(g)"
               :options="traceOptions(g)"
               ref="traces"
             ></dygraph>
           </div>
-        </div>
-        <div class="columns">
+        </div> -->
+        <!-- <div class="columns mt-6">
           <div class="column is-1">
             <div class="text-caption">Clock</div>
           </div>
@@ -57,13 +81,13 @@
               :data="clock"
               :options="{
                 showRangeSelector: true,
-                rangeSelectorHeight: 80,
+                rangeSelectorHeight: 40,
                 axes: { y: { axisLabelWidth: 5 } }
               }"
               ref="clock"
             ></dygraph>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
     <div v-show="!isSimulated"><h5>Run Simulation First</h5></div>
@@ -100,13 +124,12 @@ export default {
       if (!this.$store.getters.isSimulated) return;
       this.$nextTick(() => {
         this.syncTraces();
+        // this.resize(this.$refs.container.$el.clientWidth);
       });
     }
   },
   methods: {
     syncTraces() {
-      console.log("synTRraces");
-      console.log(this.$refs.traces);
       if (this.$refs.traces.length == 0) return;
       let traces = this.$refs.traces.map(x => x.graph);
       traces.push(this.$refs.clock.graph);
@@ -129,6 +152,8 @@ export default {
     traceOptions: function(id) {
       return {
         height: 50,
+        legend: "always",
+        labels: ["T", id],
         showRangeSelector: false,
         xRangePad: 5,
         axes: {
@@ -174,12 +199,23 @@ export default {
           1
       );
       this.$store.commit("setSelectedInstanceID", x);
+    },
+    resize(width) {
+      const graphwidth = width - 40;
+      const graphheight = 50;
+
+      if (this.$refs.traces)
+        this.$refs.traces.forEach(x => {
+          x.resize(graphwidth, graphheight);
+        });
+      if (this.$refs.clock) this.$refs.clock.resize(graphwidth, graphheight);
     }
-  },
-  mounted() {
-    // this.syncTraces();
   }
 };
 </script>
 
-<style></style>
+<style>
+.dygraphtrace {
+  margin-bottom: 20px;
+}
+</style>
