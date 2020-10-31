@@ -253,7 +253,7 @@ export default {
           const activate = newChild.data.attrs["activate"] || undefined;
           const ref = refName; //this.widgets.find(x => x.id == refName);
 
-          console.log("syncWidgets: ", id, mode, ref);
+          // console.log("syncWidgets: ", id, mode, ref);
 
           this.addWidget(id, area, {
             title,
@@ -272,7 +272,7 @@ export default {
     },
 
     addWidget(id, area, options) {
-      console.log("Lumino.vue addWidget: ", id, area, options);
+      // console.log("Lumino.vue addWidget: ", id, area, options);
       let luminoWidget = new LuminoWidget(id, options);
       this.widgets.push(luminoWidget);
       this.widgetIDs.push(id);

@@ -123,7 +123,7 @@ const Chalk = require("chalk");
 let options = { enabled: true, level: 2 };
 const chalk = new Chalk.Instance(options);
 
-const stripReactive = x => JSON.parse(JSON.stringify(x));
+import UtilsMixin from "./mixins/utils";
 
 import vlgParse from "./lib/vlgAntlrParser.js"; // build ast
 import vlgWalk from "./lib/vlgAntlrListener.js"; // convert ast into module definitions
@@ -140,6 +140,7 @@ export default {
     Gates,
     Traces
   },
+  mixins: [UtilsMixin],
   data() {
     return {
       sourceFiles: require("./files").SourceFiles,
@@ -192,7 +193,7 @@ export default {
       this.$store.commit("setSelectedInstanceID", node.data.id);
     },
     onLuminoResize(e) {
-      console.log("onLuminoResize: ", e);
+      // console.log("onLuminoResize: ", e);
       if (e.id.endsWith("_editor")) {
         this.$refs[e.id][0].resize();
       }
@@ -203,7 +204,7 @@ export default {
       }
     },
     onLuminoActivated(e) {
-      console.log("onLuminoActivated: ", e);
+      // console.log("onLuminoActivated: ", e);
       if (e.id.endsWith("_editor")) {
         this.$refs[e.id][0].resize();
         this.$refs[e.id][0].editor.focus();
@@ -267,7 +268,7 @@ export default {
       const compileResult = vlgCompile(walkResult.modules);
       this.$store.commit("setCompileResult", { ...compileResult });
       this.$store.commit("setStatus", "Compile OK");
-      console.log("Compiled: ", stripReactive(compileResult));
+      console.log("Compiled: ", compileResult);
 
       this.termWriteln(
         chalk.green(

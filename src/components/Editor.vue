@@ -64,7 +64,7 @@ import MonacoEditor from "vue-monaco";
 import parse from "../lib/vlgAntlrParser.js";
 import walk from "../lib/vlgAntlrListener.js";
 
-// import "bulma/css/bulma.css";
+import UtilsMixin from "../mixins/utils";
 
 String.prototype.regexIndexOf = function(regex, startpos) {
   var indexOf = this.substring(startpos || 0).search(regex);
@@ -86,6 +86,7 @@ export default {
   components: {
     MonacoEditor
   },
+  mixins: [UtilsMixin],
   data() {
     return {
       lintDecorations: [],
@@ -95,7 +96,6 @@ export default {
       }
     };
   },
-
   computed: {
     editor() {
       return this.$refs["editor"].getEditor();
@@ -103,6 +103,9 @@ export default {
     monaco() {
       return this.$refs["editor"].monaco;
     }
+  },
+  mounted() {
+    this.lint = this.debounce(this.lint, 1000);
   },
   methods: {
     resize() {

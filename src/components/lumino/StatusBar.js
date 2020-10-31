@@ -47,7 +47,7 @@ export class StatusBar extends Widget {
     };
     const { align, item, rank } = fullStatusItem;
 
-    console.log("registerStatusItem: ", id, statusItem, fullStatusItem);
+    // console.log("registerStatusItem: ", id, statusItem, fullStatusItem);
 
     // Connect the activeStateChanged signal to refreshing the status item,
     // if the signal was provided.
