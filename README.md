@@ -2,7 +2,7 @@
 
 An IDE for experimentation with Francis Stokes ([Low Level Javascript](https://www.youtube.com/c/LowLevelJavaScript/featured)) [Digital Circuit Simulator](https://github.com/LowLevelJavaScript/Digital-Logic-Simulator)
 
-![image](https://hithub.com/dkilfoyle/logic2/blob/master/ScreenShot.png)
+![Screenshot](https://raw.githubusercontent.com/dkilfoyle/logic2/master/ScreenShot.png)
 
 ## Installation
 
@@ -89,7 +89,7 @@ npm serve
 ## Acknowledgements
 
 1. [LowLevelJavascript Digital Circuit Simulator](https://www.youtube.com/c/LowLevelJavaScript)
-2. [Antlr]https://www.antlr.org/)
+2. [Antlr](https://www.antlr.org/)
 3. [Monaco Editor](https://microsoft.github.io/monaco-editor/)
 4. [Dygraphs](https://www.dygraphs.com/)
 5. [d3-hwschematic](https://github.com/Nic30/d3-hwschematic)
