@@ -20,6 +20,12 @@
           </button>
         </div>
       </div>
+      <div class="level-item">
+        <span v-if="$store.getters.isCompiled" class="tag is-success"
+          >Compiled</span
+        >
+        <span v-else class="tag is-danger">Errors</span>
+      </div>
       <div class="level-right">
         <div class="level-item dkbuttongroup">
           <button class="button is-small is-info">

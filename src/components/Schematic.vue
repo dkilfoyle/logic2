@@ -1,5 +1,6 @@
 <template>
   <div class="dkcontainer">
+    <div class="mx-4 my-4" v-if="!isCompiled">Compile File First</div>
     <div class="columns">
       <div class="column">
         <svg ref="svgSchematic" id="svgSchematic" />
