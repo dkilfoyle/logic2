@@ -65,6 +65,7 @@ npm serve
 
 ## TODO
 
+1. Github pages hosted web app
 1. More sample code circuits
    1. ~~One hot encoder~~
    1. ~~2 to 1 multiplexer2_1~~
@@ -76,14 +77,14 @@ npm serve
    1. Ripple counter
    1. Shift register
    1. FSMs
-2. ~~Support bitwise statements to generate the logic gates~~ eg Q = (A & B) | ~C
-3. Reuse intermediary gates
-4. Support bit vector type
-5. Improve traces with time slider to animate state
-6. Improve schematic with time slider to animate state
-7. More linting
-8. ~~Code hints (Ctrl-Space)~~, ~~snippets (Ctrl-Shift-Space)~~, ~~comment hotkey~~,
-9. Future?
+1. ~~Support bitwise statements to generate the logic gates~~ eg Q = (A & B) | ~C
+1. Reuse intermediary gates
+1. Support bit vector type
+1. Improve traces with time slider to animate state
+1. Improve schematic with time slider to animate state
+1. More linting
+1. ~~Code hints (Ctrl-Space)~~, ~~snippets (Ctrl-Shift-Space)~~, ~~comment hotkey~~,
+1. Future?
    a) Truth tables to generate optimised logic gates
 
 ## Acknowledgements
