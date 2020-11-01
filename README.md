@@ -1,6 +1,6 @@
 # Logic Simulator 2
 
-An IDE for experimentation with Francis Stokes ([Low Level Javascript](https://www.youtube.com/c/LowLevelJavaScript/featured)) [Digital Circuit Simulator](https://github.com/LowLevelJavaScript/Digital-Logic-Simulator)
+A work-in-progress/experimental IDE for experimentation with Francis Stokes ([Low Level Javascript](https://www.youtube.com/c/LowLevelJavaScript/featured)) [Digital Circuit Simulator](https://github.com/LowLevelJavaScript/Digital-Logic-Simulator)
 
 ![Screenshot](https://raw.githubusercontent.com/dkilfoyle/logic2/master/ScreenShot.png)
 
