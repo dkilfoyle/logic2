@@ -14,8 +14,18 @@
       rel="stylesheet"
     />
     <script type="module" src="https://unpkg.com/ionicons@5.0.0/dist/ionicons/ionicons.esm.js"></script>
-    
+
+    <!-- copy each of these files to public
+    <script type="text/javascript" src="../node_modules/d3/dist/d3.js"></script>
+    <script type="text/javascript" src="../node_modules/elkjs/lib/elk.bundled.js"></script>
+    <script type="text/javascript" src="../node_modules/d3-hwschematic/dist/d3-hwschematic.js"></script> -->
+
+    <script type="text/javascript" src="./d3.js"></script>
+    <script type="text/javascript" src="./elk.bundled.js"></script>
+    <script type="text/javascript" src="./d3-hwschematic.js"></script>
+ 
     <title><%= htmlWebpackPlugin.options.title %></title>
+
   </head>
   <body>
     <noscript>
@@ -26,5 +36,6 @@
     </noscript>
     <div id="app"></div>
     <!-- built files will be auto injected -->
+
   </body>
 </html>

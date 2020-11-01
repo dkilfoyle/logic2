@@ -1,6 +1,10 @@
 <template>
   <div id="app">
-    <Lumino @resize="onLuminoResize" @activated="onLuminoActivated">
+    <Lumino
+      ref="lumino"
+      @resize="onLuminoResize"
+      @activated="onLuminoActivated"
+    >
       <liquor-tree
         id="fileTree"
         area="left"
@@ -85,6 +89,16 @@
         dock-mode="split-right"
       />
 
+      <schematic
+        id="schematic"
+        area="main"
+        ref="schematic"
+        title="Schematic"
+        icon="ion-md-git-branch"
+        dock-ref="gates"
+        dock-mode="tab-after"
+      />
+
       <traces
         id="traces"
         area="main"
@@ -114,6 +128,7 @@ import Lumino from "./components/lumino/Lumino";
 import Editor from "./components/Editor.vue";
 import Gates from "./components/Gates.vue";
 import Traces from "./components/Traces.vue";
+import Schematic from "./components/Schematic.vue";
 import LiquorTree from "liquor-tree";
 import TerminalView from "./components/TerminalView";
 
@@ -138,7 +153,8 @@ export default {
     Editor,
     LiquorTree,
     Gates,
-    Traces
+    Traces,
+    Schematic
   },
   mixins: [UtilsMixin],
   data() {
@@ -202,6 +218,10 @@ export default {
       if (e.id == "traces") {
         this.$refs.traces.resize(e.msg.width, e.msg.height);
       }
+      if (e.id == "schematic")
+        this.$refs.schematic.resize(e.msg.width, e.msg.height);
+
+      console.log(this.$refs.lumino.shellWidget._dockPanel.saveLayout());
     },
     onLuminoActivated(e) {
       // console.log("onLuminoActivated: ", e);
@@ -366,7 +386,6 @@ body {
 }
 
 .dkcontainer {
-  padding: 1rem;
 }
 
 .fa-tab-bar {

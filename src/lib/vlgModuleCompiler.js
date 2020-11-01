@@ -165,7 +165,7 @@ const compile = moduleArray => {
 
   createInstance("", mainInstantiation);
 
-  return { instances, gates };
+  return { instances, gates, timestamp: Date.now() };
 };
 
 export default compile;

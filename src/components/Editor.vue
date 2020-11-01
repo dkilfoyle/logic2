@@ -323,8 +323,8 @@ export default {
           inlineClassName: "lintErrorUnderline",
           glyphMarginClassName:
             e.severity == "error"
-              ? "fas fa-exclamation-triangle marginError"
-              : "fas fa-exclamation-circle marginWarning",
+              ? "fa fa-exclamation-triangle marginError"
+              : "fa fa-exclamation-circle marginWarning",
           glyphMarginHoverMessage: { value: e.msg }
         }
       }));
@@ -344,8 +344,8 @@ export default {
               inlineClassName: "lintErrorUnderline",
               glyphMarginClassName:
                 e.severity == "error"
-                  ? "fas fa-exclamation-triangle marginError"
-                  : "fas fa-exclamation-circle marginWarning",
+                  ? "fa fa-exclamation-triangle marginError"
+                  : "fa fa-exclamation-circle marginWarning",
               glyphMarginHoverMessage: { value: e.msg }
             }
           }))

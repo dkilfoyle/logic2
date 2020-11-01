@@ -1,5 +1,5 @@
 <template>
-  <div class="dkcontainer" ref="container">
+  <div class="dkcontainer mx-4 my-4" ref="container">
     <div v-if="isSimulated" class="columns">
       <div class="column">
         <nav class="breadcrumb is-centered">

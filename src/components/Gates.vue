@@ -1,7 +1,7 @@
 <template>
-  <div class="dkcontainer">
+  <div class="dkcontainer  mx-4 my-4">
     <div v-if="$store.getters.isCompiled" class="columns">
-      <div class="column">
+      <div class="column ">
         <nav class="breadcrumb is-centered">
           <ul>
             <li
