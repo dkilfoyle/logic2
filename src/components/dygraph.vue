@@ -43,6 +43,7 @@ export default {
         showLabelsOnHighlight: false,
         zoomCallback: this.handleZoom,
         clickCallback: this.handleClick,
+        highlightCallback: this.handleHighlight,
         fillGraph: true,
         fillAlpha: 0.2,
         stepPlot: true,
@@ -142,10 +143,10 @@ export default {
           })
         );
       }
-      let html = this.graph.getLabels()[0] + ": " + data.xHTML;
+      let html = ""; //this.graph.getLabels()[0] + ": " + data.xHTML;
       data.series.forEach(function(series) {
         if (!series.isVisible) return;
-        let labeledData = series.labelHTML + ": " + series.yHTML;
+        let labeledData = series.labelHTML + " = " + series.yHTML;
         if (series.isHighlighted) {
           labeledData = "<b>" + labeledData + "</b>";
         }
@@ -154,7 +155,15 @@ export default {
       return html;
     },
     handleClick: function(e, x, points) {
+      // console.log("handleClick: ", x, points);
       this.$emit("clicked", {
+        x: x,
+        points: points
+      });
+    },
+    handleHighlight: function(e, x, points) {
+      // console.log("handleHighligth: ", x, points);
+      this.$emit("highlighted", {
         x: x,
         points: points
       });

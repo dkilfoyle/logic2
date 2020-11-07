@@ -100,6 +100,18 @@ export default new Vuex.Store({
     },
     isOutput: (state, getters) => (instanceid, gateid) => {
       return getters.getInstanceOutputs(instanceid).some(x => x == gateid);
+    },
+
+    getGateStateAtTime: (state, getters) => (gateid, time) => {
+      if (!getters.isSimulated) return 0;
+      return getters.currentFile.simulateResult.gates[gateid][time];
+    },
+    getGateStateAtSelectedTime: (state, getters) => gateid => {
+      if (!getters.isSimulated) return 0;
+      return getters.getGateStateAtTime(
+        gateid,
+        getters.currentFile.selectedTime
+      );
     }
   },
   mutations: {
@@ -117,7 +129,8 @@ export default new Vuex.Store({
         walkResult: {},
         compileResult: {},
         simulation: { ready: false, gates: {}, time: [], maxTime: 0 },
-        status: "Parse Error"
+        status: "Parse Error",
+        selectedTime: 0
       });
     },
     setParseResult(state, payload) {
@@ -134,6 +147,9 @@ export default new Vuex.Store({
     },
     setStatus(state, payload) {
       state.openFiles[state.currentFileTab].status = payload;
+    },
+    setSelectedTime(state, payload) {
+      state.openFiles[state.currentFileTab].selectedTime = payload;
     }
   },
   actions: {},

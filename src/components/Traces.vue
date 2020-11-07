@@ -12,7 +12,7 @@
             </li>
           </ul>
         </nav>
-        <div class="control is-centered is-small">
+        <div class="control is-centered is-small mb-4">
           <b-radio
             v-model="showWhichGates"
             name="showWhichGates"
@@ -43,6 +43,8 @@
             :id="'dygraph' + getLocalId(g)"
             :data="tracedata(g)"
             :options="traceOptions(g)"
+            @clicked="onClicked"
+            @highlighted="onHighlighted"
             ref="traces"
           ></dygraph
         ></template>
@@ -58,36 +60,6 @@
           }"
           ref="clock"
         ></dygraph>
-
-        <!-- <div class="columns mt-1" v-for="g in filteredInstanceGates" :key="g">
-          <div class="column is-1">
-            <div class="text-caption">{{ getLocalId(g) }}</div>
-          </div>
-          <div class="column">
-            <dygraph
-              :id="'dygraph' + getLocalId(g)"
-              :data="tracedata(g)"
-              :options="traceOptions(g)"
-              ref="traces"
-            ></dygraph>
-          </div>
-        </div> -->
-        <!-- <div class="columns mt-6">
-          <div class="column is-1">
-            <div class="text-caption">Clock</div>
-          </div>
-          <div class="column">
-            <dygraph
-              :data="clock"
-              :options="{
-                showRangeSelector: true,
-                rangeSelectorHeight: 40,
-                axes: { y: { axisLabelWidth: 5 } }
-              }"
-              ref="clock"
-            ></dygraph>
-          </div>
-        </div> -->
       </div>
     </div>
     <div v-show="!isSimulated"><h5>Run Simulation First</h5></div>
@@ -159,7 +131,7 @@ export default {
         axes: {
           x: {
             drawAxis: false,
-            drawGrid: false
+            drawGrid: true
             // axisLabelWidth: 0,
             // axisLabelFontSize: 0,
           },
@@ -209,6 +181,13 @@ export default {
           x.resize(graphwidth, graphheight);
         });
       if (this.$refs.clock) this.$refs.clock.resize(graphwidth, graphheight);
+    },
+    onClicked(e) {
+      this.$store.commit("setSelectedTime", e.x);
+    },
+    onHighlighted(e) {
+      // console.log(e);
+      this.$store.commit("setSelectedTime", e.x);
     }
   }
 };

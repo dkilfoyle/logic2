@@ -55,17 +55,20 @@
               <td>
                 <img
                   :src="require('@/assets/' + getGate(g).logic + '.svg')"
-                  style="width:1.5em;height:1.5em;vertical-align:middle"
+                  class="gateicon"
                 />
               </td>
               <td>{{ getGate(g).inputs.join(", ") }}</td>
-              <td class="text-right" v-if="getGate(g).state">
+              <td
+                class="text-right"
+                v-if="$store.getters.getGateStateAtSelectedTime(g)"
+              >
                 <!-- <i class="fa fa-check"></i> -->
-                <img src="@/assets/icons8-number-1-24.png" />
+                <img src="@/assets/icons8-number-1-48.png" class="gateicon" />
               </td>
               <td v-else>
                 <!-- <i class="fa fa-times"></i> -->
-                <img src="@/assets/icons8-0-26.png" />
+                <img src="@/assets/icons8-0-52.png" class="gateicon" />
               </td>
             </tr>
           </tbody>
@@ -104,4 +107,10 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.gateicon {
+  width: 1.5em;
+  height: 1.5em;
+  vertical-align: middle;
+}
+</style>
