@@ -239,31 +239,23 @@ export default {
         .filter(child => !this.widgetIDs.includes(child.data.attrs.id))
         .forEach(newChild => {
           const id = `${newChild.data.attrs.id}`;
-          const title = newChild.data.attrs.title || undefined;
-          const icon = newChild.data.attrs.icon || undefined;
           const area = newChild.data.attrs.area || "dock";
           const closable =
             ("closable" in newChild.data.attrs &&
               newChild.data.attrs.closable) ||
             false;
-          const refName = newChild.data.attrs["dock-ref"] || undefined;
-          const mode = newChild.data.attrs["dock-mode"] || undefined;
-          const align = newChild.data.attrs["align"] || undefined;
-          const rank = newChild.data.attrs["rank"] || undefined;
-          const activate = newChild.data.attrs["activate"] || undefined;
-          const ref = refName; //this.widgets.find(x => x.id == refName);
-
           // console.log("syncWidgets: ", id, mode, ref);
 
           this.addWidget(id, area, {
-            title,
-            icon,
+            title: newChild.data.attrs.title || undefined,
+            icon: newChild.data.attrs.icon || undefined,
             closable,
-            ref,
-            mode,
-            align,
-            rank,
-            activate
+            ref: newChild.data.attrs["dock-ref"] || undefined,
+            mode: newChild.data.attrs["dock-mode"] || undefined,
+            align: newChild.data.attrs["align"] || undefined,
+            rank: newChild.data.attrs["rank"] || undefined,
+            activate: newChild.data.attrs["activate"] || undefined,
+            splitRatio: newChild.data.attrs["split-ratio"] || undefined
           });
           this.$nextTick(() => {
             document.getElementById(id).appendChild(newChild.elm); //newChild.$el);
@@ -272,7 +264,7 @@ export default {
     },
 
     addWidget(id, area, options) {
-      // console.log("Lumino.vue addWidget: ", id, area, options);
+      console.log("Lumino.vue addWidget: ", id, area, options);
       let luminoWidget = new LuminoWidget(id, options);
       this.widgets.push(luminoWidget);
       this.widgetIDs.push(id);

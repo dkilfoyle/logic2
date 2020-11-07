@@ -69,8 +69,9 @@
         area="main"
         title="Console"
         icon="fa fa-tab-bar fa-terminal"
-        dock-ref="Scratch_editor"
+        dock-ref=""
         dock-mode="split-bottom"
+        split-ratio="0.8"
         :options="{
           scrollback: 5000,
           disableStdin: true,
@@ -85,7 +86,7 @@
         ref="gates"
         title="Gates"
         icon="fa fa-tab-bar fa-table"
-        dock-ref="terminal"
+        dock-ref=""
         dock-mode="split-right"
       />
 
@@ -221,7 +222,7 @@ export default {
       if (e.id == "schematic")
         this.$refs.schematic.resize(e.msg.width, e.msg.height);
 
-      console.log(this.$refs.lumino.shellWidget._dockPanel.saveLayout());
+      // console.log(this.$refs.lumino.shellWidget._dockPanel.saveLayout());
     },
     onLuminoActivated(e) {
       // console.log("onLuminoActivated: ", e);

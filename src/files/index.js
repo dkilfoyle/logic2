@@ -6,11 +6,16 @@ import SevenSeg from "./7seg.v";
 import Mux2_1 from "./mux.v";
 import DeMux from "./demux.v";
 import RippleCounter from "./ripplecounter.v";
+import Simplify from "./simplify.v";
 
 export const SourceTree = [
   {
     text: "Templates",
     children: [{ text: "Scratch", value: Scratch }]
+  },
+  {
+    text: "Theory",
+    children: [{ text: "Simplify", value: Simplify }]
   },
   {
     text: "Mux",
@@ -48,5 +53,6 @@ export const SourceFiles = {
   SevenSeg,
   Mux2_1,
   DeMux,
-  RippleCounter
+  RippleCounter,
+  Simplify
 };
