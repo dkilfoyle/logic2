@@ -8,7 +8,7 @@ A work-in-progress/experimental IDE for experimentation with Francis Stokes ([Lo
 
 ```bash
 npm install
-npm serve
+npm run serve
 ```
 
 ## Features
@@ -95,3 +95,4 @@ npm serve
 4. [Dygraphs](https://www.dygraphs.com/)
 5. [d3-hwschematic](https://github.com/Nic30/d3-hwschematic)
 6. [Lumino Widgets](https://github.com/jupyterlab/lumino)
+7. Vue + Buefy
