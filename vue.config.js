@@ -1,6 +1,7 @@
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 
 module.exports = {
+  publicPath: "/logic2/",
   configureWebpack: {
     devtool: "source-map"
   },
