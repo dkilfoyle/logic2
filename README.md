@@ -67,23 +67,17 @@ npm run serve
 
 1. Github pages hosted web app
 1. More sample code circuits
-   1. ~~One hot encoder~~
-   1. ~~2 to 1 multiplexer2_1~~
-   1. ~~7 segment encoder~~
-   1. ~~1 bit adder~~
-   1. ~~D flip-flop~~
    1. 4 bit ripple adder
    1. 4 to 1 multiplexer with bit vector select line
    1. Ripple counter
    1. Shift register
    1. FSMs
-1. ~~Support bitwise statements to generate the logic gates~~ eg Q = (A & B) | ~C
 1. Reuse intermediary gates
 1. Support bit vector type
-1. Improve traces with time slider to animate state
-1. Improve schematic with time slider to animate state
 1. More linting
-1. ~~Code hints (Ctrl-Space)~~, ~~snippets (Ctrl-Shift-Space)~~, ~~comment hotkey~~,
+1. Custom schematic node renderer eg seven segment
+1. d3-hwschematic - how can import without webworker problem
+1. d3-hwschematic - remove need for custom line exports.GenericNodeRenderer = GenericNodeRenderer;
 1. Future?
    a) Truth tables to generate optimised logic gates
 

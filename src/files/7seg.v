@@ -17,7 +17,7 @@ A B C | Fa Fb Fc Fd Fe Ff Fg
 */
 
 // using standard gate statements
-module SevenSeg(
+module Encoder(
   input A, B, C,
   output Fa, Fb, Fc, Fd, Fe, Ff, Fg);
 
@@ -30,16 +30,18 @@ module SevenSeg(
   assign Fg = (~A & B)  | (A & ~C) | (A & ~B);
 endmodule
 
-module main;
+module Display(
+  input Fa, Fb, Fc, Fd, Fe, Ff, Fg,
+  output X);
+  sevenseg (X, Fa, Fb, Fc, Fd, Fe, Ff, Fg);
+endmodule
 
-  wire Fa, Fb, Fc, Fd, Fe, Ff, Fg;
-  wire a, b, c;
+module Main(
+  input a, b, c,
+  output Fa, Fb, Fc, Fd, Fe, Ff, Fg
+);
 
-  control(a);
-  control(b);
-  control(c);
-
-  SevenSeg ss(
+  Encoder encoder(
 		.A(a),
 		.B(b),
 		.C(c),
@@ -52,13 +54,15 @@ module main;
     .Fg(Fg)
   );
 
-  response(Fa);
-  response(Fb);
-  response(Fc);
-  response(Fd);
-  response(Fe);
-  response(Ff);
-  response(Fg);
+  Display display(
+    .Fa(Fa),
+    .Fb(Fb),
+    .Fc(Fc),
+    .Fd(Fd),
+    .Fe(Fe),
+    .Ff(Ff),
+    .Fg(Fg)
+  );
 
   test begin
     #00 {a=0, b=0, c=0}; // should get 1 1 1 1 1 1 0

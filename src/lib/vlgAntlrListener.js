@@ -145,12 +145,14 @@ class Listener extends vlgListener {
     const time_stamp = parseInt(ctx.time_stamp().num.text);
     const newClock = { time: time_stamp, assignments: [] };
     this.curModule.clock.push(newClock);
+    if (ctx.time_assignment_list()) {
     ctx
       .time_assignment_list()
       .time_assignment()
       .forEach((x) => {
         newClock.assignments.push({ id: x.id.text, value: parseInt(x.val.text) });
       });
+    }
   }
 
   // gates ==================================================

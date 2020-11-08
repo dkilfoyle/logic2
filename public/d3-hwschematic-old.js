@@ -87,6 +87,89 @@
     return marker;
   }
 
+  /**
+   * Container for node renderer instances.
+   * This object initiates the node to renderer binding process in prepare()
+   * and executes node rendering in render()
+   */
+  class NodeRendererContainer {
+    constructor() {
+      this.renderers = [];
+    }
+
+    // add new renderer
+    registerRenderer(renderer) {
+      this.renderers.push(renderer);
+    }
+
+    // add new renderer
+    // registerCustomRenderer(renderer) {
+    //   // this.renderers.push(renderer);
+    //   this.renderers.splice(this.renderers.length - 1, 0, renderer);
+    // }
+
+    registerCustomRenderer(renderer) {
+      var rs = this.renderers;
+      for (var i = 0; i < rs.length; i++) {
+        var r = rs[i];
+        if (r instanceof GenericNodeRenderer) {
+          // insert custom renderer before GenericNodeRenderer
+          // to prevent GenericNodeRenderer.selector from prematurely halting renderers.some
+          rs.splice(i, 0, renderer);
+          return;
+        }
+      }
+      rs.push(renderer);
+    }
+
+    // Bind node to renderer recursively
+    prepare(node) {
+      var r = null;
+      this.renderers.some(function(ren) {
+        if (ren.selector(node)) r = ren;
+        return r != null;
+      });
+      if (r == null) {
+        throw new Error("Can not resolve renderer for node " + node);
+      }
+      node.hwMeta.renderer = r;
+      console.log(
+        "node renderer prepare: ",
+        node.id,
+        this.renderers,
+        node.hwMeta
+      );
+      r.prepare(node);
+      var prep = this.prepare.bind(this);
+      if (node.children) {
+        node.children.forEach(prep);
+      }
+      if (node._children) {
+        node._children.forEach(prep);
+      }
+    }
+
+    // Render all nodes using selected renderer
+    render(root, nodeG) {
+      var renderers = this.renderers;
+      var nodesForRenderer = renderers.map(() => []);
+      nodeG.each(function(d) {
+        var n = this;
+        renderers.forEach(function(r, i) {
+          if (d.hwMeta.renderer === r) {
+            nodesForRenderer[i].push(n);
+          }
+        });
+      });
+      nodesForRenderer.forEach(function(nodes, i) {
+        if (nodes.length) {
+          nodes = d3.selectAll(nodes);
+          renderers[i].render(root, nodes);
+        }
+      });
+    }
+  }
+
   /*
    * Basic renderer which renders node as a box with ports, optionally with the body text
    */
@@ -141,6 +224,7 @@
       var CHAR_WIDTH = schematic.CHAR_WIDTH;
       if (d.ports != null)
         d.ports.forEach(function(p) {
+          // console.log("initNodeSizes:", d, p);
           var t = p.properties.side;
           var indent = 0;
           if (p.hwMeta.level > 0) indent = (p.hwMeta.level + 1) * CHAR_WIDTH;
@@ -386,77 +470,6 @@
 
       // spot input/output marker
       portG.append("use").attr("href", getIOMarker);
-    }
-  }
-
-  /**
-   * Container for node renderer instances.
-   * This object initiates the node to renderer binding process in prepare()
-   * and executes node rendering in render()
-   */
-  class NodeRendererContainer {
-    constructor() {
-      this.renderers = [];
-    }
-
-    // add new renderer
-    registerRenderer(renderer) {
-      this.renderers.push(renderer);
-    }
-
-    registerCustomRenderer(renderer) {
-      var rs = this.renderers;
-      for (var i = 0; i < rs.length; i++) {
-        var r = rs[i];
-        if (r instanceof GenericNodeRenderer) {
-          // insert custom renderer before GenericNodeRenderer
-          // to prevent GenericNodeRenderer.selector from prematurely halting renderers.some
-          rs.splice(i, 0, renderer);
-          return;
-        }
-      }
-      rs.push(renderer);
-    }
-
-    // Bind node to renderer recursively
-    prepare(node) {
-      var r = null;
-      this.renderers.some(function(ren) {
-        if (ren.selector(node)) r = ren;
-        return r != null;
-      });
-      if (r == null) {
-        throw new Error("Can not resolve renderer for node " + node);
-      }
-      node.hwMeta.renderer = r;
-      r.prepare(node);
-      var prep = this.prepare.bind(this);
-      if (node.children) {
-        node.children.forEach(prep);
-      }
-      if (node._children) {
-        node._children.forEach(prep);
-      }
-    }
-
-    // Render all nodes using selected renderer
-    render(root, nodeG) {
-      var renderers = this.renderers;
-      var nodesForRenderer = renderers.map(() => []);
-      nodeG.each(function(d) {
-        var n = this;
-        renderers.forEach(function(r, i) {
-          if (d.hwMeta.renderer === r) {
-            nodesForRenderer[i].push(n);
-          }
-        });
-      });
-      nodesForRenderer.forEach(function(nodes, i) {
-        if (nodes.length) {
-          nodes = d3.selectAll(nodes);
-          renderers[i].render(root, nodes);
-        }
-      });
     }
   }
 
@@ -1485,6 +1498,8 @@
     getEdges() {
       if (this.__edgesCache != null) return this.__edgesCache;
 
+      this.__edgesCache = this.graph.edges || [];
+
       var edgesOfChildren = d3.merge(
         this.getNodes()
           .filter(function(n) {
@@ -1495,7 +1510,7 @@
           })
       );
 
-      this.__edgesCache = edgesOfChildren;
+      this.__edgesCache = this.__edgesCache.concat(edgesOfChildren);
       return this.__edgesCache;
     }
 
@@ -1678,6 +1693,7 @@
     }
 
     updateGlobalSize() {
+      console.log("updateGlobalSize: ", this.svg.style("width"));
       var width = parseInt(
         this.svg.style("width") || this.svg.attr("width"),
         10

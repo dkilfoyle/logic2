@@ -57,7 +57,8 @@ gate_type:
 	| 'xnor'
 	| 'not'
 	| 'control'
-	| 'response';
+	| 'response'
+	| 'sevenseg';
 
 continuous_assign: 'assign' list_of_assignments ';';
 list_of_assignments: assignment (',' assignment)*;

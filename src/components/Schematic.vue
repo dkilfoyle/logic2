@@ -20,6 +20,8 @@ import "d3-hwschematic/dist/d3-hwschematic.css";
 import UtilsMixin from "../mixins/utils";
 import { mapGetters } from "vuex";
 
+import SevenSegRenderer from "./sevenseg.js";
+
 export default {
   // name: 'ComponentName',
   mixins: [UtilsMixin],
@@ -54,12 +56,17 @@ export default {
     }
   },
   mounted() {
+    console.log("schematic mounted");
     this.resize = this.debounce(this.resize, 1000);
     this.svg = window.d3
       .select("#svgSchematic")
       .attr("width", 100)
       .attr("height", 100);
     this.g = new window.d3.HwSchematic(this.svg);
+    console.log(this.g);
+    console.log(this.g.nodeRenderers);
+    this.g.nodeRenderers.registerCustomRenderer(new SevenSegRenderer(this.g));
+
     var zoom = d3.zoom();
     zoom.on("zoom", this.onZoom);
     this.svg.call(zoom).on("dblclick.zoom", null);
@@ -91,7 +98,7 @@ export default {
         hwMeta: { name: "main", maxId: 200 },
         properties: {
           "org.eclipse.elk.portConstraints": "FIXED_ORDER",
-          "org.eclipse.elk.randomSeed": 0,
+          // "org.eclipse.elk.randomSeed": 0,
           "org.eclipse.elk.layered.mergeEdges": 1
         },
         hideChildren: false,
@@ -102,6 +109,7 @@ export default {
 
       // await here
       this.buildInstance(this.elkData);
+      console.log("elkData: ", this.elkData);
 
       const filter = this.g.defs
         .append("filter")
@@ -139,7 +147,7 @@ export default {
 
       this.g.bindData(this.elkData).then(() => {
         // add click handlers to all non-port gates
-        // console.log("buildNetList1: ", this.g.root);
+        console.log("buildNetList bind data: ", this.elkData);
         this.getAllInstances.forEach(instance =>
           instance.gates.forEach(gateId => {
             const node = this.g.root.select("#node-id-" + gateId + "_gate");
@@ -302,7 +310,9 @@ export default {
           currentNet.edges.push({
             id: portGate.inputs[0] + "-" + input,
             type: "parent2input",
-            hwMeta: { name: null },
+            hwMeta: {
+              name: null
+            },
             source: currentInstance.inputs.some(x => x == portGate.inputs[0]) // is the input to the port gate itself a port of the parent instance rather than a local gate
               ? currentInstance.id
               : portGate.inputs[0] + "_gate", // TODO: source might be a gate or a port - ie a pass through, is this handled??
@@ -420,5 +430,12 @@ body {
 
 .gate {
   fill: red;
+}
+
+.sevenseg-segment {
+  fill: #d1d3d4;
+  stroke: #000000;
+  stroke-width: 4;
+  stroke-miterlimit: 10;
 }
 </style>
