@@ -9,7 +9,7 @@ function SEVENSEG_SHAPE(root) {
   root
     .append("polygon")
     // .attr("fill", "#D1D3D4")
-    .attr("id", "segg")
+    .attr("id", d => d.id + "_segg")
     .attr("class", "sevenseg-segment")
     .attr(
       "points",
@@ -17,7 +17,7 @@ function SEVENSEG_SHAPE(root) {
     );
   root
     .append("polygon")
-    .attr("id", "segd")
+    .attr("id", d => d.id + "_segd")
     .attr("class", "sevenseg-segment")
     .attr(
       "points",
@@ -25,7 +25,7 @@ function SEVENSEG_SHAPE(root) {
     );
   root
     .append("polygon")
-    .attr("id", "segc")
+    .attr("id", d => d.id + "_segc")
     .attr("class", "sevenseg-segment")
     .attr(
       "points",
@@ -33,7 +33,7 @@ function SEVENSEG_SHAPE(root) {
     );
   root
     .append("polygon")
-    .attr("id", "sege")
+    .attr("id", d => d.id + "_sege")
     .attr("class", "sevenseg-segment")
     .attr(
       "points",
@@ -41,7 +41,7 @@ function SEVENSEG_SHAPE(root) {
     );
   root
     .append("polygon")
-    .attr("id", "sega")
+    .attr("id", d => d.id + "_sega")
     .attr("class", "sevenseg-segment")
     .attr(
       "points",
@@ -49,7 +49,7 @@ function SEVENSEG_SHAPE(root) {
     );
   root
     .append("polygon")
-    .attr("id", "segb")
+    .attr("id", d => d.id + "_segb")
     .attr("class", "sevenseg-segment")
     .attr(
       "points",
@@ -57,7 +57,7 @@ function SEVENSEG_SHAPE(root) {
     );
   root
     .append("polygon")
-    .attr("id", "segf")
+    .attr("id", d => d.id + "_segf")
     .attr("class", "sevenseg-segment")
     .attr(
       "points",
@@ -73,32 +73,17 @@ export default class SevenSegRenderer extends window.d3.GenericNodeRenderer {
   }
 
   prepare(node) {
-    if (!this._defsAdded) {
-      var defs = this.schematic.defs;
-      this.addShapeToDefs(defs);
-      this._defsAdded = true;
-    }
+    // if (!this._defsAdded) {
+    //   var defs = this.schematic.defs;
+    //   this.addShapeToDefs(defs);
+    //   this._defsAdded = true;
+    // }
     node.width = this.DEFULT_NODE_SIZE[0];
     node.height = this.DEFULT_NODE_SIZE[1];
   }
 
   selector(node) {
     return node.hwMeta.cls == "Operator" && node.hwMeta.name === "SEVENSEG";
-  }
-
-  addShapeToDefs(defs) {
-    var cont = defs.append("g");
-    cont.attr("id", "SEVENSEG");
-    cont.attr("class", "d3-hwschematic node-operator");
-    SEVENSEG_SHAPE(cont);
-    cont.attr("transform", "scale(0.05)");
-
-    cont
-      .append("text")
-      .text("LA")
-      .attr("y", "10")
-      .attr("x", "10")
-      .attr("style", "writing-mode: tb;");
   }
 
   /**
@@ -109,6 +94,7 @@ export default class SevenSegRenderer extends window.d3.GenericNodeRenderer {
    * */
   render(root, nodeG) {
     // apply node positions
+    console.log(nodeG);
     nodeG
       .attr("transform", function(d) {
         if (typeof d.x === "undefined" || typeof d.x === "undefined") {
@@ -117,11 +103,12 @@ export default class SevenSegRenderer extends window.d3.GenericNodeRenderer {
         return "translate(" + d.x + " " + d.y + ")";
       })
       .attr("class", d => d.hwMeta.cssClass)
-      .attr("style", d => d.hwMeta.cssStyle)
-      .attr("id", d => d.id)
-      .append("use")
-      .attr("href", function(d) {
-        return "#" + d.hwMeta.name;
-      });
+      .attr("style", d => d.hwMeta.cssStyle);
+    // .attr("id", d => d.id);
+    var cont = nodeG.append("g");
+    cont.attr("id", d => d.id + "SEVENSEG");
+    cont.attr("class", "d3-hwschematic node-operator");
+    SEVENSEG_SHAPE(cont);
+    cont.attr("transform", "scale(0.05)");
   }
 }

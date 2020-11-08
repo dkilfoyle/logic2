@@ -1,6 +1,10 @@
 <template>
-  <div class="dkcontainer mx-4 my-4" ref="container">
-    <div v-if="isSimulated" class="columns">
+  <div class="dkcontainer mx-4 my-4" ref="container" style="height:100%">
+    <div
+      v-if="isSimulated"
+      class="columns"
+      style="overflow-y: auto;height:100%"
+    >
       <div class="column">
         <nav class="breadcrumb is-centered">
           <ul>

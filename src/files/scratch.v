@@ -2,15 +2,14 @@
 
 module MyModule (
   input a, b,
-  output X );
+  output X, Y );
 
   // wires act as local variables/gates
   // wire nand1;
 
   // gate format: logicFn(id, input1, input2)
-  // and  ( X, a, b );
-  // or   ( Y, a, b );
-  sevenseg (X, a, b);
+  and  ( X, a, b );
+  or   ( Y, a, b );
 
   // alternative bitwise format
   // assign X = a & b;
@@ -33,7 +32,8 @@ module Main(
   MyModule foo(
 		.a(user1),
 		.b(user2),
-		.X(o1)
+		.X(o1),
+		.Y(o2)
   );
 
   // main module should have a testbench to set control states

@@ -1,7 +1,11 @@
 <template>
-  <div class="dkcontainer  mx-4 my-4">
-    <div v-if="$store.getters.isCompiled" class="columns">
-      <div class="column ">
+  <div class="dkcontainer  mx-4 my-4" style="height:100%">
+    <div
+      v-if="$store.getters.isCompiled"
+      class="columns"
+      style="overflow-y: auto;height:100%"
+    >
+      <div class="column">
         <nav class="breadcrumb is-centered">
           <ul>
             <li
@@ -36,7 +40,6 @@
           >
         </div>
 
-        <div class="table-container"></div>
         <table class="table is-fullwidth">
           <thead class="bg-teal">
             <tr class="text-white">

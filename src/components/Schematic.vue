@@ -38,8 +38,27 @@ export default {
   },
   watch: {
     compileStatus() {
-      console.log("compileStatusWatcher: ");
+      // console.log("compileStatusWatcher: ");
       this.$nextTick(() => this.buildNetlist());
+    },
+    getGatesStateAtSelectedTime(timestate) {
+      console.log("simulateStatusWatcher: ", timestate);
+      const sevenseggates = this.getAllGates.filter(
+        gate => gate.logic == "sevenseg"
+      );
+      sevenseggates.forEach(gate => {
+        let inputValues = gate.inputs.map(x => timestate[x]);
+        ["a", "b", "c", "d", "e", "f", "g"].forEach((letter, i) => {
+          const element = document.getElementById(
+            gate.id + "_gate_seg" + letter
+          );
+          if (element) {
+            element.classList.remove("segment-0");
+            element.classList.remove("segment-1");
+            element.classList.add("segment-" + inputValues[i]);
+          }
+        });
+      });
     }
   },
   computed: {
@@ -49,10 +68,15 @@ export default {
       "getInstance",
       "getGate",
       "currentFile",
-      "isCompiled"
+      "isCompiled",
+      "isSimulated",
+      "getGatesStateAtSelectedTime"
     ]),
     compileStatus() {
       return this.isCompiled && this.currentFile.compileResult.timestamp;
+    },
+    simulateStatus() {
+      return this.isSimulated && this.currentFile.simulateResult.timestamp;
     }
   },
   mounted() {
@@ -437,5 +461,13 @@ body {
   stroke: #000000;
   stroke-width: 4;
   stroke-miterlimit: 10;
+}
+
+.segment-0 {
+  fill: #d1d3d4;
+}
+
+.segment-1 {
+  fill: red;
 }
 </style>

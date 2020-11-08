@@ -35,7 +35,9 @@ const logicFunctions = {
   or3: (a, b, c) => a || b || c,
   nor3: (a, b, c) => not(a || b || c),
   xor3: (a, b, c) => a ^ b ^ c,
-  xnor3: (a, b, c) => not(a ^ b ^ c)
+  xnor3: (a, b, c) => not(a ^ b ^ c),
+  sevenseg2: () => 0,
+  sevenseg7: () => 0
 };
 
 const evaluate = (components, componentLookup) => {
@@ -75,6 +77,33 @@ const evaluate = (components, componentLookup) => {
         aOut === "x" || bOut === "x" || cOut === "x"
           ? "x"
           : logicFunctions[logicFn + "3"](aOut.state, bOut.state, cOut.state);
+      return;
+    }
+
+    if (component.inputs.length == 7) {
+      const cOut = componentLookup[component.inputs[2]];
+      const dOut = componentLookup[component.inputs[3]];
+      const eOut = componentLookup[component.inputs[4]];
+      const fOut = componentLookup[component.inputs[5]];
+      const gOut = componentLookup[component.inputs[6]];
+      component.state =
+        aOut === "x" ||
+        bOut === "x" ||
+        cOut === "x" ||
+        dOut === "x" ||
+        eOut === "x" ||
+        fOut === "x" ||
+        gOut === "x"
+          ? "x"
+          : logicFunctions[logicFn + "7"](
+              aOut.state,
+              bOut.state,
+              cOut.state,
+              dOut.state,
+              eOut.state,
+              fOut.state,
+              gOut.state
+            );
       return;
     }
   };

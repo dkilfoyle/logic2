@@ -112,6 +112,15 @@ export default new Vuex.Store({
         gateid,
         getters.currentFile.selectedTime
       );
+    },
+    getGatesStateAtSelectedTime: (state, getters) => {
+      if (!getters.isSimulated) return [];
+      const gates = getters.currentFile.simulateResult.gates;
+      let res = {};
+      Object.keys(gates).forEach(
+        id => (res[id] = gates[id][getters.currentFile.selectedTime])
+      );
+      return res;
     }
   },
   mutations: {
