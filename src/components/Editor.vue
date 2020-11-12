@@ -46,6 +46,7 @@
             <span class="icon is-small">
               <i class="fa fa-play"></i>
             </span>
+            <span>Simulate</span>
           </button>
         </div>
       </div>

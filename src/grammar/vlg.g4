@@ -52,6 +52,7 @@ gate_declaration:
 gate_type:
 	'and'
 	| 'or'
+	| 'xor'
 	| 'nand'
 	| 'nor'
 	| 'xnor'
