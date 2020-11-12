@@ -11,7 +11,7 @@ module DFF (
 	nand( d_nand_a, dIn, clk );
 	nand( q3, d_nand_a, q_ );
 	nand( d_nand_c, not_d_in, clk );
-  nand( q_, d_nand_c, q3);
+  nand( q_, d_nand_c, q3); // todo: fix compiler to accept an output gate as an input
 endmodule
 
 module DFFE (
@@ -28,17 +28,11 @@ module DFFE (
 
 endmodule
 
-module main;
-
-  wire A, E, clock, q1;
-
-  control(A);
-  control(E);
-  control(clock);
+module Main(
+  input A, E, clock,
+  output q1);
 
   DFFE dffe(.clk(clock), .dIn(A), .dEnable(E), .q2(q1));
-
-  response(q1);
 
   test begin
     #0  { E=1 };
