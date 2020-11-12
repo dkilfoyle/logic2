@@ -32,13 +32,9 @@ module OneHotDecoder (
   and(F3, a, b);
 endmodule
 
-module main;
-
-  wire a, b; // controls
-  wire F3, F2, F1, F0; // response
-
-  control(a);
-  control(b);
+module Main( 
+  input a, b,
+  output F3, F2, F1, F0);
 
   // OneHotDecoder ohd(
   OneHotDecoderBitwise ohd(
@@ -49,11 +45,6 @@ module main;
 		.F1(F1),
 		.F0(F0)
   );
-
-  response(F3);
-  response(F2);
-  response(F1);
-  response(F0);
 
   test begin
 		#0  {a=0, b=0};

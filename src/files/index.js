@@ -26,7 +26,7 @@ export const SourceTree = [
   },
   {
     text: "Decoders",
-    children: [{ text: "OneHot", value: OneHotDecoder }]
+    children: [{ text: "OneHotDecoder", value: OneHotDecoder }]
   },
   {
     text: "Encoders",
