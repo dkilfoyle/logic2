@@ -67,13 +67,13 @@ npm run serve
 
 ## TODO
 
-1. Github pages hosted web app
 1. More sample code circuits
    1. 4 bit ripple adder
    1. 4 to 1 multiplexer with bit vector select line
    1. Ripple counter
    1. Shift register
    1. FSMs
+1. More custom nodes eg bits to number
 1. Reuse intermediary gates
 1. Support bit vector type
 1. More linting
