@@ -20,7 +20,7 @@ endmodule
 
 module Main (
   input a, b, cin,
-  output sum, count
+  output sum, cout
 );
 
   SingleStage uut(

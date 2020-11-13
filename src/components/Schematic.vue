@@ -20,7 +20,8 @@ import "d3-hwschematic/dist/d3-hwschematic.css";
 import UtilsMixin from "../mixins/utils";
 import { mapGetters } from "vuex";
 
-import SevenSegRenderer from "./sevenseg.js";
+import SevenSegRenderer from "./renderers/sevenseg.js";
+import BufferRenderer from "./renderers/buffer.js";
 
 export default {
   // name: 'ComponentName',
@@ -42,23 +43,31 @@ export default {
       this.$nextTick(() => this.buildNetlist());
     },
     getGatesStateAtSelectedTime(timestate) {
-      console.log("simulateStatusWatcher: ", timestate);
-      const sevenseggates = this.getAllGates.filter(
-        gate => gate.logic == "sevenseg"
-      );
-      sevenseggates.forEach(gate => {
-        let inputValues = gate.inputs.map(x => timestate[x]);
-        ["a", "b", "c", "d", "e", "f", "g"].forEach((letter, i) => {
-          const element = document.getElementById(
-            gate.id + "_gate_seg" + letter
-          );
-          if (element) {
-            element.classList.remove("segment-0");
-            element.classList.remove("segment-1");
-            element.classList.add("segment-" + inputValues[i]);
-          }
+      this.getAllGates
+        .filter(gate => gate.logic == "sevenseg")
+        .forEach(gate => {
+          let inputValues = gate.inputs.map(x => timestate[x]);
+          ["a", "b", "c", "d", "e", "f", "g"].forEach((letter, i) => {
+            const element = document.getElementById(
+              gate.id + "_gate_seg" + letter
+            );
+            if (element) {
+              element.classList.remove("segment-0");
+              element.classList.remove("segment-1");
+              element.classList.add("segment-" + inputValues[i]);
+            }
+          });
         });
-      });
+
+      for (const [gateid, gatevalue] of Object.entries(
+        this.getGatesStateAtSelectedTime
+      )) {
+        const querystr = "#svgSchematic ." + gateid + "_link";
+        const elements = document.querySelectorAll(querystr);
+        elements.forEach(element =>
+          element.setAttribute("class", `${gateid}_link link-${gatevalue}`)
+        );
+      }
     }
   },
   computed: {
@@ -80,16 +89,14 @@ export default {
     }
   },
   mounted() {
-    console.log("schematic mounted");
     this.resize = this.debounce(this.resize, 1000);
     this.svg = window.d3
       .select("#svgSchematic")
       .attr("width", 100)
       .attr("height", 100);
     this.g = new window.d3.HwSchematic(this.svg);
-    console.log(this.g);
-    console.log(this.g.nodeRenderers);
     this.g.nodeRenderers.registerCustomRenderer(new SevenSegRenderer(this.g));
+    this.g.nodeRenderers.registerCustomRenderer(new BufferRenderer(this.g));
 
     var zoom = d3.zoom();
     zoom.on("zoom", this.onZoom);
@@ -122,7 +129,7 @@ export default {
         hwMeta: { name: "main", maxId: 200 },
         properties: {
           "org.eclipse.elk.portConstraints": "FIXED_ORDER",
-          // "org.eclipse.elk.randomSeed": 0,
+          "org.eclipse.elk.randomSeed": 0,
           "org.eclipse.elk.layered.mergeEdges": 1
         },
         hideChildren: false,
@@ -212,7 +219,7 @@ export default {
             cls: "Operator",
             name:
               gate.logic == "control" ||
-              gate.logic == "buffer" ||
+              gate.logic == "portbuffer" ||
               gate.logic == "response"
                 ? this.getLocalId(gate.id)
                 : gate.logic.toUpperCase(),
@@ -260,7 +267,7 @@ export default {
             sourcePort: gate.inputs[i],
             target: gate.id + "_gate",
             targetPort: gate.id + "_input_" + i,
-            hwMeta: { name: null }
+            hwMeta: { name: null, cssClass: gate.id + "_link" }
           });
         });
 
@@ -469,5 +476,24 @@ body {
 
 .segment-1 {
   fill: red;
+}
+
+.d3-hwschematic .link-wrap {
+  opacity: 1;
+  stroke-width: 2;
+}
+
+.link-0 {
+  stroke: rgb(97, 194, 226) !important;
+  stroke-opacity: 1;
+  stroke-width: 3;
+  fill: none;
+}
+
+.link-1 {
+  stroke: rgb(221, 97, 97) !important;
+  stroke-opacity: 1;
+  stroke-width: 3;
+  fill: none;
 }
 </style>

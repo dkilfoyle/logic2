@@ -10,19 +10,13 @@ module DFF (
   nand( d_nand_a, dIn, clk );
   nand( q, d_nand_a, q_ );
   nand( d_nand_c, not_d_in, clk );
-  nand( q_, d_nand_c, q);
+  nand( q_, d_nand_c, q); // todo: compiler accept output as input
 endmodule
 
-module main;
+module Main(
+  input clock, qn1, qn2,
+  output count0, count1);
 
-  wire clock, qn1, qn2;
-  wire count0, count1;
-
-  control(clock);
-
-  response(count0);
-  response(count1);
-  
   buffer(qn1);
   buffer(qn2);
 

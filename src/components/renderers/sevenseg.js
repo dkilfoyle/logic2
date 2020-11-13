@@ -68,7 +68,7 @@ function SEVENSEG_SHAPE(root) {
 export default class SevenSegRenderer extends window.d3.GenericNodeRenderer {
   constructor(schematic) {
     super(schematic);
-    this.DEFULT_NODE_SIZE = [20, 40];
+    this.DEFULT_NODE_SIZE = [40, 80];
     this._defsAdded = false;
   }
 
@@ -94,7 +94,6 @@ export default class SevenSegRenderer extends window.d3.GenericNodeRenderer {
    * */
   render(root, nodeG) {
     // apply node positions
-    console.log(nodeG);
     nodeG
       .attr("transform", function(d) {
         if (typeof d.x === "undefined" || typeof d.x === "undefined") {
@@ -109,6 +108,6 @@ export default class SevenSegRenderer extends window.d3.GenericNodeRenderer {
     cont.attr("id", d => d.id + "SEVENSEG");
     cont.attr("class", "d3-hwschematic node-operator");
     SEVENSEG_SHAPE(cont);
-    cont.attr("transform", "scale(0.05)");
+    cont.attr("transform", "scale(0.1)");
   }
 }

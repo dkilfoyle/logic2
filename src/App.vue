@@ -188,11 +188,11 @@ export default {
       const newSourceName = Object.keys(this.$store.state.openFiles).includes(
         sourceName
       )
-        ? newSourceName + this.sourceCounter++
+        ? sourceName + this.sourceCounter++
         : sourceName;
       this.$store.commit("openFile", {
         newSourceName,
-        code: this.sourceFiles[newSourceName]
+        code: this.sourceFiles[sourceName]
       });
       this.$store.commit("setCurrentFileTab", newSourceName);
       // this.currentFileTab = newSourceName;

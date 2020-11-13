@@ -1,8 +1,7 @@
 // D Flip Flop
 
 module DFF (
-	input clk,
-	input dIn,
+	input clk, dIn,
 	output q3);
 
 	wire not_d_in, d_nand_a, d_nand_c, q_;
@@ -11,16 +10,16 @@ module DFF (
 	nand( d_nand_a, dIn, clk );
 	nand( q3, d_nand_a, q_ );
 	nand( d_nand_c, not_d_in, clk );
-  nand( q_, d_nand_c, q3); // todo: fix compiler to accept an output gate as an input
+  nand( q_, d_nand_c, q3);
 endmodule
 
 module DFFE (
-  input clk,
-  input dIn,
-  input dEnable,
+  input clk, dIn, dEnable,
   output q2);
 
   wire gatedClk;
+
+  buffer(q2);
   and(gatedClk, clk, dEnable);
   
   DFF dff(.clk(gatedClk), .dIn(dIn), .q3(q2));

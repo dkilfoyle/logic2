@@ -23,6 +23,7 @@ const not = x => ~x & 1;
 const logicFunctions = {
   not: a => ~a & 1,
   buffer: a => a,
+  portbuffer: a => a,
   response: a => a,
   and2: (a, b) => a && b,
   nand2: (a, b) => not(a && b),
@@ -44,7 +45,14 @@ const evaluate = (components, componentLookup) => {
   const logicOperation = component => {
     let logicFn = component.logic;
     if (component.inputs.length == 1) {
-      if (!(logicFn == "not" || logicFn == "buffer" || logicFn == "response")) {
+      if (
+        !(
+          logicFn == "not" ||
+          logicFn == "buffer" ||
+          logicFn == "response" ||
+          logicFn == "portbuffer"
+        )
+      ) {
         console.log(
           "Gate evaluation error - 1 input only valid for not and buffer gates"
         );

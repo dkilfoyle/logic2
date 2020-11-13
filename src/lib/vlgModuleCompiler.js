@@ -75,7 +75,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
     const portGate = {
       id: `${namespace}_${port.id}` + (port.type == "output" ? "-out" : ""),
-      logic: "buffer",
+      logic: "portbuffer",
       instance: namespace,
       inputs: [],
       state: 0,
@@ -115,13 +115,15 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
         // push the output gate (output-out) to the mapped parent gate's inputs
         // output-out ------> parentGate = {parentNamespace}_{param.value.id}
-        const parentGate = gates.find(
+        let parentGate = gates.find(
           gate => gate.id == `${parentNamespace}_${connection.value.id}`
         );
-        if (!parentGate)
+        if (!parentGate) {
+          console.log(instanceDeclaration, port, connection);
           throw new Error(
             `${connection.value.id} is not a gate in ${parentNamespace}`
           );
+        }
         parentGate.inputs.push(portGate.id); // portGate.id already has -out appended
 
         //  push the gate with the same name as the output into the output port buffer gate's inputs

@@ -164,9 +164,9 @@ class Listener extends vlgListener {
 
     // semantic error if any of the inputs are not defined
     gateInputs.forEach((gateInput, index) => {
-      if (!this.isWireOrInput(gateInput)) {
+      if (!this.isWireOrPort(gateInput)) {
         const idctx = ctx.identifier_list().IDENTIFIER(index + 1); // because IDENTIFER(0) is the output
-        this.addSemanticError(idctx.symbol, `'${gateInput}' is not defined as a wire or module input`);
+        this.addSemanticError(idctx.symbol, `'${gateInput}' is not defined as a wire or module port`);
       }
     });
 
