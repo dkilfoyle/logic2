@@ -51,5 +51,6 @@ module Main(
     #5  {a=1, b=0, c=1};
     #6  {a=1, b=1, c=0};
     #7  {a=1, b=1, c=1};
+    #8;
   end
 endmodule

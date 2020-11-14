@@ -381,7 +381,7 @@ export class LabShell extends Widget {
   }
 
   _onActiveChanged(sender, args) {
-    console.log("_onActiveChanged: ", sender, args);
+    // console.log("_onActiveChanged: ", sender, args);
     if (args.newValue) {
       args.newValue.title.className += ` ${ACTIVE_CLASS}`;
     }
@@ -395,7 +395,7 @@ export class LabShell extends Widget {
   }
 
   _onCurrentChanged(sender, args) {
-    console.log("_onCurrenntChanged: ", sender, args);
+    // console.log("_onCurrenntChanged: ", sender, args);
     if (args.newValue) {
       args.newValue.title.className += ` ${CURRENT_CLASS}`;
     }

@@ -58,6 +58,7 @@
           id="dygraphclock"
           :options="{
             height: 50,
+            xRangePad: 5,
             showRangeSelector: true,
             rangeSelectorHeight: 40,
             axes: { y: { axisLabelWidth: 5 } }

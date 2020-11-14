@@ -43,5 +43,6 @@ module Main(
     #2  {user1=0, user2=1};
     #4  {user1=1, user2=0};
     #6  {user1=1, user2=1};
+    #8;
   end
 endmodule

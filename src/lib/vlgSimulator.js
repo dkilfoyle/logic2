@@ -166,10 +166,11 @@ const simulate = (gates, instances, modules, logger) => {
     if (gatesLookup["main_clock"])
       gatesLookup["main_clock"].state = ~gatesLookup["main_clock"].state & 1;
 
-    // run gate evaluation for this time step
+    // run gate evaluation for this time step (not t=0)
     for (let i = 0; i < EVALS_PER_STEP; i++) {
       evaluate(gates, gatesLookup);
     }
+
     // and store gate results in newSimulation
     gates.forEach(g => {
       newSimulation.gates[g.id].push(gatesLookup[g.id].state);

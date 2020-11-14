@@ -264,7 +264,7 @@ export default {
     },
 
     addWidget(id, area, options) {
-      console.log("Lumino.vue addWidget: ", id, area, options);
+      // console.log("Lumino.vue addWidget: ", id, area, options);
       let luminoWidget = new LuminoWidget(id, options);
       this.widgets.push(luminoWidget);
       this.widgetIDs.push(id);

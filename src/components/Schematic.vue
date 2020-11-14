@@ -1,6 +1,11 @@
 <template>
   <div class="dkcontainer">
-    <div class="mx-4 my-4" v-if="!isCompiled">Compile File First</div>
+    <div class="level my-4" v-if="isSimulated">
+      <div class="level-item has-text-centered">
+        t = {{ $store.getters.currentFile.selectedTime }}
+      </div>
+    </div>
+    <div class="mx-4 my-2" v-if="!isCompiled">Compile File First</div>
     <div class="columns">
       <div class="column">
         <svg ref="svgSchematic" id="svgSchematic" />
@@ -67,6 +72,15 @@ export default {
         elements.forEach(element =>
           element.setAttribute("class", `${gateid}_link link-${gatevalue}`)
         );
+        let gate = this.getGate(gateid);
+        if (gate.logic == "control" || gate.logic == "response") {
+          const querystr = "#svgSchematic ." + gateid + "_external";
+          const elements = document.querySelector(querystr);
+          elements.setAttribute(
+            "class",
+            `node-external-port ${gateid}_external external-${gatevalue}`
+          );
+        }
       }
     }
   },
@@ -95,6 +109,7 @@ export default {
       .attr("width", 100)
       .attr("height", 100);
     this.g = new window.d3.HwSchematic(this.svg);
+    console.log(this.g);
     this.g.nodeRenderers.registerCustomRenderer(new SevenSegRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new BufferRenderer(this.g));
 
@@ -129,7 +144,7 @@ export default {
         hwMeta: { name: "main", maxId: 200 },
         properties: {
           "org.eclipse.elk.portConstraints": "FIXED_ORDER",
-          "org.eclipse.elk.randomSeed": 0,
+          // "org.eclipse.elk.randomSeed": 0,
           "org.eclipse.elk.layered.mergeEdges": 1
         },
         hideChildren: false,
@@ -217,6 +232,10 @@ export default {
           hwMeta: {
             maxId: currentNet.hwMeta.maxId + 50 + gateCount,
             cls: "Operator",
+            cssClass:
+              gate.logic == "control" || gate.logic == "response"
+                ? gate.id + "_external"
+                : "",
             name:
               gate.logic == "control" ||
               gate.logic == "portbuffer" ||
@@ -227,7 +246,7 @@ export default {
           },
           properties: {
             "org.eclipse.elk.portConstraints": "FIXED_ORDER",
-            "org.eclipse.elk.randomSeed": 0,
+            // "org.eclipse.elk.randomSeed": 0,
             "org.eclipse.elk.layered.mergeEdges": 1
           },
           hideChildren: true,
@@ -256,7 +275,7 @@ export default {
             }
           });
 
-          currentNet.edges.push({
+          let gate2gate = {
             id: input + "-" + gate.id + "_input_" + i,
             type: "gate2gate",
             source: this.getAllGates.some(
@@ -268,7 +287,9 @@ export default {
             target: gate.id + "_gate",
             targetPort: gate.id + "_input_" + i,
             hwMeta: { name: null, cssClass: gate.id + "_link" }
-          });
+          };
+          currentNet.edges.push(gate2gate);
+          // console.log("-- g2g: ", gate2gate.id, this.stripReactive(gate2gate));
         });
 
         currentNet.children.push(gateNet);
@@ -289,7 +310,7 @@ export default {
           properties: {
             // "org.eclipse.elk.portConstraints": "FREE"
             "org.eclipse.elk.portConstraints": "FIXED_ORDER",
-            "org.eclipse.elk.randomSeed": 0,
+            // "org.eclipse.elk.randomSeed": 0,
             "org.eclipse.elk.layered.mergeEdges": 1
           },
           hideChildren: false,
@@ -321,7 +342,10 @@ export default {
             sourcePort: portGate.inputs[0],
             target: this.getNamespace(output),
             targetPort: output,
-            hwMeta: { name: null }
+            hwMeta: {
+              name: null,
+              cssClass: portGate.inputs[0] + "_link"
+            }
           });
         });
 
@@ -338,7 +362,7 @@ export default {
 
           // get the buffer gate for this port
           const portGate = this.getGate(input);
-          currentNet.edges.push({
+          const parent2input = {
             id: portGate.inputs[0] + "-" + input,
             type: "parent2input",
             hwMeta: {
@@ -350,7 +374,13 @@ export default {
             sourcePort: portGate.inputs[0],
             target: this.getNamespace(input),
             targetPort: input
-          });
+          };
+          parent2input.hwMeta.cssClass = currentInstance.inputs.some(
+            x => x == portGate.inputs[0]
+          ) // is the input to the port gate itself a port of the parent instance rather than a local gate
+            ? currentInstance.id
+            : portGate.inputs[0] + "_link"; // TODO: source might be a gate or a port - ie a pass through, is this handled??
+          currentNet.edges.push(parent2input);
         });
 
         this.buildInstance(childNet); // add any child instances of this child
@@ -364,83 +394,6 @@ export default {
 <style>
 text {
   font-family: monospace;
-}
-
-.node {
-  stroke: #bdbdbd;
-  stroke-width: 1px;
-  fill: #e6ffff;
-  border: 2px;
-}
-
-.node text {
-  font-style: normal;
-  font-family: monospace;
-  fill: black;
-  stroke-width: 0px;
-}
-
-.node-operator {
-  stroke: BLACK;
-  stroke-width: 1px;
-  fill: #e6ffff;
-  border: 2px;
-}
-
-g.node-operator:hover {
-  fill: red;
-  stroke: red;
-}
-
-.node-operator text {
-  font-style: normal;
-  font-family: monospace;
-  fill: black;
-  stroke-width: 0px;
-}
-
-.node-external-port {
-  stroke: #000;
-  stroke-width: 0px;
-  fill: #bdbdbd;
-  border: 1px;
-}
-
-.node-external-port text {
-  font-style: normal;
-  font-family: monospace;
-  fill: black;
-  stroke-width: 0px;
-}
-
-.link {
-  stroke: #000;
-  stroke-opacity: 0.6;
-  fill: none;
-}
-
-.link-selected {
-  stroke: orange;
-  /*stroke-opacity: .9;*/
-  fill: none;
-}
-
-.link-wrap-activated {
-  stroke-width: 4;
-  fill: none;
-  stroke: deepskyblue;
-}
-
-.link-wrap {
-  stroke-width: 4;
-  fill: none;
-  stroke: white;
-  opacity: 0;
-}
-
-.port {
-  stroke: #000;
-  opacity: 0.6;
 }
 
 tspan {
@@ -457,10 +410,6 @@ body {
   border-radius: 5px;
   padding: 5px;
   position: fixed;
-}
-
-.gate {
-  fill: red;
 }
 
 .sevenseg-segment {
@@ -483,6 +432,10 @@ body {
   stroke-width: 2;
 }
 
+.d3-hwschematic .node-external-port text {
+  font-size: 8pt;
+}
+
 .link-0 {
   stroke: rgb(97, 194, 226) !important;
   stroke-opacity: 1;
@@ -491,9 +444,17 @@ body {
 }
 
 .link-1 {
-  stroke: rgb(221, 97, 97) !important;
+  stroke: rgb(237, 137, 137, 1) !important;
   stroke-opacity: 1;
   stroke-width: 3;
   fill: none;
+}
+
+.external-0 {
+  fill: rgb(97, 194, 226) !important;
+}
+
+.external-1 {
+  fill: rgb(237, 137, 137, 1) !important;
 }
 </style>

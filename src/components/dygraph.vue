@@ -8,7 +8,8 @@
 
 import _DygraphRoot from "dygraphs";
 window.Dygraph = _DygraphRoot;
-require("dygraphs/src/extras/crosshair");
+// require("dygraphs/src/extras/crosshair");
+require("./crosshair");
 
 import "dygraphs/dist/dygraph.css";
 
