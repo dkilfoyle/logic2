@@ -75,11 +75,12 @@ export default {
         let gate = this.getGate(gateid);
         if (gate.logic == "control" || gate.logic == "response") {
           const querystr = "#svgSchematic ." + gateid + "_external";
-          const elements = document.querySelector(querystr);
-          elements.setAttribute(
-            "class",
-            `node-external-port ${gateid}_external external-${gatevalue}`
-          );
+          const element = document.querySelector(querystr);
+          if (element)
+            element.setAttribute(
+              "class",
+              `node-external-port ${gateid}_external external-${gatevalue}`
+            );
         }
       }
     }
@@ -433,6 +434,10 @@ body {
 }
 
 .d3-hwschematic .node-external-port text {
+  font-size: 8pt;
+}
+
+.d3-hwschematic .node-operator text {
   font-size: 8pt;
 }
 

@@ -7,6 +7,7 @@ import Mux2_1 from "./mux.v";
 import DeMux from "./demux.v";
 import RippleCounter from "./ripplecounter.v";
 import Simplify from "./simplify.v";
+import SumProducts from "./sumproducts.v";
 
 export const SourceTree = [
   {
@@ -15,7 +16,10 @@ export const SourceTree = [
   },
   {
     text: "Theory",
-    children: [{ text: "Simplify", value: Simplify }]
+    children: [
+      { text: "Simplify", value: Simplify },
+      { text: "SumProducts", value: SumProducts }
+    ]
   },
   {
     text: "Mux",
@@ -54,5 +58,6 @@ export const SourceFiles = {
   Mux2_1,
   DeMux,
   RippleCounter,
-  Simplify
+  Simplify,
+  SumProducts
 };

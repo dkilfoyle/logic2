@@ -59,17 +59,26 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   instanceModule.ports.forEach(port => {
     if (namespace == "main") {
       const portType = port.type == "input" ? "control" : "response";
-      const newGate = {
-        id: "main_" + port.id,
-        logic: portType,
-        inputs: [],
-        instance: "main",
-        state: 0,
-        type: "gate"
-      };
-      // console.log("main port ", port);
-      gates.push(newGate);
-      newInstance.gates.push(newGate.id);
+
+      // output ports may already be defined as a buffer eg buffer(F, Fe);
+      // if main_port.id already exists then just change it's logic to responsebuffer
+
+      if (gates.some(x => x.id == "main_" + port.id)) {
+        console.log("responsebuffer");
+      } else {
+        const newGate = {
+          id: "main_" + port.id,
+          logic: portType,
+          inputs: [],
+          instance: "main",
+          state: 0,
+          type: "gate"
+        };
+
+        // console.log("main port ", port);
+        gates.push(newGate);
+        newInstance.gates.push(newGate.id);
+      }
       return;
     }
 

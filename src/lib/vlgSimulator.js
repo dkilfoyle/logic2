@@ -65,6 +65,7 @@ const evaluate = (components, componentLookup) => {
       }
       component.state =
         aOut === "x" ? "x" : logicFunctions[logicFn](aOut.state);
+      // console.log(component.id, logicFn, aOut.state, component.state);
       return;
     }
 
@@ -76,15 +77,13 @@ const evaluate = (components, componentLookup) => {
         aOut === "x" || bOut === "x"
           ? "x"
           : logicFunctions[logicFn + "2"](aOut.state, bOut.state);
-      return;
-    }
-
-    if (component.inputs.length == 3) {
-      const cOut = componentLookup[component.inputs[2]];
-      component.state =
-        aOut === "x" || bOut === "x" || cOut === "x"
-          ? "x"
-          : logicFunctions[logicFn + "3"](aOut.state, bOut.state, cOut.state);
+      // console.log(
+      //   component.id,
+      //   logicFn,
+      //   aOut.state,
+      //   bOut.state,
+      //   component.state
+      // );
       return;
     }
 
@@ -118,8 +117,7 @@ const evaluate = (components, componentLookup) => {
 
   components.forEach(component => {
     if (component.logic === "control") return;
-
-    return logicOperation(component);
+    logicOperation(component);
   });
 };
 
@@ -165,6 +163,8 @@ const simulate = (gates, instances, modules, logger) => {
     // store tick or tock
     if (gatesLookup["main_clock"])
       gatesLookup["main_clock"].state = ~gatesLookup["main_clock"].state & 1;
+
+    console.log("Clock: ", clock);
 
     // run gate evaluation for this time step (not t=0)
     for (let i = 0; i < EVALS_PER_STEP; i++) {

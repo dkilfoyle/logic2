@@ -8,12 +8,12 @@ grammar vlg;
 /* The start rule */
 source_text: modules EOF;
 
-modules: (module)+ module_main EOF;
+modules: module* module_main EOF;
 
 /* Module declaration ============================================== */
 
 module_main:
-	'module' 'Main' (module_ports)? ';' module_item* test_bench? 'endmodule';
+	'module' MAIN (module_ports)? ';' module_item* test_bench? 'endmodule';
 
 module:
 	'module' IDENTIFIER (module_ports)? ';' module_item* 'endmodule';
@@ -115,6 +115,8 @@ ONE_LINE_COMMENT:
 	'//' .*? ('\r')? (EOF | '\n') -> channel(HIDDEN);
 BLOCK_COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
 WHITE_SPACE: [ \t\n\r\f]+ -> channel(HIDDEN);
+
+MAIN: 'Main';
 
 IDENTIFIER: [a-zA-Z_] ( [a-zA-Z0-9_$])*;
 
