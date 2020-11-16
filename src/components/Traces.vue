@@ -50,8 +50,8 @@
             @clicked="onClicked"
             @highlighted="onHighlighted"
             ref="traces"
-          ></dygraph
-        ></template>
+          ></dygraph>
+        </template>
 
         <dygraph
           :data="clock"
@@ -133,6 +133,7 @@ export default {
         labels: ["T", id],
         showRangeSelector: false,
         xRangePad: 5,
+        gridLinePattern: [2, 2],
         axes: {
           x: {
             drawAxis: false,
@@ -151,7 +152,7 @@ export default {
           }
         },
         series: {
-          Y1: { color: this.traceColor(id) }
+          [id]: { color: this.traceColor(id) }
         }
       };
     },

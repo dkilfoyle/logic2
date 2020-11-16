@@ -1,5 +1,7 @@
 var modules, instances, gates;
 
+// const stripReactive = x => JSON.parse(JSON.stringify(x));
+
 const createInstance = (parentNamespace, instanceDeclaration) => {
   var namespace;
   if (parentNamespace == "") namespace = "main";
@@ -16,6 +18,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     gates: [] // non port gate ids
   };
 
+  // console.log("createInstance: ", newInstance.id);
+  // console.log("-- instance connections: ", instanceDeclaration.connections);
   // instanceDeclaration is generated from module statement Mymodule foo(.a(user1), .b(user2), .X(o1))
   // => { id: "foo", module: "Mymodule", connections: [{port: {id: "a"}, value: {id: "user1", index: 0}}, ...]}
 
@@ -26,6 +30,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   instanceModule.ports.forEach(port => {
     varMap[port.id] = `${namespace}_${port.id}`;
   });
+
+  // console.log("-- instance varMap: ", varMap);
 
   // create all the gates defined in the instance's module statements
   // gate declaration has the form { id: "X", gate: "and", inputs: ["a", "b"], type: "gate"}
@@ -46,6 +52,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       newInstance.gates.push(newGate.id);
     });
 
+  // console.log("-- instance gates: ", newInstance.gates);
   // create a buffer gate for each port in the instance's module definition
   // each port is mapped to {parentNamespace}_{connection.value.id}
   // input port buffers:
@@ -91,6 +98,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       type: "port"
     };
 
+    // console.log("-- port: ", port.id, ", gate: ", portGate.id);
+
     // connect the input port buffer gate's input to the mapped parent value in the instanceDeclaration parameters
     /*
                            |           |
@@ -121,6 +130,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       );
       if (connection) {
         // if the output port is connected
+        // console.log("---- connection: ", connection);
 
         // push the output gate (output-out) to the mapped parent gate's inputs
         // output-out ------> parentGate = {parentNamespace}_{param.value.id}
@@ -133,11 +143,18 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
             `${connection.value.id} is not a gate in ${parentNamespace}`
           );
         }
+        // console.log(
+        //   `---- parentGate: ${parentGate.id} will get input from ${portGate.id}`
+        // );
         parentGate.inputs.push(portGate.id); // portGate.id already has -out appended
 
         //  push the gate with the same name as the output into the output port buffer gate's inputs
         const sameNameGate = gates.find(gate => gate.id == varMap[port.id]);
-        if (sameNameGate) portGate.inputs.push(varMap[port.id]);
+        if (sameNameGate) portGate.inputs.push(sameNameGate.id);
+
+        // console.log(
+        //   `---- sameNameGate: ${sameNameGate.id}. ${portGate.id} will get this as input`
+        // );
 
         newInstance.outputs.push(portGate.id);
       }

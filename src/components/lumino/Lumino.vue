@@ -101,9 +101,14 @@ export default {
       viewMenu.addItem({ command: "view:schematic" });
       viewMenu.addItem({ command: "view:terminal" });
 
+      let helpMenu = new Menu({ commands: this.commands });
+      helpMenu.title.label = "Help";
+      helpMenu.addItem({ command: "help:about" });
+
       this.mainMenu.addMenu(fileMenu);
       this.mainMenu.addMenu(editMenu);
       this.mainMenu.addMenu(viewMenu);
+      this.mainMenu.addMenu(helpMenu);
 
       this.mainMenu.id = "jp-MainMenu";
       this.mainMenu.addClass("jp-scrollbar-tiny");
@@ -116,7 +121,7 @@ export default {
         mnemonic: 0,
         caption: "Open a new tab",
         execute: () => {
-          console.log("New Tab");
+          this.$emit("newFile");
         }
       });
       this.commands.addCommand("file:compile", {
@@ -124,7 +129,7 @@ export default {
         mnemonic: 0,
         caption: "Compile current file",
         execute: () => {
-          console.log("Compile");
+          this.$emit("compile");
         }
       });
       this.commands.addCommand("file:simulate", {
@@ -132,7 +137,7 @@ export default {
         mnemonic: 0,
         caption: "Simulate current file",
         execute: () => {
-          console.log("Simulate");
+          this.$emit("simulate");
         }
       });
 
@@ -212,6 +217,15 @@ export default {
         caption: "View Terminal",
         execute: () => {
           console.log("view terminal");
+        }
+      });
+
+      this.commands.addCommand("help:about", {
+        label: "About",
+        mnemonic: 2,
+        caption: "About",
+        execute: () => {
+          this.$emit("about");
         }
       });
 

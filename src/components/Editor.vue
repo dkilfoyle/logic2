@@ -308,6 +308,20 @@ export default {
               insertTextRules:
                 monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
               documentation: "If-Else Statement"
+            },
+            {
+              label: "module",
+              kind: monaco.languages.CompletionItemKind.Snippet,
+              insertText: [
+                "module \t$0 (",
+                "\tinput \t$1,",
+                "\toutput \t$2);",
+                "\t",
+                "end module"
+              ].join("\n"),
+              insertTextRules:
+                monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              documentation: "Module declaration"
             }
           ];
           return { suggestions: suggestions };
@@ -361,7 +375,7 @@ export default {
         // TODO: convert walkResult.errors to add to newdecorations
       }
 
-      console.log("lint result: ", parseResult, walkResult);
+      // console.log("lint result: ", parseResult, walkResult);
       this.lintDecorations = this.editor.deltaDecorations(
         this.lintDecorations,
         newDecorations

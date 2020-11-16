@@ -4,6 +4,10 @@
       ref="lumino"
       @resize="onLuminoResize"
       @activated="onLuminoActivated"
+      @newFile="addFileTab('Scratch')"
+      @compile="compile"
+      @simulate="simulate"
+      @about="about"
     >
       <liquor-tree
         id="fileTree"
@@ -250,7 +254,7 @@ export default {
       this.$store.commit("setCompileResult", { ...compileResult });
       this.$store.commit("setStatus", "Compile OK");
 
-      console.log("app: onPassLint: ", this.$store.getters.currentFile);
+      console.log("app onPassLint: walkResult = ", e.walkResult);
     },
     compile() {
       this.termWriteln(
@@ -336,6 +340,10 @@ export default {
       this.$store.commit("setSimulateResult", simulateResult);
       this.$store.commit("setStatus", "Simulation OK");
       console.log("Simulation: ", simulateResult);
+    },
+    about() {
+      this.termWriteln(chalk.bold.cyan("Logic2: A logic circuit simulator"));
+      this.termWriteln(chalk.yellow("https://github.com/dkilfoyle/logic2"));
     }
   }
 };

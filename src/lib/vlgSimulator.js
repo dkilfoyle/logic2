@@ -16,7 +16,7 @@ const indexBy = (array, prop) =>
 
 const getLocalId = x => x.substr(x.lastIndexOf("_") + 1);
 
-const EVALS_PER_STEP = 5;
+const EVALS_PER_STEP = 15;
 
 const not = x => ~x & 1;
 
@@ -163,8 +163,6 @@ const simulate = (gates, instances, modules, logger) => {
     // store tick or tock
     if (gatesLookup["main_clock"])
       gatesLookup["main_clock"].state = ~gatesLookup["main_clock"].state & 1;
-
-    console.log("Clock: ", clock);
 
     // run gate evaluation for this time step (not t=0)
     for (let i = 0; i < EVALS_PER_STEP; i++) {

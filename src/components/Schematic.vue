@@ -110,7 +110,6 @@ export default {
       .attr("width", 100)
       .attr("height", 100);
     this.g = new window.d3.HwSchematic(this.svg);
-    console.log(this.g);
     this.g.nodeRenderers.registerCustomRenderer(new SevenSegRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new BufferRenderer(this.g));
 
@@ -156,7 +155,7 @@ export default {
 
       // await here
       this.buildInstance(this.elkData);
-      console.log("elkData: ", this.elkData);
+      // console.log("elkData: ", this.elkData);
 
       const filter = this.g.defs
         .append("filter")
@@ -194,7 +193,7 @@ export default {
 
       this.g.bindData(this.elkData).then(() => {
         // add click handlers to all non-port gates
-        console.log("buildNetList bind data: ", this.elkData);
+        // console.log("buildNetList bind data: ", this.elkData);
         this.getAllInstances.forEach(instance =>
           instance.gates.forEach(gateId => {
             const node = this.g.root.select("#node-id-" + gateId + "_gate");
@@ -287,7 +286,8 @@ export default {
             sourcePort: gate.inputs[i],
             target: gate.id + "_gate",
             targetPort: gate.id + "_input_" + i,
-            hwMeta: { name: null, cssClass: gate.id + "_link" }
+            // hwMeta: { name: null, cssClass: gate.id + "_link" }
+            hwMeta: { name: null, cssClass: input + "_link" }
           };
           currentNet.edges.push(gate2gate);
           // console.log("-- g2g: ", gate2gate.id, this.stripReactive(gate2gate));
@@ -336,7 +336,7 @@ export default {
           //   output.substr(0, output.indexOf("-out"))
           // );
 
-          childNet.edges.push({
+          let gate2output = {
             id: output + "_" + portGate.inputs[0],
             type: "gate2output",
             source: portGate.inputs[0] + "_gate",
@@ -347,7 +347,9 @@ export default {
               name: null,
               cssClass: portGate.inputs[0] + "_link"
             }
-          });
+          };
+          childNet.edges.push(gate2output);
+          // console.log("gate2output: ", gate2output.id, gate2output);
         });
 
         // Build ports for childinstance and connect to currentinstance gates
@@ -367,7 +369,8 @@ export default {
             id: portGate.inputs[0] + "-" + input,
             type: "parent2input",
             hwMeta: {
-              name: null
+              name: null,
+              cssClass: portGate.inputs[0] + "_link"
             },
             source: currentInstance.inputs.some(x => x == portGate.inputs[0]) // is the input to the port gate itself a port of the parent instance rather than a local gate
               ? currentInstance.id
@@ -376,12 +379,8 @@ export default {
             target: this.getNamespace(input),
             targetPort: input
           };
-          parent2input.hwMeta.cssClass = currentInstance.inputs.some(
-            x => x == portGate.inputs[0]
-          ) // is the input to the port gate itself a port of the parent instance rather than a local gate
-            ? currentInstance.id
-            : portGate.inputs[0] + "_link"; // TODO: source might be a gate or a port - ie a pass through, is this handled??
           currentNet.edges.push(parent2input);
+          // console.log("parent2input: ", parent2input.id, parent2input);
         });
 
         this.buildInstance(childNet); // add any child instances of this child

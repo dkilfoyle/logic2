@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { tree, CommonToken } from "antlr4";
+import { tree, CommonToken, TerminalNode } from "antlr4";
 import { vlgListener } from "../grammar/vlgListener.js";
 
 class Listener extends vlgListener {
@@ -15,20 +15,26 @@ class Listener extends vlgListener {
   // utils
 
   addSemanticError(node, msg, severity = "warning") {
+    console.log(node, msg);
+    var token;
     if (node instanceof CommonToken) {
-      const token = node;
-      this.errors.push({
-        startLine: token.line,
-        startColumn: token.column + 1,
-        endLine: token.line,
-        endColumn: token.column + token.text.length + 1,
-        msg,
-        severity,
-      });
-    } else {
+      token = node;
+    }
+    else if (node.symbol instanceof CommonToken) {
+      token = node.symbol;
+    }
+    else {
       throw new Error("node is not commontoken", node);
       // ? check if terminal node and if so use ctx.symbol.line
     }
+    this.errors.push({
+      startLine: token.line,
+      startColumn: token.column + 1,
+      endLine: token.line,
+      endColumn: token.column + token.text.length + 1,
+      msg,
+      severity,
+    });
   }
 
   getModule(id) {

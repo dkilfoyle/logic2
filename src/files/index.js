@@ -8,6 +8,11 @@ import DeMux from "./demux.v";
 import RippleCounter from "./ripplecounter.v";
 import Simplify from "./simplify.v";
 import SumProducts from "./sumproducts.v";
+import DeMorgans from "./demorgan.v";
+import SRLatch from "./srlatch.v";
+import SRLatchComplement from "./srlatchcomplement.v";
+import SRLatchEnable from "./srlatchenable.v";
+import DLatch from "./dlatch.v";
 
 export const SourceTree = [
   {
@@ -18,33 +23,45 @@ export const SourceTree = [
     text: "Theory",
     children: [
       { text: "Simplify", value: Simplify },
-      { text: "SumProducts", value: SumProducts }
+      { text: "SumProducts", value: SumProducts },
+      { text: "DeMorgans", value: DeMorgans }
     ]
   },
   {
-    text: "Mux",
+    text: "Combinational",
     children: [
-      { text: "Mux2_1", value: Mux2_1 },
-      { text: "DeMux", value: DeMux }
+      {
+        text: "Multiplexers",
+        children: [
+          { text: "Mux2_1", value: Mux2_1 },
+          { text: "DeMux", value: DeMux }
+        ]
+      },
+      {
+        text: "En/Decoders",
+        children: [
+          { text: "OneHotDecoder", value: OneHotDecoder },
+          { text: "SevenSeg", value: SevenSeg }
+        ]
+      },
+      {
+        text: "Math",
+        children: [
+          { text: "BitAdder", value: BitAdder },
+          { text: "RippleCounter", value: RippleCounter }
+        ]
+      }
     ]
   },
+
   {
-    text: "Decoders",
-    children: [{ text: "OneHotDecoder", value: OneHotDecoder }]
-  },
-  {
-    text: "Encoders",
-    children: [{ text: "SevenSeg", value: SevenSeg }]
-  },
-  {
-    text: "Memory",
-    children: [{ text: "DFF", covaluede: DFF }]
-  },
-  {
-    text: "Math",
+    text: "Sequential",
     children: [
-      { text: "BitAdder", value: BitAdder },
-      { text: "RippleCounter", value: RippleCounter }
+      { text: "SRLatch", value: SRLatch },
+      { text: "SRLatchComplement", value: SRLatchComplement },
+      { text: "SRLatchEnable", value: SRLatchEnable },
+      { text: "DLatch", value: DLatch },
+      { text: "DFF", value: DFF }
     ]
   }
 ];
@@ -59,5 +76,10 @@ export const SourceFiles = {
   DeMux,
   RippleCounter,
   Simplify,
-  SumProducts
+  SumProducts,
+  DeMorgans,
+  SRLatch,
+  SRLatchComplement,
+  SRLatchEnable,
+  DLatch
 };
