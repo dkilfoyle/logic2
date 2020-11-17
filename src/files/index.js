@@ -13,6 +13,7 @@ import SRLatch from "./srlatch.v";
 import SRLatchComplement from "./srlatchcomplement.v";
 import SRLatchEnable from "./srlatchenable.v";
 import DLatch from "./dlatch.v";
+import DFlipFlop from "./dflipflop.v";
 
 export const SourceTree = [
   {
@@ -61,6 +62,7 @@ export const SourceTree = [
       { text: "SRLatchComplement", value: SRLatchComplement },
       { text: "SRLatchEnable", value: SRLatchEnable },
       { text: "DLatch", value: DLatch },
+      { text: "DFlipFlop", value: DFlipFlop },
       { text: "DFF", value: DFF }
     ]
   }
@@ -81,5 +83,6 @@ export const SourceFiles = {
   SRLatch,
   SRLatchComplement,
   SRLatchEnable,
-  DLatch
+  DLatch,
+  DFlipFlop
 };
