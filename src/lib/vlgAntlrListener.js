@@ -15,7 +15,7 @@ class Listener extends vlgListener {
   // utils
 
   addSemanticError(node, msg, severity = "warning") {
-    console.log(node, msg);
+    // console.log(node, msg);
     var token;
     if (node instanceof CommonToken) {
       token = node;
@@ -156,7 +156,10 @@ class Listener extends vlgListener {
       .time_assignment_list()
       .time_assignment()
       .forEach((x) => {
-        newClock.assignments.push({ id: x.id.text, value: parseInt(x.val.text) });
+        if (this.isInput(x.id.text))
+          newClock.assignments.push({ id: x.id.text, value: parseInt(x.val.text) });
+        else
+          this.addSemanticError(x.id, `'${x.id.text}' is not a valid main module input`);
       });
     }
   }

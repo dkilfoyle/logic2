@@ -14,6 +14,7 @@ import SRLatchComplement from "./srlatchcomplement.v";
 import SRLatchEnable from "./srlatchenable.v";
 import DLatch from "./dlatch.v";
 import DFlipFlop from "./dflipflop.v";
+import WindowController from "./windowcontroller.v";
 
 export const SourceTree = [
   {
@@ -65,6 +66,10 @@ export const SourceTree = [
       { text: "DFlipFlop", value: DFlipFlop },
       { text: "DFF", value: DFF }
     ]
+  },
+  {
+    text: "Finite State Machine",
+    children: [{ text: "WindowController", value: WindowController }]
   }
 ];
 
@@ -84,5 +89,6 @@ export const SourceFiles = {
   SRLatchComplement,
   SRLatchEnable,
   DLatch,
-  DFlipFlop
+  DFlipFlop,
+  WindowController
 };
