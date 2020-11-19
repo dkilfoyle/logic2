@@ -143,7 +143,7 @@ const simulate = (gates, instances, modules, logger) => {
     0
   );
 
-  if (gatesLookup["main_clock"]) gatesLookup["main_clock"].state = 0;
+  if (gatesLookup["main_clock"]) gatesLookup["main_clock"].state = 1;
 
   // run the clock
   for (let clock = 0; clock <= maxClock; clock++) {

@@ -36,40 +36,29 @@ endmodule
 
 module Main(
   input clock,
-  output Count0, Count1, Count2
+  output Q, Qn
 ); 
 
-  wire Qntf1, Qntf2, Qntf3;
-  buffer(Qntf1);
-  buffer(Qntf2);
-  buffer(Qntf3);
-
-  DFlipFlop tf1(
-    .d(Qntf1),
+  DFlipFlop dff(
+    .d(Qn),
 		.c(clock),
-		.Q(Count0),
-    .Qn(Qntf1)
+		.Q(Q),
+    .Qn(Qn)
   );
-
-  DFlipFlop tf2(
-    .d(Qntf2),
-		.c(Qntf1),
-		.Q(Count1),
-    .Qn(Qntf2)
-  );
-
-  DFlipFlop tf3(
-    .d(Qntf3),
-		.c(Qntf2),
-		.Q(Count2),
-    .Qn(Qntf3)
-  );
-
-  // TODO: d3-hwschematic custom node to convert bits to number
-  // wire X;
-  // number(X, Count0, Count1, Count2);
 
   test begin
-    #20;
+    #0 ;
+    #1 ;
+    #2 ;
+    #3 ;
+    #4 ;
+    #5 ;
+    #6 ;
+    #7 ;
+    #8 ;
+    #9 ;
+    #10;
+    #11;
+    #12;
   end
 endmodule

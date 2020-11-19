@@ -35,41 +35,39 @@ module DFlipFlop (
 endmodule
 
 module Main(
-  input clock,
-  output Count0, Count1, Count2
+  input clock, din,
+  output Out1, Out2, Out3, Out4
 ); 
 
-  wire Qntf1, Qntf2, Qntf3;
-  buffer(Qntf1);
-  buffer(Qntf2);
-  buffer(Qntf3);
-
-  DFlipFlop tf1(
-    .d(Qntf1),
+  DFlipFlop dff1(
+    .d(din),
 		.c(clock),
-		.Q(Count0),
-    .Qn(Qntf1)
+		.Q(Out1)
   );
 
-  DFlipFlop tf2(
-    .d(Qntf2),
-		.c(Qntf1),
-		.Q(Count1),
-    .Qn(Qntf2)
+  DFlipFlop dff2(
+    .d(Out1),
+		.c(clock),
+		.Q(Out2)
   );
 
-  DFlipFlop tf3(
-    .d(Qntf3),
-		.c(Qntf2),
-		.Q(Count2),
-    .Qn(Qntf3)
+  DFlipFlop dff3(
+    .d(Out2),
+		.c(clock),
+		.Q(Out3)
   );
 
-  // TODO: d3-hwschematic custom node to convert bits to number
-  // wire X;
-  // number(X, Count0, Count1, Count2);
+  DFlipFlop dff4(
+    .d(Out3),
+		.c(clock),
+		.Q(Out4)
+  );
 
   test begin
-    #20;
+    #0 { din = 1 };
+    #2 { din = 0 };
+    #4 { din = 0 };
+    #6 { din = 0 };
+    #8;
   end
 endmodule

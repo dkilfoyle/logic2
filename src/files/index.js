@@ -15,6 +15,8 @@ import SRLatchEnable from "./srlatchenable.v";
 import DLatch from "./dlatch.v";
 import DFlipFlop from "./dflipflop.v";
 import WindowController from "./windowcontroller.v";
+import ToggleFlopDivider from "./toggleflopdivider.v";
+import ShiftRegister from "./shiftregister.v";
 
 export const SourceTree = [
   {
@@ -48,10 +50,7 @@ export const SourceTree = [
       },
       {
         text: "Math",
-        children: [
-          { text: "BitAdder", value: BitAdder },
-          { text: "RippleCounter", value: RippleCounter }
-        ]
+        children: [{ text: "BitAdder", value: BitAdder }]
       }
     ]
   },
@@ -59,12 +58,25 @@ export const SourceTree = [
   {
     text: "Sequential",
     children: [
-      { text: "SRLatch", value: SRLatch },
-      { text: "SRLatchComplement", value: SRLatchComplement },
-      { text: "SRLatchEnable", value: SRLatchEnable },
-      { text: "DLatch", value: DLatch },
-      { text: "DFlipFlop", value: DFlipFlop },
-      { text: "DFF", value: DFF }
+      {
+        text: "Latches",
+        children: [
+          { text: "SRLatch", value: SRLatch },
+          { text: "SRLatchComplement", value: SRLatchComplement },
+          { text: "SRLatchEnable", value: SRLatchEnable },
+          { text: "DLatch", value: DLatch },
+          { text: "DFlipFlop", value: DFlipFlop },
+          { text: "DFF", value: DFF }
+        ]
+      },
+      {
+        text: "Circuits",
+        children: [
+          { text: "ToggleFlopDivider", value: ToggleFlopDivider },
+          { text: "RippleCounter", value: RippleCounter },
+          { text: "ShiftRegister", value: ShiftRegister }
+        ]
+      }
     ]
   },
   {
@@ -90,5 +102,7 @@ export const SourceFiles = {
   SRLatchEnable,
   DLatch,
   DFlipFlop,
-  WindowController
+  WindowController,
+  ToggleFlopDivider,
+  ShiftRegister
 };

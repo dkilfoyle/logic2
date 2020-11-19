@@ -305,7 +305,7 @@ export default {
         const childNet = {
           id: childInstanceID,
           hwMeta: {
-            name: childInstanceID,
+            name: childInstanceID.slice(5), // remove the main_ from name
             maxID: currentNet.hwMeta.maxId + 100
           },
           properties: {
@@ -438,6 +438,9 @@ body {
 
 .d3-hwschematic .node-operator text {
   font-size: 8pt;
+}
+.d3-hwschematic .node {
+  fill: #81d4fa2a;
 }
 
 .link-0 {

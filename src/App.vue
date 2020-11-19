@@ -15,24 +15,27 @@
         class="jp-FileBrowser"
         icon="ion-md-folder-open"
         :data="sourceTree"
-        :options="{ nodeIndent: 14 }"
+        :options="{ nodeIndent: 22 }"
         @node:selected="onCodeTreeSelection"
       >
         <span class="tree-text" slot-scope="{ node }">
           <template v-if="!node.hasChildren()">
-            <ion-icon name="document-text-outline"></ion-icon>
-            {{ node.text }}
+            <template v-if="!node.data.icon">
+              <ion-icon name="document-text-outline"></ion-icon>
+              {{ node.text }}
+            </template>
+
+            <template v-else>
+              <i :class="node.data.icon"></i>
+              {{ node.text }}
+            </template>
           </template>
 
           <template v-else>
             <i
-              :class="[
-                node.expanded()
-                  ? 'ion-android-folder-open'
-                  : 'ion-android-folder'
-              ]"
+              :class="node.expanded() ? 'fa fa-folder-open' : 'fa fa-folder-o'"
             ></i>
-            {{ node.text }}
+            <span style="margin-left: 8px">{{ node.text }}</span>
           </template>
         </span></liquor-tree
       >
