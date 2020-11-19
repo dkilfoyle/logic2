@@ -142,6 +142,9 @@ export default new Vuex.Store({
         selectedTime: 0
       });
     },
+    closeFile(state, payload) {
+      Vue.delete(state.openFiles, payload);
+    },
     setParseResult(state, payload) {
       state.openFiles[state.currentFileTab].parseResult = payload;
     },

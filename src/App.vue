@@ -4,6 +4,7 @@
       ref="lumino"
       @resize="onLuminoResize"
       @activated="onLuminoActivated"
+      @deleted="onLuminoDeleted"
       @newFile="addFileTab('Scratch')"
       @compile="compile"
       @simulate="simulate"
@@ -241,6 +242,11 @@ export default {
           e.id.substring(0, e.id.indexOf("_editor"))
         );
       }
+    },
+    onLuminoDeleted(e) {
+      // console.log("Lumino deleted: ", e);
+      this.$store.commit("closeFile", e.name);
+      this.$store.commit("setCurrentFileTab", "Scratch");
     },
     termWriteln(str) {
       this.$refs.terminal.setContent(str);

@@ -43,7 +43,7 @@ module Main(
   DFlipFlop dff(
     .d(d),
 		.c(c),
-		..Q(Qm)
+		.Q(Qm)
   );
 
   test begin

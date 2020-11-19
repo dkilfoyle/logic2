@@ -87,6 +87,23 @@ const evaluate = (components, componentLookup) => {
       return;
     }
 
+    // TODO: Refactor the code for different input lengths - this is hideous!!
+    if (component.inputs.length == 3) {
+      const cOut = componentLookup[component.inputs[2]];
+      component.state =
+        aOut === "x" || bOut === "x" || cOut === "x"
+          ? "x"
+          : logicFunctions[logicFn + "3"](aOut.state, bOut.state, cOut.state);
+      // console.log(
+      //   component.id,
+      //   logicFn,
+      //   aOut.state,
+      //   bOut.state,
+      //   component.state
+      // );
+      return;
+    }
+
     if (component.inputs.length == 7) {
       const cOut = componentLookup[component.inputs[2]];
       const dOut = componentLookup[component.inputs[3]];

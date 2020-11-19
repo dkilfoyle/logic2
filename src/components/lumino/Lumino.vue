@@ -340,7 +340,7 @@ export default {
       document
         .getElementById(id)
         .removeEventListener("lumino:activated", this.onWidgetActivated);
-      this.$emit("lumino:deleted", customEvent.detail);
+      this.$emit("deleted", customEvent.detail);
     }
   }
 };

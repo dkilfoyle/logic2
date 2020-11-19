@@ -12,7 +12,7 @@ module SingleStage (
   and( w1, a, b );
   and( w2, a, cin );
   and( w3, b, cin );
-  or( cout, w1, w2, w3 );
+  or( cout, w1, w2, w3 ); 
 
   xor( s, a, b, cin );
 
