@@ -97,6 +97,10 @@ export default {
     this.terminal.dispose();
   },
 
+  // updated() {
+  //   this.open();
+  // },
+
   methods: {
     open() {
       this.terminal = new Terminal({

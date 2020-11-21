@@ -190,6 +190,9 @@ export default {
   created() {
     this.addFileTab("Scratch");
   },
+  mounted() {
+    setTimeout(() => this.about(), 3000);
+  },
   computed: {
     ...mapGetters(["getInstanceTree"])
   },
