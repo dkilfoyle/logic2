@@ -17,6 +17,7 @@ import DFlipFlop from "./dflipflop.v";
 import WindowController from "./windowcontroller.v";
 import ToggleFlopDivider from "./toggleflopdivider.v";
 import ShiftRegister from "./shiftregister.v";
+import BinaryUp from "./binaryup.v";
 
 export const SourceTree = [
   {
@@ -81,7 +82,18 @@ export const SourceTree = [
   },
   {
     text: "Finite State Machine",
-    children: [{ text: "WindowController", value: WindowController }]
+    children: [
+      { text: "WindowController", value: WindowController },
+      {
+        text: "Counters",
+        children: [
+          {
+            text: "BinaryUp",
+            value: BinaryUp
+          }
+        ]
+      }
+    ]
   }
 ];
 
@@ -104,5 +116,6 @@ export const SourceFiles = {
   DFlipFlop,
   WindowController,
   ToggleFlopDivider,
-  ShiftRegister
+  ShiftRegister,
+  BinaryUp
 };

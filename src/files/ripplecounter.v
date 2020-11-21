@@ -65,9 +65,8 @@ module Main(
     .Qn(Qntf3)
   );
 
-  // TODO: d3-hwschematic custom node to convert bits to number
-  // wire X;
-  // number(X, Count0, Count1, Count2);
+  wire dec;
+  number(dec, Count0, Count1, Count2);
 
   test begin
     #20;

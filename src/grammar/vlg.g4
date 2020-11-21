@@ -60,7 +60,8 @@ gate_type:
 	| 'control'
 	| 'response'
 	| 'buffer'
-	| 'sevenseg';
+	| 'sevenseg'
+	| 'number';
 
 continuous_assign: 'assign' list_of_assignments ';';
 list_of_assignments: assignment (',' assignment)*;

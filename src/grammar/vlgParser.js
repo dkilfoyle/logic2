@@ -9,7 +9,7 @@ var grammarFileName = "vlg.g4";
 
 
 var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
-    "\u0003/\u00fc\u0004\u0002\t\u0002\u0004\u0003\t\u0003\u0004\u0004\t",
+    "\u00030\u00fc\u0004\u0002\t\u0002\u0004\u0003\t\u0003\u0004\u0004\t",
     "\u0004\u0004\u0005\t\u0005\u0004\u0006\t\u0006\u0004\u0007\t\u0007\u0004",
     "\b\t\b\u0004\t\t\t\u0004\n\t\n\u0004\u000b\t\u000b\u0004\f\t\f\u0004",
     "\r\t\r\u0004\u000e\t\u000e\u0004\u000f\t\u000f\u0004\u0010\t\u0010\u0004",
@@ -50,7 +50,7 @@ var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
     "\u001c\u00f8\u000b\u001c\u0003\u001d\u0003\u001d\u0003\u001d\u0002\u0003",
     ".\u001e\u0002\u0004\u0006\b\n\f\u000e\u0010\u0012\u0014\u0016\u0018",
     "\u001a\u001c\u001e \"$&(*,.02468\u0002\u0006\u0003\u0002\t\n\u0003\u0002",
-    "\u0012\u001c\u0004\u0002!#\'(\u0003\u0002./\u0002\u00f4\u0002:\u0003",
+    "\u0012\u001d\u0004\u0002\"$()\u0003\u0002/0\u0002\u00f4\u0002:\u0003",
     "\u0002\u0002\u0002\u0004@\u0003\u0002\u0002\u0002\u0006F\u0003\u0002",
     "\u0002\u0002\bW\u0003\u0002\u0002\u0002\ne\u0003\u0002\u0002\u0002\f",
     "p\u0003\u0002\u0002\u0002\u000es\u0003\u0002\u0002\u0002\u0010y\u0003",
@@ -69,14 +69,14 @@ var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
     ">\u0003\u0002\u0002\u0002@A\u0003\u0002\u0002\u0002AC\u0003\u0002\u0002",
     "\u0002B@\u0003\u0002\u0002\u0002CD\u0005\u0006\u0004\u0002DE\u0007\u0002",
     "\u0002\u0003E\u0005\u0003\u0002\u0002\u0002FG\u0007\u0003\u0002\u0002",
-    "GI\u0007,\u0002\u0002HJ\u0005\n\u0006\u0002IH\u0003\u0002\u0002\u0002",
+    "GI\u0007-\u0002\u0002HJ\u0005\n\u0006\u0002IH\u0003\u0002\u0002\u0002",
     "IJ\u0003\u0002\u0002\u0002JK\u0003\u0002\u0002\u0002KO\u0007\u0004\u0002",
     "\u0002LN\u0005\u0010\t\u0002ML\u0003\u0002\u0002\u0002NQ\u0003\u0002",
     "\u0002\u0002OM\u0003\u0002\u0002\u0002OP\u0003\u0002\u0002\u0002PS\u0003",
     "\u0002\u0002\u0002QO\u0003\u0002\u0002\u0002RT\u0005\u0012\n\u0002S",
     "R\u0003\u0002\u0002\u0002ST\u0003\u0002\u0002\u0002TU\u0003\u0002\u0002",
     "\u0002UV\u0007\u0005\u0002\u0002V\u0007\u0003\u0002\u0002\u0002WX\u0007",
-    "\u0003\u0002\u0002XZ\u0007-\u0002\u0002Y[\u0005\n\u0006\u0002ZY\u0003",
+    "\u0003\u0002\u0002XZ\u0007.\u0002\u0002Y[\u0005\n\u0006\u0002ZY\u0003",
     "\u0002\u0002\u0002Z[\u0003\u0002\u0002\u0002[\\\u0003\u0002\u0002\u0002",
     "\\`\u0007\u0004\u0002\u0002]_\u0005\u0010\t\u0002^]\u0003\u0002\u0002",
     "\u0002_b\u0003\u0002\u0002\u0002`^\u0003\u0002\u0002\u0002`a\u0003\u0002",
@@ -100,47 +100,47 @@ var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
     "\u0018\r\u0002\u0087\u0086\u0003\u0002\u0002\u0002\u0087\u0088\u0003",
     "\u0002\u0002\u0002\u0088\u0089\u0003\u0002\u0002\u0002\u0089\u008a\u0007",
     "\u0004\u0002\u0002\u008a\u0015\u0003\u0002\u0002\u0002\u008b\u008c\u0007",
-    "\u000e\u0002\u0002\u008c\u008d\u0007.\u0002\u0002\u008d\u0017\u0003",
+    "\u000e\u0002\u0002\u008c\u008d\u0007/\u0002\u0002\u008d\u0017\u0003",
     "\u0002\u0002\u0002\u008e\u008f\u0007\u000f\u0002\u0002\u008f\u0094\u0005",
     "\u001a\u000e\u0002\u0090\u0091\u0007\u0007\u0002\u0002\u0091\u0093\u0005",
     "\u001a\u000e\u0002\u0092\u0090\u0003\u0002\u0002\u0002\u0093\u0096\u0003",
     "\u0002\u0002\u0002\u0094\u0092\u0003\u0002\u0002\u0002\u0094\u0095\u0003",
     "\u0002\u0002\u0002\u0095\u0097\u0003\u0002\u0002\u0002\u0096\u0094\u0003",
     "\u0002\u0002\u0002\u0097\u0098\u0007\u0010\u0002\u0002\u0098\u0019\u0003",
-    "\u0002\u0002\u0002\u0099\u009a\u0007-\u0002\u0002\u009a\u009b\u0007",
-    "$\u0002\u0002\u009b\u009c\u0007.\u0002\u0002\u009c\u001b\u0003\u0002",
+    "\u0002\u0002\u0002\u0099\u009a\u0007.\u0002\u0002\u009a\u009b\u0007",
+    "%\u0002\u0002\u009b\u009c\u0007/\u0002\u0002\u009c\u001b\u0003\u0002",
     "\u0002\u0002\u009d\u009e\u0007\u0011\u0002\u0002\u009e\u009f\u00056",
     "\u001c\u0002\u009f\u00a0\u0007\u0004\u0002\u0002\u00a0\u001d\u0003\u0002",
-    "\u0002\u0002\u00a1\u00a3\u0005 \u0011\u0002\u00a2\u00a4\u0007-\u0002",
+    "\u0002\u0002\u00a1\u00a3\u0005 \u0011\u0002\u00a2\u00a4\u0007.\u0002",
     "\u0002\u00a3\u00a2\u0003\u0002\u0002\u0002\u00a3\u00a4\u0003\u0002\u0002",
     "\u0002\u00a4\u00a5\u0003\u0002\u0002\u0002\u00a5\u00a6\u0007\u0006\u0002",
     "\u0002\u00a6\u00a7\u00056\u001c\u0002\u00a7\u00a8\u0007\b\u0002\u0002",
     "\u00a8\u00a9\u0007\u0004\u0002\u0002\u00a9\u001f\u0003\u0002\u0002\u0002",
     "\u00aa\u00ab\t\u0003\u0002\u0002\u00ab!\u0003\u0002\u0002\u0002\u00ac",
-    "\u00ad\u0007\u001d\u0002\u0002\u00ad\u00ae\u0005$\u0013\u0002\u00ae",
+    "\u00ad\u0007\u001e\u0002\u0002\u00ad\u00ae\u0005$\u0013\u0002\u00ae",
     "\u00af\u0007\u0004\u0002\u0002\u00af#\u0003\u0002\u0002\u0002\u00b0",
     "\u00b5\u0005&\u0014\u0002\u00b1\u00b2\u0007\u0007\u0002\u0002\u00b2",
     "\u00b4\u0005&\u0014\u0002\u00b3\u00b1\u0003\u0002\u0002\u0002\u00b4",
     "\u00b7\u0003\u0002\u0002\u0002\u00b5\u00b3\u0003\u0002\u0002\u0002\u00b5",
     "\u00b6\u0003\u0002\u0002\u0002\u00b6%\u0003\u0002\u0002\u0002\u00b7",
-    "\u00b5\u0003\u0002\u0002\u0002\u00b8\u00b9\u0007-\u0002\u0002\u00b9",
-    "\u00ba\u0007$\u0002\u0002\u00ba\u00bb\u0005.\u0018\u0002\u00bb\'\u0003",
-    "\u0002\u0002\u0002\u00bc\u00bd\u0007-\u0002\u0002\u00bd\u00be\u0007",
-    "-\u0002\u0002\u00be\u00bf\u0005*\u0016\u0002\u00bf\u00c0\u0007\u0004",
+    "\u00b5\u0003\u0002\u0002\u0002\u00b8\u00b9\u0007.\u0002\u0002\u00b9",
+    "\u00ba\u0007%\u0002\u0002\u00ba\u00bb\u0005.\u0018\u0002\u00bb\'\u0003",
+    "\u0002\u0002\u0002\u00bc\u00bd\u0007.\u0002\u0002\u00bd\u00be\u0007",
+    ".\u0002\u0002\u00be\u00bf\u0005*\u0016\u0002\u00bf\u00c0\u0007\u0004",
     "\u0002\u0002\u00c0)\u0003\u0002\u0002\u0002\u00c1\u00c2\u0007\u0006",
     "\u0002\u0002\u00c2\u00c7\u0005,\u0017\u0002\u00c3\u00c4\u0007\u0007",
     "\u0002\u0002\u00c4\u00c6\u0005,\u0017\u0002\u00c5\u00c3\u0003\u0002",
     "\u0002\u0002\u00c6\u00c9\u0003\u0002\u0002\u0002\u00c7\u00c5\u0003\u0002",
     "\u0002\u0002\u00c7\u00c8\u0003\u0002\u0002\u0002\u00c8\u00ca\u0003\u0002",
     "\u0002\u0002\u00c9\u00c7\u0003\u0002\u0002\u0002\u00ca\u00cb\u0007\b",
-    "\u0002\u0002\u00cb+\u0003\u0002\u0002\u0002\u00cc\u00cd\u0007\u001e",
-    "\u0002\u0002\u00cd\u00ce\u0007-\u0002\u0002\u00ce\u00cf\u0007\u0006",
-    "\u0002\u0002\u00cf\u00d0\u0007-\u0002\u0002\u00d0\u00d1\u0007\b\u0002",
+    "\u0002\u0002\u00cb+\u0003\u0002\u0002\u0002\u00cc\u00cd\u0007\u001f",
+    "\u0002\u0002\u00cd\u00ce\u0007.\u0002\u0002\u00ce\u00cf\u0007\u0006",
+    "\u0002\u0002\u00cf\u00d0\u0007.\u0002\u0002\u00d0\u00d1\u0007\b\u0002",
     "\u0002\u00d1-\u0003\u0002\u0002\u0002\u00d2\u00d3\b\u0018\u0001\u0002",
-    "\u00d3\u00d4\u0007 \u0002\u0002\u00d4\u00db\u0005.\u0018\u0006\u00d5",
+    "\u00d3\u00d4\u0007!\u0002\u0002\u00d4\u00db\u0005.\u0018\u0006\u00d5",
     "\u00d6\u0007\u0006\u0002\u0002\u00d6\u00d7\u0005.\u0018\u0002\u00d7",
     "\u00d8\u0007\b\u0002\u0002\u00d8\u00db\u0003\u0002\u0002\u0002\u00d9",
-    "\u00db\u0007-\u0002\u0002\u00da\u00d2\u0003\u0002\u0002\u0002\u00da",
+    "\u00db\u0007.\u0002\u0002\u00da\u00d2\u0003\u0002\u0002\u0002\u00da",
     "\u00d5\u0003\u0002\u0002\u0002\u00da\u00d9\u0003\u0002\u0002\u0002\u00db",
     "\u00e2\u0003\u0002\u0002\u0002\u00dc\u00dd\f\u0005\u0002\u0002\u00dd",
     "\u00de\u00050\u0019\u0002\u00de\u00df\u0005.\u0018\u0006\u00df\u00e1",
@@ -148,13 +148,13 @@ var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
     "\u0003\u0002\u0002\u0002\u00e2\u00e0\u0003\u0002\u0002\u0002\u00e2\u00e3",
     "\u0003\u0002\u0002\u0002\u00e3/\u0003\u0002\u0002\u0002\u00e4\u00e2",
     "\u0003\u0002\u0002\u0002\u00e5\u00e6\t\u0004\u0002\u0002\u00e61\u0003",
-    "\u0002\u0002\u0002\u00e7\u00e8\u0007-\u0002\u0002\u00e83\u0003\u0002",
+    "\u0002\u0002\u0002\u00e7\u00e8\u0007.\u0002\u0002\u00e83\u0003\u0002",
     "\u0002\u0002\u00e9\u00ee\u00052\u001a\u0002\u00ea\u00eb\u0007\u0007",
     "\u0002\u0002\u00eb\u00ed\u00052\u001a\u0002\u00ec\u00ea\u0003\u0002",
     "\u0002\u0002\u00ed\u00f0\u0003\u0002\u0002\u0002\u00ee\u00ec\u0003\u0002",
     "\u0002\u0002\u00ee\u00ef\u0003\u0002\u0002\u0002\u00ef5\u0003\u0002",
-    "\u0002\u0002\u00f0\u00ee\u0003\u0002\u0002\u0002\u00f1\u00f6\u0007-",
-    "\u0002\u0002\u00f2\u00f3\u0007\u0007\u0002\u0002\u00f3\u00f5\u0007-",
+    "\u0002\u0002\u00f0\u00ee\u0003\u0002\u0002\u0002\u00f1\u00f6\u0007.",
+    "\u0002\u0002\u00f2\u00f3\u0007\u0007\u0002\u0002\u00f3\u00f5\u0007.",
     "\u0002\u0002\u00f4\u00f2\u0003\u0002\u0002\u0002\u00f5\u00f8\u0003\u0002",
     "\u0002\u0002\u00f6\u00f4\u0003\u0002\u0002\u0002\u00f6\u00f7\u0003\u0002",
     "\u0002\u0002\u00f77\u0003\u0002\u0002\u0002\u00f8\u00f6\u0003\u0002",
@@ -173,15 +173,16 @@ var literalNames = [ null, "'module'", "';'", "'endmodule'", "'('", "','",
                      "')'", "'input'", "'output'", "'test'", "'begin'", 
                      "'end'", "'#'", "'{'", "'}'", "'wire'", "'and'", "'or'", 
                      "'xor'", "'nand'", "'nor'", "'xnor'", "'not'", "'control'", 
-                     "'response'", "'buffer'", "'sevenseg'", "'assign'", 
-                     "'.'", "'!'", "'~'", "'~&'", "'~|'", "'^'", "'='", 
-                     "'+'", "'-'", "'&'", "'|'", null, null, null, "'Main'" ];
+                     "'response'", "'buffer'", "'sevenseg'", "'number'", 
+                     "'assign'", "'.'", "'!'", "'~'", "'~&'", "'~|'", "'^'", 
+                     "'='", "'+'", "'-'", "'&'", "'|'", null, null, null, 
+                     "'Main'" ];
 
 var symbolicNames = [ null, null, null, null, null, null, null, null, null, 
                       null, null, null, null, null, null, null, null, null, 
                       null, null, null, null, null, null, null, null, null, 
-                      null, null, "NOT", "NEG", "NAND", "NOR", "XOR", "ASSIGN", 
-                      "PLUS", "MINUS", "AND", "OR", "ONE_LINE_COMMENT", 
+                      null, null, null, "NOT", "NEG", "NAND", "NOR", "XOR", 
+                      "ASSIGN", "PLUS", "MINUS", "AND", "OR", "ONE_LINE_COMMENT", 
                       "BLOCK_COMMENT", "WHITE_SPACE", "MAIN", "IDENTIFIER", 
                       "UNSIGNED_NUMBER", "BINARY_NUMBER" ];
 
@@ -241,23 +242,24 @@ vlgParser.T__24 = 25;
 vlgParser.T__25 = 26;
 vlgParser.T__26 = 27;
 vlgParser.T__27 = 28;
-vlgParser.NOT = 29;
-vlgParser.NEG = 30;
-vlgParser.NAND = 31;
-vlgParser.NOR = 32;
-vlgParser.XOR = 33;
-vlgParser.ASSIGN = 34;
-vlgParser.PLUS = 35;
-vlgParser.MINUS = 36;
-vlgParser.AND = 37;
-vlgParser.OR = 38;
-vlgParser.ONE_LINE_COMMENT = 39;
-vlgParser.BLOCK_COMMENT = 40;
-vlgParser.WHITE_SPACE = 41;
-vlgParser.MAIN = 42;
-vlgParser.IDENTIFIER = 43;
-vlgParser.UNSIGNED_NUMBER = 44;
-vlgParser.BINARY_NUMBER = 45;
+vlgParser.T__28 = 29;
+vlgParser.NOT = 30;
+vlgParser.NEG = 31;
+vlgParser.NAND = 32;
+vlgParser.NOR = 33;
+vlgParser.XOR = 34;
+vlgParser.ASSIGN = 35;
+vlgParser.PLUS = 36;
+vlgParser.MINUS = 37;
+vlgParser.AND = 38;
+vlgParser.OR = 39;
+vlgParser.ONE_LINE_COMMENT = 40;
+vlgParser.BLOCK_COMMENT = 41;
+vlgParser.WHITE_SPACE = 42;
+vlgParser.MAIN = 43;
+vlgParser.IDENTIFIER = 44;
+vlgParser.UNSIGNED_NUMBER = 45;
+vlgParser.BINARY_NUMBER = 46;
 
 vlgParser.RULE_source_text = 0;
 vlgParser.RULE_modules = 1;
@@ -549,7 +551,7 @@ vlgParser.prototype.module_main = function() {
         this.state = 77;
         this._errHandler.sync(this);
         _la = this._input.LA(1);
-        while(((((_la - 15)) & ~0x1f) == 0 && ((1 << (_la - 15)) & ((1 << (vlgParser.T__14 - 15)) | (1 << (vlgParser.T__15 - 15)) | (1 << (vlgParser.T__16 - 15)) | (1 << (vlgParser.T__17 - 15)) | (1 << (vlgParser.T__18 - 15)) | (1 << (vlgParser.T__19 - 15)) | (1 << (vlgParser.T__20 - 15)) | (1 << (vlgParser.T__21 - 15)) | (1 << (vlgParser.T__22 - 15)) | (1 << (vlgParser.T__23 - 15)) | (1 << (vlgParser.T__24 - 15)) | (1 << (vlgParser.T__25 - 15)) | (1 << (vlgParser.T__26 - 15)) | (1 << (vlgParser.IDENTIFIER - 15)))) !== 0)) {
+        while(((((_la - 15)) & ~0x1f) == 0 && ((1 << (_la - 15)) & ((1 << (vlgParser.T__14 - 15)) | (1 << (vlgParser.T__15 - 15)) | (1 << (vlgParser.T__16 - 15)) | (1 << (vlgParser.T__17 - 15)) | (1 << (vlgParser.T__18 - 15)) | (1 << (vlgParser.T__19 - 15)) | (1 << (vlgParser.T__20 - 15)) | (1 << (vlgParser.T__21 - 15)) | (1 << (vlgParser.T__22 - 15)) | (1 << (vlgParser.T__23 - 15)) | (1 << (vlgParser.T__24 - 15)) | (1 << (vlgParser.T__25 - 15)) | (1 << (vlgParser.T__26 - 15)) | (1 << (vlgParser.T__27 - 15)) | (1 << (vlgParser.IDENTIFIER - 15)))) !== 0)) {
             this.state = 74;
             this.module_item();
             this.state = 79;
@@ -665,7 +667,7 @@ vlgParser.prototype.module = function() {
         this.state = 94;
         this._errHandler.sync(this);
         _la = this._input.LA(1);
-        while(((((_la - 15)) & ~0x1f) == 0 && ((1 << (_la - 15)) & ((1 << (vlgParser.T__14 - 15)) | (1 << (vlgParser.T__15 - 15)) | (1 << (vlgParser.T__16 - 15)) | (1 << (vlgParser.T__17 - 15)) | (1 << (vlgParser.T__18 - 15)) | (1 << (vlgParser.T__19 - 15)) | (1 << (vlgParser.T__20 - 15)) | (1 << (vlgParser.T__21 - 15)) | (1 << (vlgParser.T__22 - 15)) | (1 << (vlgParser.T__23 - 15)) | (1 << (vlgParser.T__24 - 15)) | (1 << (vlgParser.T__25 - 15)) | (1 << (vlgParser.T__26 - 15)) | (1 << (vlgParser.IDENTIFIER - 15)))) !== 0)) {
+        while(((((_la - 15)) & ~0x1f) == 0 && ((1 << (_la - 15)) & ((1 << (vlgParser.T__14 - 15)) | (1 << (vlgParser.T__15 - 15)) | (1 << (vlgParser.T__16 - 15)) | (1 << (vlgParser.T__17 - 15)) | (1 << (vlgParser.T__18 - 15)) | (1 << (vlgParser.T__19 - 15)) | (1 << (vlgParser.T__20 - 15)) | (1 << (vlgParser.T__21 - 15)) | (1 << (vlgParser.T__22 - 15)) | (1 << (vlgParser.T__23 - 15)) | (1 << (vlgParser.T__24 - 15)) | (1 << (vlgParser.T__25 - 15)) | (1 << (vlgParser.T__26 - 15)) | (1 << (vlgParser.T__27 - 15)) | (1 << (vlgParser.IDENTIFIER - 15)))) !== 0)) {
             this.state = 91;
             this.module_item();
             this.state = 96;
@@ -1119,12 +1121,13 @@ vlgParser.prototype.module_item = function() {
         case vlgParser.T__23:
         case vlgParser.T__24:
         case vlgParser.T__25:
+        case vlgParser.T__26:
             localctx = new GateContext(this, localctx);
             this.enterOuterAlt(localctx, 2);
             this.state = 116;
             this.gate_declaration();
             break;
-        case vlgParser.T__26:
+        case vlgParser.T__27:
             localctx = new AssignContext(this, localctx);
             this.enterOuterAlt(localctx, 3);
             this.state = 117;
@@ -1790,7 +1793,7 @@ vlgParser.prototype.gate_type = function() {
         this.enterOuterAlt(localctx, 1);
         this.state = 168;
         _la = this._input.LA(1);
-        if(!((((_la) & ~0x1f) == 0 && ((1 << _la) & ((1 << vlgParser.T__15) | (1 << vlgParser.T__16) | (1 << vlgParser.T__17) | (1 << vlgParser.T__18) | (1 << vlgParser.T__19) | (1 << vlgParser.T__20) | (1 << vlgParser.T__21) | (1 << vlgParser.T__22) | (1 << vlgParser.T__23) | (1 << vlgParser.T__24) | (1 << vlgParser.T__25))) !== 0))) {
+        if(!((((_la) & ~0x1f) == 0 && ((1 << _la) & ((1 << vlgParser.T__15) | (1 << vlgParser.T__16) | (1 << vlgParser.T__17) | (1 << vlgParser.T__18) | (1 << vlgParser.T__19) | (1 << vlgParser.T__20) | (1 << vlgParser.T__21) | (1 << vlgParser.T__22) | (1 << vlgParser.T__23) | (1 << vlgParser.T__24) | (1 << vlgParser.T__25) | (1 << vlgParser.T__26))) !== 0))) {
         this._errHandler.recoverInline(this);
         }
         else {
@@ -1864,7 +1867,7 @@ vlgParser.prototype.continuous_assign = function() {
     try {
         this.enterOuterAlt(localctx, 1);
         this.state = 170;
-        this.match(vlgParser.T__26);
+        this.match(vlgParser.T__27);
         this.state = 171;
         this.list_of_assignments();
         this.state = 172;
@@ -2294,7 +2297,7 @@ vlgParser.prototype.named_port_connection = function() {
     try {
         this.enterOuterAlt(localctx, 1);
         this.state = 202;
-        this.match(vlgParser.T__27);
+        this.match(vlgParser.T__28);
         this.state = 203;
         localctx.port = this.match(vlgParser.IDENTIFIER);
         this.state = 204;
@@ -2653,7 +2656,7 @@ vlgParser.prototype.binary_operator = function() {
         this.enterOuterAlt(localctx, 1);
         this.state = 227;
         _la = this._input.LA(1);
-        if(!(((((_la - 31)) & ~0x1f) == 0 && ((1 << (_la - 31)) & ((1 << (vlgParser.NAND - 31)) | (1 << (vlgParser.NOR - 31)) | (1 << (vlgParser.XOR - 31)) | (1 << (vlgParser.AND - 31)) | (1 << (vlgParser.OR - 31)))) !== 0))) {
+        if(!(((((_la - 32)) & ~0x1f) == 0 && ((1 << (_la - 32)) & ((1 << (vlgParser.NAND - 32)) | (1 << (vlgParser.NOR - 32)) | (1 << (vlgParser.XOR - 32)) | (1 << (vlgParser.AND - 32)) | (1 << (vlgParser.OR - 32)))) !== 0))) {
         this._errHandler.recoverInline(this);
         }
         else {

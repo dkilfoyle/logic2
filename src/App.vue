@@ -52,11 +52,22 @@
         @node:selected="onInstanceTreeSelection"
       ></liquor-tree>
 
+      <TruthTable
+        id="truthtable"
+        area="main"
+        :closable="false"
+        title="Truth Table"
+        icon="ion-md-document"
+        ref="truthtable"
+      ></TruthTable>
+
       <template v-for="openFile in $store.state.openFiles">
         <Editor
           :id="openFile.name + '_editor'"
           :key="openFile.name"
           area="main"
+          dock-ref="truthtable"
+          dock-mode="tab-after"
           :closable="openFile.name !== 'Scratch'"
           :title="openFile.name"
           icon="ion-md-document"
@@ -140,6 +151,7 @@ import Traces from "./components/Traces.vue";
 import Schematic from "./components/Schematic.vue";
 import LiquorTree from "liquor-tree";
 import TerminalView from "./components/TerminalView";
+import TruthTable from "./components/TruthTable";
 
 import { mapGetters } from "vuex";
 
@@ -163,7 +175,8 @@ export default {
     LiquorTree,
     Gates,
     Traces,
-    Schematic
+    Schematic,
+    TruthTable
   },
   mixins: [UtilsMixin],
   data() {
@@ -246,7 +259,7 @@ export default {
     onLuminoDeleted(e) {
       // console.log("Lumino deleted: ", e);
       this.$store.commit("closeFile", e.name);
-      this.$store.commit("setCurrentFileTab", "Scratch");
+      // this.$store.commit("setCurrentFileTab", "Scratch"); // unnecessary because luminoActivated is called?
     },
     termWriteln(str) {
       this.$refs.terminal.setContent(str);

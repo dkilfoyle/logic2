@@ -26,6 +26,7 @@ import UtilsMixin from "../mixins/utils";
 import { mapGetters } from "vuex";
 
 import SevenSegRenderer from "./renderers/sevenseg.js";
+import NumberRenderer from "./renderers/number.js";
 import BufferRenderer from "./renderers/buffer.js";
 
 export default {
@@ -62,6 +63,14 @@ export default {
               element.classList.add("segment-" + inputValues[i]);
             }
           });
+        });
+
+      this.getAllGates
+        .filter(gate => gate.logic == "number")
+        .forEach(gate => {
+          let id = gate.id + "_gate_number";
+          let element = document.querySelector("#svgSchematic #" + id);
+          if (element) element.textContent = timestate[gate.id];
         });
 
       for (const [gateid, gatevalue] of Object.entries(
@@ -111,6 +120,7 @@ export default {
       .attr("height", 100);
     this.g = new window.d3.HwSchematic(this.svg);
     this.g.nodeRenderers.registerCustomRenderer(new SevenSegRenderer(this.g));
+    this.g.nodeRenderers.registerCustomRenderer(new NumberRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new BufferRenderer(this.g));
 
     var zoom = d3.zoom();
@@ -441,6 +451,10 @@ body {
 }
 .d3-hwschematic .node {
   fill: #81d4fa2a;
+}
+
+.d3-hwschematic .node-number text {
+  font-size: 12pt;
 }
 
 .link-0 {
