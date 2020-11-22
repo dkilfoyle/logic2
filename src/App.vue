@@ -53,17 +53,22 @@
       ></liquor-tree>
 
       <TruthTable
-        id="truthtable"
+        id="truthTable"
         area="main"
         :closable="false"
         title="Truth Table"
         icon="ion-md-document"
-        ref="truthtable"
+        ref="truthTable"
+        @passLint="onPassLint"
+        @failLint="onFailLint"
+        @compile="compile"
+        @simulate="simulate"
       ></TruthTable>
 
-      <template v-for="openFile in $store.state.openFiles">
+      <template v-for="openFile in $store.getters.openEditorFiles">
         <Editor
           :id="openFile.name + '_editor'"
+          :name="openFile.name"
           :key="openFile.name"
           area="main"
           dock-ref="truthtable"
@@ -74,6 +79,7 @@
           :ref="openFile.name + '_editor'"
           v-model="openFile.code"
           @passLint="onPassLint"
+          @failLint="onFailLint"
           @onDidChangeCursorPosition="onChangeCursorPosition"
           @onDidChangeModelContent="onChangeEditorModelContent"
           @compile="compile"
@@ -188,6 +194,10 @@ export default {
     };
   },
   created() {
+    this.$store.commit("openFile", {
+      newSourceName: "TruthTable",
+      code: ""
+    });
     this.addFileTab("Scratch");
   },
   mounted() {
@@ -239,6 +249,8 @@ export default {
         this.$refs[e.id][0].resize();
       }
 
+      if (e.id == "truthTable") this.$refs.truthTable.resize();
+
       if (e.id == "terminalView") this.$refs.terminal.fit();
       if (e.id == "traces") {
         this.$refs.traces.resize(e.msg.width, e.msg.height);
@@ -258,6 +270,10 @@ export default {
           e.id.substring(0, e.id.indexOf("_editor"))
         );
       }
+      if (e.id == "truthTable") {
+        this.$refs.truthTable.focus();
+        this.$store.commit("setCurrentFileTab", "TruthTable");
+      }
     },
     onLuminoDeleted(e) {
       // console.log("Lumino deleted: ", e);
@@ -267,7 +283,13 @@ export default {
     termWriteln(str) {
       this.$refs.terminal.setContent(str);
     },
+    onFailLint(e) {
+      console.log("onFailLint: ", e);
+      this.$store.commit("setStatus", "Parse Error");
+    },
     onPassLint(e) {
+      console.log("onPassLint: ", e);
+
       // if simulate on pass lint
       this.$store.commit("setParseResult", { ...e.parseResult });
       this.$store.commit("setWalkResult", { ...e.walkResult });

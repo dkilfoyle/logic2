@@ -25,6 +25,7 @@
     "liquor-tree": "^0.2.70",
     "monaco-editor-webpack-plugin": "^1.9.0",
     "raw-loader": "^4.0.2",
+    "template-string-loader": "0.0.4",
     "vue": "^2.6.11",
     "vue-monaco": "^1.2.1",
     "vuex": "^3.4.0",

@@ -12,6 +12,9 @@ export default new Vuex.Store({
   getters: {
     currentFile: state =>
       state.currentFileTab != "" ? state.openFiles[state.currentFileTab] : {},
+
+    openEditorFiles: state =>
+      Object.values(state.openFiles).filter(file => file.name != "TruthTable"),
     isCompiled: (state, getters) => {
       return (
         getters.currentFile &&

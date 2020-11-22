@@ -1,68 +1,73 @@
 <template>
-  <div class="editorContainer">
-    <nav class="level dktoolbar">
-      <div class="level-left">
-        <div class="level-item dkbuttongroup">
-          <button class="button is-small ">
-            <span class="icon is-small">
-              <i class="fa fa-cut"></i>
-            </span>
-          </button>
-          <button class="button is-small is-light">
-            <span class="icon is-small">
-              <i class="fa fa-copy"></i>
-            </span>
-          </button>
-          <button class="button is-small is-light">
-            <span class="icon is-small">
-              <i class="fa fa-paste"></i>
-            </span>
-          </button>
+  <div class="columns" style="height:100%">
+    <div class="column">
+      <nav class="level dktoolbar">
+        <div class="level-left">
+          <div class="level-item dkbuttongroup">
+            <button class="button is-small ">
+              <span class="icon is-small">
+                <i class="fa fa-cut"></i>
+              </span>
+            </button>
+            <button class="button is-small is-light">
+              <span class="icon is-small">
+                <i class="fa fa-copy"></i>
+              </span>
+            </button>
+            <button class="button is-small is-light">
+              <span class="icon is-small">
+                <i class="fa fa-paste"></i>
+              </span>
+            </button>
+          </div>
         </div>
-      </div>
-      <div class="level-item">
-        <span v-if="$store.getters.isCompiled" class="tag is-success"
-          >Compiled</span
-        >
-        <span v-else class="tag is-danger">Errors</span>
-      </div>
-      <div class="level-right">
-        <div class="level-item dkbuttongroup">
-          <button class="button is-small is-info">
-            <span class="icon is-small">
-              <i class="fa fa-check"></i>
-            </span>
-            <span>Auto Compile</span>
-          </button>
-          <button
-            class="button is-primary is-small is-info"
-            @click="$emit('compile')"
+        <div class="level-item">
+          <span v-if="$store.getters.isCompiled" class="tag is-success"
+            >Compiled</span
           >
-            <span class="icon is-small">
-              <i class="fa fa-refresh"></i>
-            </span>
-          </button>
-          <button class="button is-primary is-small" @click="$emit('simulate')">
-            <span class="icon is-small">
-              <i class="fa fa-play"></i>
-            </span>
-            <span>Simulate</span>
-          </button>
+          <span v-else class="tag is-danger">Errors</span>
         </div>
-      </div>
-    </nav>
+        <div class="level-right">
+          <div class="level-item dkbuttongroup">
+            <button class="button is-small is-info">
+              <span class="icon is-small">
+                <i class="fa fa-check"></i>
+              </span>
+              <span>Auto Compile</span>
+            </button>
+            <button
+              class="button is-primary is-small is-info"
+              @click="$emit('compile')"
+            >
+              <span class="icon is-small">
+                <i class="fa fa-refresh"></i>
+              </span>
+            </button>
+            <button
+              class="button is-primary is-small"
+              @click="$emit('simulate')"
+            >
+              <span class="icon is-small">
+                <i class="fa fa-play"></i>
+              </span>
+              <span>Simulate</span>
+            </button>
+          </div>
+        </div>
+      </nav>
 
-    <MonacoEditor
-      ref="editor"
-      :value="value"
-      :options="monacoOptions"
-      @change="onChange"
-      @editorWillMount="onEditorWillMount"
-      @editorDidMount="onEditorDidMount"
-      class="editor"
-      language="miniVerilog"
-      theme="myCoolTheme"
-    />
+      <MonacoEditor
+        ref="editor"
+        :value="value"
+        :options="monacoOptions"
+        @change="onChange"
+        @editorWillMount="onEditorWillMount"
+        @editorDidMount="onEditorDidMount"
+        class="editor"
+        language="miniVerilog"
+        theme="myCoolTheme"
+      />
+    </div>
   </div>
 </template>
 
@@ -88,6 +93,9 @@ export default {
     size: {
       type: Object,
       default: () => ({ width: 100, height: 100 })
+    },
+    name: {
+      type: String
     }
   },
   components: {
@@ -383,10 +391,10 @@ export default {
 
       if (parseResult.errors.length == 0 && walkResult.errors.length == 0) {
         this.$nextTick(() => {
-          this.$store.commit("setStatus", "Parse OK");
-          this.$emit("passLint", { parseResult, walkResult });
+          this.$emit("passLint", { name: this.name, parseResult, walkResult });
         });
-      } else this.$store.commit("setStatus", "Parse Error");
+      } else
+        this.$emit("failLint", { name: this.name, parseResult, walkResult });
     }
   }
 };
@@ -396,7 +404,6 @@ export default {
 <style>
 .editorContainer {
   width: 100%;
-  height: 100%;
 }
 .marginError {
   color: indianred;
