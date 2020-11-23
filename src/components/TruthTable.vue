@@ -53,25 +53,23 @@
         <table class="table is-fullwidth">
           <thead class="bg-teal">
             <tr class="text-white">
-              <th></th>
-              <th class="text-left">00</th>
-              <th class="text-left">01</th>
-              <th class="text-left">11</th>
-              <th class="text-left">10</th>
+              <th>
+                {{ kmapInputs.rows.join("") }} \ {{ kmapInputs.cols.join("") }}
+              </th>
+              <template v-for="(col, j) in grayCode(kmapInputs.cols.length)">
+                <th :key="j" class="text-left">{{ col }}</th></template
+              >
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>00</td>
-            </tr>
-            <tr>
-              <td>01</td>
-            </tr>
-            <tr>
-              <td>11</td>
-            </tr>
-            <tr>
-              <td>10</td>
+            <tr
+              v-for="(rowInput, i) in grayCode(kmapInputs.rows.length)"
+              :key="i"
+            >
+              <td>{{ rowInput }}</td>
+              <td v-for="(n, j) in kmapInputs.cols.length * 2" :key="j">
+                {{ kmapIndices[i][j] }}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -140,6 +138,47 @@ export default {
         )
         .join(" | ");
     },
+    kmapBinaryIndices() {
+      switch (this.inputDimension) {
+        case 2:
+          return this.grayCode(1).map(row =>
+            this.grayCode(1).map(col => row + col)
+          );
+        case 3:
+          return this.grayCode(2).map(row =>
+            this.grayCode(1).map(col => row + col)
+          );
+        case 4:
+          return this.grayCode(2).map(row =>
+            this.grayCode(2).map(col => row + col)
+          );
+      }
+      return [];
+    },
+    kmapIndices() {
+      return this.kmapBinaryIndices.map(row =>
+        row.map(item => parseInt(item, 2))
+      );
+    },
+    kmapInputs() {
+      var rows = [];
+      var cols = [];
+      switch (this.inputDimension) {
+        case 2:
+          rows = [this.inputNames[0]];
+          cols = [this.inputNames[1]];
+          break;
+        case 3:
+          rows = [this.inputNames[0], this.inputNames[1]];
+          cols = [this.inputNames[2]];
+          break;
+        case 4:
+          rows = [this.inputNames[0], this.inputNames[1]];
+          cols = [this.inputNames[2], this.inputNames[3]];
+          break;
+      }
+      return { rows, cols };
+    },
     testBench() {
       return this.truth
         .map(
@@ -165,6 +204,18 @@ export default {
     this.buildTruth();
   },
   methods: {
+    grayCode(bits) {
+      switch (bits) {
+        case 1:
+          return ["0", "1"];
+        case 2:
+          return ["00", "01", "11", "10"];
+        case 3:
+          return ["000", "001", "011", "010", "100", "101", "110", "111"];
+        default:
+          throw new Error("");
+      }
+    },
     inputs(row) {
       return this.truth[row].slice(0, this.inputDimension);
     },
