@@ -67,12 +67,28 @@
               :key="i"
             >
               <td>{{ rowInput }}</td>
-              <td v-for="(n, j) in kmapInputs.cols.length * 2" :key="j">
-                {{ kmapIndices[i][j] }}
+              <td
+                v-for="(n, j) in kmapInputs.cols.length * 2"
+                :key="j"
+                @click="kmapClick($event, i, j)"
+              >
+                <!-- <img
+                  src="@/assets/icons8-number-1-48.png"
+                  class="kmap1"
+                  v-if="kmapCells[i][j]"
+                />
+                <img src="@/assets/icons8-0-52.png" class="kmap0" v-else /> -->
+                {{ kmapCells[i][j] }}
               </td>
             </tr>
           </tbody>
         </table>
+        <div class="box" v-show="curSelection.length">
+          <p>
+            Selection started: click adjacent cells to add to current selection.
+            Click the first cell again to finish the selection.
+          </p>
+        </div>
       </div>
     </div>
     <div class="columns" style="height:400px">
@@ -104,7 +120,9 @@ export default {
     return {
       userInputs: "a, b, c",
       outputName: "Y",
-      truth: []
+      truth: [],
+      curSelection: [],
+      selections: []
     };
   },
   mixins: [UtilsMixin, SelectionsMixin],
@@ -145,8 +163,8 @@ export default {
             this.grayCode(1).map(col => row + col)
           );
         case 3:
-          return this.grayCode(2).map(row =>
-            this.grayCode(1).map(col => row + col)
+          return this.grayCode(1).map(row =>
+            this.grayCode(2).map(col => row + col)
           );
         case 4:
           return this.grayCode(2).map(row =>
@@ -160,6 +178,9 @@ export default {
         row.map(item => parseInt(item, 2))
       );
     },
+    kmapCells() {
+      return this.kmapIndices.map(row => row.map(col => this.output(col)));
+    },
     kmapInputs() {
       var rows = [];
       var cols = [];
@@ -169,12 +190,12 @@ export default {
           cols = [this.inputNames[1]];
           break;
         case 3:
-          rows = [this.inputNames[0], this.inputNames[1]];
-          cols = [this.inputNames[2]];
+          cols = [this.inputNames[0], this.inputNames[1]];
+          rows = [this.inputNames[2]];
           break;
         case 4:
-          rows = [this.inputNames[0], this.inputNames[1]];
-          cols = [this.inputNames[2], this.inputNames[3]];
+          cols = [this.inputNames[0], this.inputNames[1]];
+          rows = [this.inputNames[2], this.inputNames[3]];
           break;
       }
       return { rows, cols };
@@ -247,6 +268,75 @@ export default {
     },
     focus() {
       this.$refs.editor.editor.focus();
+    },
+
+    incCell(td) {
+      let curClass = Array.from(td.classList).find(x =>
+        x.startsWith("selected-")
+      );
+      let curN = curClass ? parseInt(curClass.slice(9)) : -1;
+      if (curClass) td.classList.remove(curClass);
+      td.classList.add("selected-" + (curN + 1));
+    },
+    decCell(td) {
+      let curClass = Array.from(td.classList).find(x =>
+        x.startsWith("selected-")
+      );
+      let curN = curClass ? parseInt(curClass.slice(9)) : -1;
+      console.log(curClass, curN);
+      if (curClass) td.classList.remove(curClass);
+      if (curN > 0) td.classList.add("selected-" + (curN - 1));
+    },
+
+    kmapClick(e, i, j) {
+      console.log(e, i, j, e.target.classList.values());
+      if (!this.kmapCells[i][j]) return; // can only click on 1s
+      if (this.curSelection.length == 0) {
+        // start selection
+        console.log("start current selection");
+        this.curSelection.push({ i, j, td: e.target });
+        e.target.classList.add("start-selection");
+        this.incCell(e.target);
+      } else if (i == this.curSelection[0].i && j == this.curSelection[0].j) {
+        // end selection
+        console.log("end current selection");
+        this.selections.push(this.curSelection);
+        this.curSelection[0].td.classList.remove("start-selection");
+        // outline the selection
+        let bounds = this.curSelection.reduce(
+          (bounds, cell) => {
+            bounds.mini = Math.min(bounds.mini, cell.i);
+            bounds.minj = Math.min(bounds.minj, cell.j);
+            bounds.maxi = Math.max(bounds.maxi, cell.i);
+            bounds.maxj = Math.max(bounds.maxj, cell.j);
+            return bounds;
+          },
+          { mini: 1000, minj: 1000, maxi: -1, maxj: -1 }
+        );
+        this.curSelection.forEach(cell => {
+          if (cell.i == bounds.mini) cell.td.classList.add("border-top");
+          if (cell.i == bounds.maxi) cell.td.classList.add("border-bottom");
+          if (cell.j == bounds.minj) cell.td.classList.add("border-left");
+          if (cell.j == bounds.maxj) cell.td.classList.add("border-right");
+        });
+        console.log(this.curSelection);
+        console.log(bounds);
+        this.curSelection = [];
+      } else {
+        // add or remove to selection
+        let index = this.curSelection.findIndex(x => x.i == i && x.j == j);
+        if (index > 0) {
+          // clicked a cell that already exists in selection so remove it from selection
+          console.log("remove from current selection)");
+          this.curSelection.splice(index);
+          this.decCell(e.target);
+        } else {
+          // clicked a new cell that needs to be added to curselection
+          console.log("add to current selection");
+          this.curSelection.push({ i, j, td: e.target }); // todo: check if valid adjacent
+          this.incCell(e.target);
+        }
+      }
     }
   }
 };
@@ -266,5 +356,53 @@ export default {
 .truth-table td {
   width: 3em;
   height: 2em;
+}
+
+.border-left {
+  border-left: 2px solid red;
+}
+.border-right {
+  border-right: 2px solid red;
+}
+.border-top {
+  border-top: 2px solid red;
+}
+.border-bottom {
+  border-bottom: 2px solid red;
+}
+
+.selected-0 {
+  background: var(--md-red-200);
+}
+.selected-1 {
+  background: var(--md-red-300);
+}
+.selected-2 {
+  background: var(--md-red-400);
+}
+.selected-3 {
+  background: var(--md-red-500);
+}
+.selected-4 {
+  background: var(--md-red-600);
+}
+.selected-5 {
+  background: var(--md-red-700);
+}
+.selected-6 {
+  background: var(--md-red-800);
+}
+.selected-7 {
+  background: var(--md-red-900);
+}
+.start-selection {
+  font-weight: bold;
+}
+.kmap0 {
+  font-size: 10pt;
+  color: darkgrey;
+}
+.kmap1 {
+  font-size: 10pt;
 }
 </style>
