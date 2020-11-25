@@ -14,6 +14,16 @@
     </div>
     <div class="columns">
       <div class="column">
+        <h4 class="title is-4">Truth Table</h4>
+        <div class="message is-info" v-show="showTruthTableHelp">
+          <div class="message-header">
+            <p>Truth Table Instructions</p>
+            <button class="delete" @click="showTruthTableHelp = false"></button>
+          </div>
+          <div class="message-body">
+            Click outputs in the Truth Table to toggle 0/1.
+          </div>
+        </div>
         <table class="table truth-table">
           <thead>
             <tr>
@@ -50,6 +60,18 @@
         </table>
       </div>
       <div class="column">
+        <h4 class="title is-4">Karnaugh Map</h4>
+        <div class="message is-info" v-show="showKmapHelp">
+          <div class="message-header">
+            <p>KMap Instructions</p>
+            <button class="delete" @click="showKmapHelp = false"></button>
+          </div>
+          <div class="message-body">
+            Click adjacent '1' cells in the kmap. Re-click the first selected
+            cell to complete a block of 1,2,4 or 8 adjacent cells. Right click a
+            cell to delete that block.
+          </div>
+        </div>
         <table class="table is-fullwidth kmap-table">
           <thead class="bg-teal">
             <tr class="text-white">
@@ -71,6 +93,7 @@
                 v-for="(n, j) in kmapInputs.cols.length * 2"
                 :key="j"
                 @click="kmapClick($event, i, j)"
+                @contextmenu.prevent="kmapRClick($event, i, j)"
               >
                 <!-- <img
                   src="@/assets/icons8-number-1-48.png"
@@ -84,12 +107,6 @@
           </tbody>
         </table>
         <p>{{ kmap }}</p>
-        <div class="box" v-show="curSelection.length">
-          <p>
-            Selection started: click adjacent cells to add to current selection.
-            Click the first cell again to finish the selection.
-          </p>
-        </div>
       </div>
     </div>
     <div class="columns" style="height:400px">
@@ -123,7 +140,9 @@ export default {
       outputName: "Y",
       truth: [],
       curSelection: [],
-      selections: []
+      selections: [],
+      showKmapHelp: true,
+      showTruthTableHelp: true
     };
   },
   mixins: [UtilsMixin, SelectionsMixin],
@@ -225,7 +244,8 @@ export default {
         outputName: this.outputName,
         sumofproducts: this.sumofproducts,
         kmap: this.kmap,
-        testBench: this.testBench
+        testBench: this.testBench,
+        arguments: this.inputNames.map(i => `.${i}(${i})`).join(", ")
       });
     }
   },
@@ -316,18 +336,31 @@ export default {
       if (curN > 0) td.classList.add("selected-" + (curN - 1));
     },
 
+    kmapRClick(e, i, j) {
+      let index = this.selections.findIndex(sel =>
+        sel.some(cell => cell.i == i && cell.j == j)
+      );
+      if (index >= 0) {
+        this.selections[index].forEach(cell => {
+          this.decCell(cell.td);
+          cell.td.classList.remove("border-top");
+          cell.td.classList.remove("border-bottom");
+          cell.td.classList.remove("border-left");
+          cell.td.classList.remove("border-right");
+        });
+        this.selections.splice(index, 1);
+      }
+    },
+
     kmapClick(e, i, j) {
-      console.log(e, i, j, e.target.classList.values());
       if (!this.kmapCells[i][j]) return; // can only click on 1s
       if (this.curSelection.length == 0) {
         // start selection
-        console.log("start current selection");
         this.curSelection.push({ i, j, td: e.target });
         e.target.classList.add("start-selection");
         this.incCell(e.target);
       } else if (i == this.curSelection[0].i && j == this.curSelection[0].j) {
         // end selection
-        console.log("end current selection");
         this.selections.push(this.curSelection);
         this.curSelection[0].td.classList.remove("start-selection");
         // outline the selection
@@ -347,20 +380,16 @@ export default {
           if (cell.j == bounds.minj) cell.td.classList.add("border-left");
           if (cell.j == bounds.maxj) cell.td.classList.add("border-right");
         });
-        console.log(this.curSelection);
-        console.log(bounds);
         this.curSelection = [];
       } else {
         // add or remove to selection
         let index = this.curSelection.findIndex(x => x.i == i && x.j == j);
         if (index > 0) {
           // clicked a cell that already exists in selection so remove it from selection
-          console.log("remove from current selection)");
           this.curSelection.splice(index);
           this.decCell(e.target);
         } else {
           // clicked a new cell that needs to be added to curselection
-          console.log("add to current selection");
           this.curSelection.push({ i, j, td: e.target }); // todo: check if valid adjacent
           this.incCell(e.target);
         }

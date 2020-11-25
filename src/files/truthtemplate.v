@@ -1,16 +1,26 @@
+module SumOfProducts(
+  input ${this.inputNames},
+  output ${this.outputName});
+
+  assign ${this.outputName} = ${this.sumofproducts};
+endmodule
+
+${this.kmap ? "" : "\/*"}
+module KMap(
+  input ${this.inputNames},
+  output ${this.outputName});
+  
+  ${this.kmap ? "" : "\/\/"} assign ${this.outputName} = ${this.kmap};
+endmodule
+${this.kmap ? "" : "*\/"}
+
 module Main(
   input ${this.inputNames},
   output ${this.outputName}sop, ${this.outputName}kmap
 ); 
 
-  wire sumOfProducts;
-  assign sumOfProducts = ${this.sumofproducts};
-
-  wire kmap;
-  assign kmap = ${this.kmap};
-
-  response(${this.outputName}sop, sumOfProducts);
-  response(${this.outputName}kmap, kmap);
+  SumOfProducts sop(${this.arguments}, .${this.outputName}(${this.outputName}sop));
+  ${this.kmap ? "" : "\/\/"} KMap kmap(${this.arguments}, .${this.outputName}(${this.outputName}kmap));
 
   test begin
 ${this.testBench}
