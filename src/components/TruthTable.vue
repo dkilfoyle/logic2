@@ -50,7 +50,7 @@
         </table>
       </div>
       <div class="column">
-        <table class="table is-fullwidth">
+        <table class="table is-fullwidth kmap-table">
           <thead class="bg-teal">
             <tr class="text-white">
               <th>
@@ -83,6 +83,7 @@
             </tr>
           </tbody>
         </table>
+        <p>{{ kmap }}</p>
         <div class="box" v-show="curSelection.length">
           <p>
             Selection started: click adjacent cells to add to current selection.
@@ -142,6 +143,11 @@ export default {
     inputDimension() {
       return this.inputNames.length;
     },
+    kmap() {
+      return this.selections
+        .map(sel => this.simplifyKMapSelection(sel))
+        .join(" | ");
+    },
     sumofproducts() {
       return this.truth
         .filter((row, i) => this.output(i))
@@ -160,19 +166,20 @@ export default {
       switch (this.inputDimension) {
         case 2:
           return this.grayCode(1).map(row =>
-            this.grayCode(1).map(col => row + col)
+            this.grayCode(1).map(col => col + row)
           );
         case 3:
           return this.grayCode(1).map(row =>
-            this.grayCode(2).map(col => row + col)
+            this.grayCode(2).map(col => col + row)
           );
         case 4:
           return this.grayCode(2).map(row =>
-            this.grayCode(2).map(col => row + col)
+            this.grayCode(2).map(col => col + row)
           );
       }
       return [];
     },
+
     kmapIndices() {
       return this.kmapBinaryIndices.map(row =>
         row.map(item => parseInt(item, 2))
@@ -217,6 +224,7 @@ export default {
         inputNames: this.inputNames.join(", "),
         outputName: this.outputName,
         sumofproducts: this.sumofproducts,
+        kmap: this.kmap,
         testBench: this.testBench
       });
     }
@@ -225,6 +233,26 @@ export default {
     this.buildTruth();
   },
   methods: {
+    simplifyKMapSelection(sel) {
+      let sums = new Array(this.inputDimension).fill(0);
+      sel.forEach(cell => {
+        let bits = this.kmapBinaryIndices[cell.i][cell.j]
+          .split("")
+          .map(x => parseInt(x));
+        bits.forEach((bit, index) => (sums[index] += bit));
+      });
+      let terms = [];
+      sums.forEach((sum, i) => {
+        if (sum == 0) {
+          // all 0s
+          terms.push("~" + this.inputNames[i]);
+        } else if (sum == sel.length) {
+          // all 1s
+          terms.push(this.inputNames[i]);
+        }
+      });
+      return terms.length > 1 ? "( " + terms.join(" & ") + " )" : terms[0];
+    },
     grayCode(bits) {
       switch (bits) {
         case 1:
@@ -359,16 +387,16 @@ export default {
 }
 
 .border-left {
-  border-left: 2px solid red;
+  border-left: 3px solid red;
 }
 .border-right {
-  border-right: 2px solid red;
+  border-right: 3px solid red;
 }
 .border-top {
-  border-top: 2px solid red;
+  border-top: 3px solid red;
 }
 .border-bottom {
-  border-bottom: 2px solid red;
+  border-bottom: 3px solid red !important;
 }
 
 .selected-0 {
@@ -404,5 +432,9 @@ export default {
 }
 .kmap1 {
   font-size: 10pt;
+}
+.kmap-table td,
+.kmap-table th {
+  border-bottom: 0px;
 }
 </style>

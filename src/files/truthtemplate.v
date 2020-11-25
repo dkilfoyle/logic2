@@ -1,12 +1,16 @@
 module Main(
   input ${this.inputNames},
-  output ${this.outputName}
+  output ${this.outputName}sop, ${this.outputName}kmap
 ); 
 
   wire sumOfProducts;
   assign sumOfProducts = ${this.sumofproducts};
 
-  response(${this.outputName}, sumOfProducts);
+  wire kmap;
+  assign kmap = ${this.kmap};
+
+  response(${this.outputName}sop, sumOfProducts);
+  response(${this.outputName}kmap, kmap);
 
   test begin
 ${this.testBench}
