@@ -6,6 +6,9 @@ import Buefy from "buefy";
 import "buefy/dist/buefy.css";
 Vue.use(Buefy);
 
+import VueKonva from "vue-konva";
+Vue.use(VueKonva);
+
 Vue.config.productionTip = false;
 
 new Vue({

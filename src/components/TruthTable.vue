@@ -12,18 +12,59 @@
         ></b-field>
       </div>
     </div>
-    <div class="columns">
+
+    <div class="columns" v-show="showTruthTableHelp">
       <div class="column">
-        <h4 class="title is-4">Truth Table</h4>
-        <div class="message is-info" v-show="showTruthTableHelp">
+        <div class="message is-info">
           <div class="message-header">
             <p>Truth Table Instructions</p>
             <button class="delete" @click="showTruthTableHelp = false"></button>
           </div>
           <div class="message-body">
-            Click outputs in the Truth Table to toggle 0/1.
+            Click outputs (rightmost column) in the Truth Table to toggle the
+            desired output (0 or 1) for each unique combination of inputs. The
+            code below will compile the Truth Table into a logic statement via
+            the Sum of Products.
           </div>
         </div>
+      </div>
+    </div>
+
+    <div class="columns" v-show="showKmapHelp">
+      <div class="column">
+        <div class="message is-info">
+          <div class="message-header">
+            <p>Karnaugh Map Instructions</p>
+            <button class="delete" @click="showKmapHelp = false"></button>
+          </div>
+          <div class="message-body">
+            Outputs with a value of 1 are transferred to the cells of the KMap.
+            Click adjacent '1' cells in the kmap to select regions of 1,2,4 or 8
+            cells. Re-click the first selected cell to complete a block. Left
+            click a non-overlapping cell to activate that block. Right click a
+            non-overlapping cell to delete that block.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="columns">
+      <div class="column">
+        <div class="level">
+          <div class="level-left">
+            <div class="level-item">
+              <h4 class="title is-4">
+                Truth Table
+              </h4>
+            </div>
+            <div class="level-item">
+              <span class="tag is-info" @click="showTruthTableHelp = true"
+                >?</span
+              >
+            </div>
+          </div>
+        </div>
+
         <table class="table truth-table">
           <thead>
             <tr>
@@ -60,53 +101,119 @@
         </table>
       </div>
       <div class="column">
-        <h4 class="title is-4">Karnaugh Map</h4>
-        <div class="message is-info" v-show="showKmapHelp">
-          <div class="message-header">
-            <p>KMap Instructions</p>
-            <button class="delete" @click="showKmapHelp = false"></button>
-          </div>
-          <div class="message-body">
-            Click adjacent '1' cells in the kmap. Re-click the first selected
-            cell to complete a block of 1,2,4 or 8 adjacent cells. Right click a
-            cell to delete that block.
+        <div class="level">
+          <div class="level-left">
+            <div class="level-item">
+              <h4 class="title is-4">
+                Karnaugh Map
+              </h4>
+            </div>
+            <div class="level-item">
+              <span class="tag is-info" @click="showKmapHelp = true">?</span>
+            </div>
           </div>
         </div>
-        <table class="table is-fullwidth kmap-table">
-          <thead class="bg-teal">
-            <tr class="text-white">
-              <th>
-                {{ kmapInputs.rows.join("") }} \ {{ kmapInputs.cols.join("") }}
-              </th>
-              <template v-for="(col, j) in grayCode(kmapInputs.cols.length)">
-                <th :key="j" class="text-left">{{ col }}</th></template
-              >
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(rowInput, i) in grayCode(kmapInputs.rows.length)"
-              :key="i"
+
+        <v-stage :config="{ width: 600, height: 200 }">
+          <v-layer>
+            <!-- header row -->
+            <template v-for="(col, j) in grayCode(kmapInputs.cols.length)">
+              <v-text
+                :key="'header' + j"
+                :config="{
+                  text: col,
+                  x: kmapDims.colStart + (j + 1) * kmapDims.colSpacing,
+                  y: kmapDims.rowStart,
+                  width: kmapDims.colSpacing,
+                  height: kmapDims.rowSpacing,
+                  fontSize: 16,
+                  align: 'center',
+                  verticalAlign: 'middle'
+                }"
+              ></v-text>
+            </template>
+
+            <!-- selections -->
+            <template v-for="(selection, sel_n) in selections">
+              <v-rect
+                v-for="cell in selection"
+                :key="'selection_' + sel_n + '_' + cell.i + cell.j"
+                :config="{
+                  x: kmapDims.colStart + (cell.j + 1) * kmapDims.colSpacing,
+                  y: kmapDims.rowStart + (cell.i + 1) * kmapDims.rowSpacing,
+                  width: kmapDims.colSpacing,
+                  height: kmapDims.rowSpacing,
+                  fill: kmapColors[sel_n % 7]
+                }"
+              ></v-rect>
+            </template>
+
+            <!-- data rows -->
+            <template v-for="(row, i) in grayCode(kmapInputs.rows.length)">
+              <div :key="i">
+                <v-text
+                  :config="{
+                    text: row,
+                    x: kmapDims.colStart,
+                    y: kmapDims.rowStart + (i + 1) * kmapDims.rowSpacing,
+                    width: kmapDims.colSpacing,
+                    height: kmapDims.rowSpacing,
+                    fontSize: 16,
+                    align: 'center',
+                    verticalAlign: 'middle'
+                  }"
+                ></v-text>
+                <template v-for="(col, j) in kmapInputs.cols.length * 2">
+                  <div :key="i + j">
+                    <v-rect
+                      :config="{
+                        x: kmapDims.colStart + (j + 1) * kmapDims.colSpacing,
+                        y: kmapDims.rowStart + (i + 1) * kmapDims.rowSpacing,
+                        width: kmapDims.colSpacing,
+                        height: kmapDims.rowSpacing,
+                        fill: 'rgba(0,0,0,0)',
+                        strokeWidth: 1,
+                        stroke: 'lightgrey'
+                      }"
+                    ></v-rect>
+                    <v-text
+                      :config="{
+                        text: isActiveBlockStart(i, j)
+                          ? `*${kmapCells[i][j]}*`
+                          : kmapCells[i][j],
+                        x: kmapDims.colStart + (j + 1) * kmapDims.colSpacing,
+                        y: kmapDims.rowStart + (i + 1) * kmapDims.rowSpacing,
+                        width: kmapDims.colSpacing,
+                        height: kmapDims.rowSpacing,
+                        fontSize: 16,
+                        align: 'center',
+                        verticalAlign: 'middle',
+                        fill: kmapCells[i][j] ? 'black' : 'lightgrey',
+                        cell: { i, j }
+                      }"
+                      @click="onCellClick"
+                    ></v-text>
+                  </div>
+                </template>
+              </div>
+            </template>
+          </v-layer>
+        </v-stage>
+        <h6>
+          KMap Status: <span>{{ kmapStatus }}</span>
+        </h6>
+
+        <h6>
+          KMap Logic:
+          <span v-for="(sel, seln) in selections" :key="seln">
+            <span
+              @click="curSelection = seln"
+              :style="'color: ' + kmapColors[seln]"
+              >{{ simplifyKMapSelection(sel) }}</span
             >
-              <td>{{ rowInput }}</td>
-              <td
-                v-for="(n, j) in kmapInputs.cols.length * 2"
-                :key="j"
-                @click="kmapClick($event, i, j)"
-                @contextmenu.prevent="kmapRClick($event, i, j)"
-              >
-                <!-- <img
-                  src="@/assets/icons8-number-1-48.png"
-                  class="kmap1"
-                  v-if="kmapCells[i][j]"
-                />
-                <img src="@/assets/icons8-0-52.png" class="kmap0" v-else /> -->
-                {{ kmapCells[i][j] }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <p>{{ kmap }}</p>
+            <span v-if="seln < selections.length - 1"> | </span>
+          </span>
+        </h6>
       </div>
     </div>
     <div class="columns" style="height:400px">
@@ -139,10 +246,25 @@ export default {
       userInputs: "a, b, c",
       outputName: "Y",
       truth: [],
-      curSelection: [],
       selections: [],
-      showKmapHelp: true,
-      showTruthTableHelp: true
+      curSelection: -1,
+      showKmapHelp: false,
+      showTruthTableHelp: false,
+      kmapDims: {
+        rowSpacing: 50,
+        rowStart: 10,
+        colSpacing: 100,
+        colStart: 10
+      },
+      kmapColors: [
+        "#ef9a9a88",
+        "#ce93d888",
+        "#9fa8da88",
+        "#81d4fa88",
+        "#a5d6a788",
+        "#fff59d88",
+        "#ffcc888a"
+      ]
     };
   },
   mixins: [UtilsMixin, SelectionsMixin],
@@ -167,6 +289,7 @@ export default {
         .map(sel => this.simplifyKMapSelection(sel))
         .join(" | ");
     },
+
     sumofproducts() {
       return this.truth
         .filter((row, i) => this.output(i))
@@ -207,6 +330,7 @@ export default {
     kmapCells() {
       return this.kmapIndices.map(row => row.map(col => this.output(col)));
     },
+
     kmapInputs() {
       var rows = [];
       var cols = [];
@@ -225,6 +349,33 @@ export default {
           break;
       }
       return { rows, cols };
+    },
+    kmapStatus() {
+      if (this.curSelection == -1) {
+        // none selected
+        // are there any uncovered 1s
+        if (
+          this.kmapCells.some((row, i) =>
+            row.some(
+              (val, j) =>
+                val == 1 &&
+                !this.selections.some(sel =>
+                  sel.some(cell => cell.i == i && cell.j == j)
+                )
+            )
+          )
+        ) {
+          return "Unselected 1s";
+        }
+      } else {
+        if (
+          ![1, 2, 4, 8, 16].some(
+            x => x == this.selections[this.curSelection].length
+          )
+        )
+          return "Selection must have 1,2,4 or 8 cells";
+      }
+      return "Pass";
     },
     testBench() {
       return this.truth
@@ -318,81 +469,72 @@ export default {
       this.$refs.editor.editor.focus();
     },
 
-    incCell(td) {
-      let curClass = Array.from(td.classList).find(x =>
-        x.startsWith("selected-")
-      );
-      let curN = curClass ? parseInt(curClass.slice(9)) : -1;
-      if (curClass) td.classList.remove(curClass);
-      td.classList.add("selected-" + (curN + 1));
-    },
-    decCell(td) {
-      let curClass = Array.from(td.classList).find(x =>
-        x.startsWith("selected-")
-      );
-      let curN = curClass ? parseInt(curClass.slice(9)) : -1;
-      console.log(curClass, curN);
-      if (curClass) td.classList.remove(curClass);
-      if (curN > 0) td.classList.add("selected-" + (curN - 1));
+    isSameCell(x) {
+      return y => x.i == y.i && x.j == y.j;
     },
 
-    kmapRClick(e, i, j) {
-      let index = this.selections.findIndex(sel =>
-        sel.some(cell => cell.i == i && cell.j == j)
+    isActiveBlockStart(i, j) {
+      return (
+        this.curSelection > -1 &&
+        this.isSameCell(this.selections[this.curSelection][0])({ i, j })
       );
-      if (index >= 0) {
-        this.selections[index].forEach(cell => {
-          this.decCell(cell.td);
-          cell.td.classList.remove("border-top");
-          cell.td.classList.remove("border-bottom");
-          cell.td.classList.remove("border-left");
-          cell.td.classList.remove("border-right");
-        });
-        this.selections.splice(index, 1);
+    },
+
+    get2dIndex(arr, fun) {
+      for (let i = 0; i < arr.length; i++) {
+        let j = arr.findIndex(x => fun(x));
+        if (j > -1) return [i, j];
       }
+      return [-1, -1];
     },
 
-    kmapClick(e, i, j) {
-      if (!this.kmapCells[i][j]) return; // can only click on 1s
-      if (this.curSelection.length == 0) {
-        // start selection
-        this.curSelection.push({ i, j, td: e.target });
-        e.target.classList.add("start-selection");
-        this.incCell(e.target);
-      } else if (i == this.curSelection[0].i && j == this.curSelection[0].j) {
-        // end selection
-        this.selections.push(this.curSelection);
-        this.curSelection[0].td.classList.remove("start-selection");
-        // outline the selection
-        let bounds = this.curSelection.reduce(
-          (bounds, cell) => {
-            bounds.mini = Math.min(bounds.mini, cell.i);
-            bounds.minj = Math.min(bounds.minj, cell.j);
-            bounds.maxi = Math.max(bounds.maxi, cell.i);
-            bounds.maxj = Math.max(bounds.maxj, cell.j);
-            return bounds;
-          },
-          { mini: 1000, minj: 1000, maxi: -1, maxj: -1 }
+    onCellClick(evt) {
+      let cell = evt.target.attrs.cell;
+      if (!this.kmapCells[cell.i][cell.j]) return; // can't select cells with 0 value
+
+      if (this.curSelection == -1) {
+        // not yet selecting
+        const index = this.selections.findIndex(sel =>
+          sel.some(x => this.isSameCell(cell)(x))
         );
-        this.curSelection.forEach(cell => {
-          if (cell.i == bounds.mini) cell.td.classList.add("border-top");
-          if (cell.i == bounds.maxi) cell.td.classList.add("border-bottom");
-          if (cell.j == bounds.minj) cell.td.classList.add("border-left");
-          if (cell.j == bounds.maxj) cell.td.classList.add("border-right");
-        });
-        this.curSelection = [];
-      } else {
-        // add or remove to selection
-        let index = this.curSelection.findIndex(x => x.i == i && x.j == j);
-        if (index > 0) {
-          // clicked a cell that already exists in selection so remove it from selection
-          this.curSelection.splice(index);
-          this.decCell(e.target);
+        if (index == -1) {
+          // not currently selecting and cell is not part of a selection so start a new curSelection
+          console.log(
+            "not currently selecting and cell is not part of a selection so start a new curSelection",
+            index
+          );
+          this.selections.push([{ i: cell.i, j: cell.j }]);
+          this.curSelection = this.selections.length - 1;
         } else {
-          // clicked a new cell that needs to be added to curselection
-          this.curSelection.push({ i, j, td: e.target }); // todo: check if valid adjacent
-          this.incCell(e.target);
+          // not currently selecting and cell IS part of an existing selection, set curSelection to the existing selection
+          console.log(
+            "not currently selecting and cell IS part of an existing selection, set curSelection to the existing selection",
+            index
+          );
+          this.curSelection = index;
         }
+        return;
+      }
+
+      // must already be in selection mode
+
+      // if reselect first cell in selection then stop selecting
+      if (this.isSameCell(cell)(this.selections[this.curSelection][0])) {
+        console.log("clicked first cell so stopping selection");
+        this.curSelection = -1; // TODO: do validity check and abort if invalid selection
+        return;
+      }
+
+      // add to cur selection
+
+      if (
+        !this.selections[this.curSelection].some(x => this.isSameCell(cell)(x))
+      ) {
+        console.log(
+          "clicked a new cell and adding to selection as it's not already there",
+          this.curSelection
+        );
+        this.selections[this.curSelection].push(cell);
       }
     }
   }
@@ -413,57 +555,5 @@ export default {
 .truth-table td {
   width: 3em;
   height: 2em;
-}
-
-.border-left {
-  border-left: 3px solid red;
-}
-.border-right {
-  border-right: 3px solid red;
-}
-.border-top {
-  border-top: 3px solid red;
-}
-.border-bottom {
-  border-bottom: 3px solid red !important;
-}
-
-.selected-0 {
-  background: var(--md-red-200);
-}
-.selected-1 {
-  background: var(--md-red-300);
-}
-.selected-2 {
-  background: var(--md-red-400);
-}
-.selected-3 {
-  background: var(--md-red-500);
-}
-.selected-4 {
-  background: var(--md-red-600);
-}
-.selected-5 {
-  background: var(--md-red-700);
-}
-.selected-6 {
-  background: var(--md-red-800);
-}
-.selected-7 {
-  background: var(--md-red-900);
-}
-.start-selection {
-  font-weight: bold;
-}
-.kmap0 {
-  font-size: 10pt;
-  color: darkgrey;
-}
-.kmap1 {
-  font-size: 10pt;
-}
-.kmap-table td,
-.kmap-table th {
-  border-bottom: 0px;
 }
 </style>
