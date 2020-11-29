@@ -40,9 +40,9 @@
           <div class="message-body">
             Outputs with a value of 1 are transferred to the cells of the KMap.
             Click adjacent '1' cells in the kmap to select regions of 1,2,4 or 8
-            cells. Re-click the first selected cell to complete a block. Left
-            click a non-overlapping cell to activate that block. Right click a
-            non-overlapping cell to delete that block.
+            cells. Click the triangle in the upper-left cell to complete a
+            block. Select existing blocks by clicking the triangle. Aim to have
+            all "1"s covered by the minimum possible number of blocks.
           </div>
         </div>
       </div>
@@ -116,24 +116,7 @@
 
         <v-stage :config="{ width: 600, height: 200 }">
           <v-layer>
-            <!-- header row -->
-            <template v-for="(col, j) in grayCode(kmapInputs.cols.length)">
-              <v-text
-                :key="'header' + j"
-                :config="{
-                  text: col,
-                  x: kmapDims.colStart + (j + 1) * kmapDims.colSpacing,
-                  y: kmapDims.rowStart,
-                  width: kmapDims.colSpacing,
-                  height: kmapDims.rowSpacing,
-                  fontSize: 16,
-                  align: 'center',
-                  verticalAlign: 'middle'
-                }"
-              ></v-text>
-            </template>
-
-            <!-- selections -->
+            <!-- selections shading -->
             <template v-for="(selection, sel_n) in selections">
               <v-rect
                 v-for="cell in selection"
@@ -143,9 +126,55 @@
                   y: kmapDims.rowStart + (cell.i + 1) * kmapDims.rowSpacing,
                   width: kmapDims.colSpacing,
                   height: kmapDims.rowSpacing,
-                  fill: kmapColors[sel_n % 7]
+                  fill: mdcolors[kmapColors[sel_n % 7]]['300'] + '88'
                 }"
-              ></v-rect>
+              ></v-rect></template
+          ></v-layer>
+
+          <v-layer>
+            <!-- header row -->
+            <v-line
+              :config="{
+                points: [
+                  kmapDims.colStart + (0 + 1) * kmapDims.colSpacing,
+                  kmapDims.rowStart + (0 + 1) * kmapDims.rowSpacing,
+                  kmapDims.colStart + (0 + 1) * kmapDims.colSpacing - 40,
+                  kmapDims.rowStart + (0 + 1) * kmapDims.rowSpacing - 40
+                ],
+                stroke: 'lightgray',
+                strokeWidth: 2
+              }"
+            ></v-line>
+            <v-text
+              :config="{
+                x: kmapDims.colStart + (0 + 1) * kmapDims.colSpacing - 10,
+                y: kmapDims.rowStart + (0 + 1) * kmapDims.rowSpacing - 40,
+                fill: 'darkgray',
+                text: kmapInputs.cols.join('')
+              }"
+            ></v-text>
+            <v-text
+              :config="{
+                x: kmapDims.colStart + (0 + 1) * kmapDims.colSpacing - 35,
+                y: kmapDims.rowStart + (0 + 1) * kmapDims.rowSpacing - 15,
+                fill: 'darkgray',
+                text: kmapInputs.rows.join('')
+              }"
+            ></v-text>
+            <template v-for="(col, j) in grayCode(kmapInputs.cols.length)">
+              <v-text
+                :key="'header' + j"
+                :config="{
+                  text: col,
+                  x: kmapDims.colStart + (j + 1) * kmapDims.colSpacing,
+                  y: kmapDims.rowStart + 10,
+                  width: kmapDims.colSpacing,
+                  height: kmapDims.rowSpacing,
+                  fontSize: 16,
+                  align: 'center',
+                  verticalAlign: 'middle'
+                }"
+              ></v-text>
             </template>
 
             <!-- data rows -->
@@ -154,7 +183,7 @@
                 <v-text
                   :config="{
                     text: row,
-                    x: kmapDims.colStart,
+                    x: kmapDims.colStart + 30,
                     y: kmapDims.rowStart + (i + 1) * kmapDims.rowSpacing,
                     width: kmapDims.colSpacing,
                     height: kmapDims.rowSpacing,
@@ -167,8 +196,8 @@
                   <div :key="i + j">
                     <v-rect
                       :config="{
-                        x: kmapDims.colStart + (j + 1) * kmapDims.colSpacing,
-                        y: kmapDims.rowStart + (i + 1) * kmapDims.rowSpacing,
+                        x: kmapCellsXY[i][j].x,
+                        y: kmapCellsXY[i][j].y,
                         width: kmapDims.colSpacing,
                         height: kmapDims.rowSpacing,
                         fill: 'rgba(0,0,0,0)',
@@ -178,11 +207,9 @@
                     ></v-rect>
                     <v-text
                       :config="{
-                        text: isActiveBlockStart(i, j)
-                          ? `*${kmapCells[i][j]}*`
-                          : kmapCells[i][j],
-                        x: kmapDims.colStart + (j + 1) * kmapDims.colSpacing,
-                        y: kmapDims.rowStart + (i + 1) * kmapDims.rowSpacing,
+                        text: kmapCells[i][j],
+                        x: kmapCellsXY[i][j].x,
+                        y: kmapCellsXY[i][j].y,
                         width: kmapDims.colSpacing,
                         height: kmapDims.rowSpacing,
                         fontSize: 16,
@@ -198,6 +225,44 @@
               </div>
             </template>
           </v-layer>
+
+          <v-layer>
+            <!-- selections top left -->
+            <template v-for="(cell, sel_n) in upperLeftCells">
+              <v-line
+                :key="'selection_' + sel_n"
+                :config="{
+                  closed: true,
+                  points: [
+                    kmapCellsXY[cell.i][cell.j].x,
+                    kmapCellsXY[cell.i][cell.j].y,
+                    kmapCellsXY[cell.i][cell.j].x + 20,
+                    kmapCellsXY[cell.i][cell.j].y,
+                    kmapCellsXY[cell.i][cell.j].x,
+                    kmapCellsXY[cell.i][cell.j].y + 20
+                  ],
+                  width: kmapDims.colSpacing,
+                  height: kmapDims.rowSpacing,
+                  fill: mdcolors[kmapColors[sel_n % 7]]['500'],
+                  cell: cell
+                }"
+                @click="onSelectionClick"
+              ></v-line> </template
+          ></v-layer>
+
+          <!-- current selection outline -->
+          <v-layer>
+            <v-line
+              v-for="(line, x) in currentSelectionOutline"
+              :key="'outline' + x"
+              :config="{
+                points: line,
+                stroke: mdcolors[kmapColors[curSelection]]['500'] + 'ff',
+                strokeWidth: 3,
+                lineCap: 'round'
+              }"
+            ></v-line
+          ></v-layer>
         </v-stage>
         <h6>
           KMap Status: <span>{{ kmapStatus }}</span>
@@ -240,6 +305,8 @@ const fillTemplate = function(templateString, templateVars) {
   return new Function("return `" + templateString + "`;").call(templateVars);
 };
 
+import colors from "material-colors";
+
 export default {
   data() {
     return {
@@ -256,15 +323,8 @@ export default {
         colSpacing: 100,
         colStart: 10
       },
-      kmapColors: [
-        "#ef9a9a88",
-        "#ce93d888",
-        "#9fa8da88",
-        "#81d4fa88",
-        "#a5d6a788",
-        "#fff59d88",
-        "#ffcc888a"
-      ]
+      mdcolors: colors,
+      kmapColors: ["red", "blue", "green", "orange", "purple", "teal", "brown"]
     };
   },
   mixins: [UtilsMixin, SelectionsMixin],
@@ -275,11 +335,18 @@ export default {
     },
     code() {
       this.$refs.editor.editor.getModel().setValue(this.code);
+    },
+    truth() {
+      this.selections = [];
+      this.curSelection = -1;
     }
   },
   computed: {
     inputNames() {
-      return this.userInputs.replace(/\s/g, "").split(",");
+      return this.userInputs
+        .replace(/\s/g, "")
+        .split(",")
+        .slice(0, 4); // currently maximum of 4 inputs
     },
     inputDimension() {
       return this.inputNames.length;
@@ -330,6 +397,14 @@ export default {
     kmapCells() {
       return this.kmapIndices.map(row => row.map(col => this.output(col)));
     },
+    kmapCellsXY() {
+      return this.kmapCells.map((row, i) =>
+        row.map((col, j) => ({
+          x: this.kmapDims.colStart + (j + 1) * this.kmapDims.colSpacing,
+          y: this.kmapDims.rowStart + (i + 1) * this.kmapDims.rowSpacing
+        }))
+      );
+    },
 
     kmapInputs() {
       var rows = [];
@@ -368,14 +443,92 @@ export default {
           return "Unselected 1s";
         }
       } else {
+        // building a block
         if (
           ![1, 2, 4, 8, 16].some(
             x => x == this.selections[this.curSelection].length
           )
         )
           return "Selection must have 1,2,4 or 8 cells";
+        // todo check that all cells are adacent
+        // if not adjacent return "Cells in a selection must be adjacent, no islands"
       }
       return "Pass";
+    },
+
+    upperLeftCells() {
+      // return the upper left cell of each selection
+      return this.selections.map((selection, i) => ({
+        ...this.upperLeftCell(selection),
+        selection: i
+      }));
+    },
+
+    currentSelectionOutline() {
+      if (this.curSelection == -1) return [];
+
+      let cells = this.selections[this.curSelection];
+      let lines = [];
+
+      let maxi = this.kmapCells.length;
+      let maxj = this.kmapCells[0].length;
+
+      cells.forEach(cell => {
+        // nothing on same row to the left including wrapping?
+        if (
+          !cells.some(
+            x => x.i == cell.i && (x.j < cell.j || (cell.j == 0 && x.j == maxj))
+          )
+        ) {
+          lines.push([
+            this.kmapDims.colStart + (cell.j + 1) * this.kmapDims.colSpacing,
+            this.kmapDims.rowStart + (cell.i + 1) * this.kmapDims.rowSpacing,
+            this.kmapDims.colStart + (cell.j + 1) * this.kmapDims.colSpacing,
+            this.kmapDims.rowStart + (cell.i + 2) * this.kmapDims.rowSpacing
+          ]);
+        }
+        // nothing on same row to the right including wrapping?
+        if (
+          !cells.some(
+            x => x.i == cell.i && (x.j > cell.j || (cell.j == maxj && x.j == 0))
+          )
+        ) {
+          lines.push([
+            this.kmapDims.colStart + (cell.j + 2) * this.kmapDims.colSpacing,
+            this.kmapDims.rowStart + (cell.i + 1) * this.kmapDims.rowSpacing,
+            this.kmapDims.colStart + (cell.j + 2) * this.kmapDims.colSpacing,
+            this.kmapDims.rowStart + (cell.i + 2) * this.kmapDims.rowSpacing
+          ]);
+        }
+        // nothing on same col above including wrapping?
+        if (
+          !cells.some(
+            x => x.j == cell.j && (x.i < cell.i || (cell.i == 0 && x.i == maxi))
+          )
+        ) {
+          lines.push([
+            this.kmapDims.colStart + (cell.j + 1) * this.kmapDims.colSpacing,
+            this.kmapDims.rowStart + (cell.i + 1) * this.kmapDims.rowSpacing,
+            this.kmapDims.colStart + (cell.j + 2) * this.kmapDims.colSpacing,
+            this.kmapDims.rowStart + (cell.i + 1) * this.kmapDims.rowSpacing
+          ]);
+        }
+        // nothing on same col below including wrapping?
+        if (
+          !cells.some(
+            x => x.j == cell.j && (x.i > cell.i || (cell.i == maxi && x.i == 0))
+          )
+        ) {
+          lines.push([
+            this.kmapDims.colStart + (cell.j + 1) * this.kmapDims.colSpacing,
+            this.kmapDims.rowStart + (cell.i + 2) * this.kmapDims.rowSpacing,
+            this.kmapDims.colStart + (cell.j + 2) * this.kmapDims.colSpacing,
+            this.kmapDims.rowStart + (cell.i + 2) * this.kmapDims.rowSpacing
+          ]); // y1
+        }
+      });
+
+      return lines;
     },
     testBench() {
       return this.truth
@@ -442,6 +595,29 @@ export default {
     output(row) {
       return this.truth[row][this.inputNames.length];
     },
+
+    selectionsAt(i, j) {
+      return this.upperLeftCellsAt(i, j).map(cell => cell.selection);
+    },
+    upperLeftCellsAt(i, j) {
+      return this.upperLeftCells.filter(cell => cell.i == i && cell.j == j);
+    },
+    upperLeftCell(selection) {
+      let mini = 1000;
+      let minj = 1000;
+      let index = -1;
+      selection.forEach((cell, k) => {
+        if (cell.i < mini) {
+          mini = cell.i;
+          index = k;
+        }
+        if (cell.j < minj) {
+          minj = cell.j;
+          index = k;
+        }
+      });
+      return selection[index];
+    },
     resize() {
       this.$refs.editor.resize();
     },
@@ -488,53 +664,49 @@ export default {
       return [-1, -1];
     },
 
+    onSelectionClick(evt) {
+      let cell = evt.target.attrs.cell;
+      let indices = [...this.selectionsAt(cell.i, cell.j), -1];
+      console.log("onSelectionClick: ", cell, indices, this.curSelection);
+      if (indices.length == 0) throw new Error("huh?");
+      if (this.curSelection == -1) {
+        this.curSelection = indices[0];
+      } else {
+        this.curSelection =
+          indices[
+            (indices.findIndex(i => i == this.curSelection) + 1) %
+              indices.length
+          ];
+      }
+      console.log("onSelectionClick ====> ", this.curSelection);
+    },
+
     onCellClick(evt) {
       let cell = evt.target.attrs.cell;
+      console.log("onCellClick: ", cell);
+
       if (!this.kmapCells[cell.i][cell.j]) return; // can't select cells with 0 value
 
       if (this.curSelection == -1) {
-        // not yet selecting
-        const index = this.selections.findIndex(sel =>
-          sel.some(x => this.isSameCell(cell)(x))
+        // no active selection so start a new one and add this cell
+        this.selections.push([{ i: cell.i, j: cell.j }]);
+        this.curSelection = this.selections.length - 1;
+      } else {
+        // there is an active selection so add this cell if not already present, else remove it from the selection
+        let index = this.selections[this.curSelection].findIndex(x =>
+          this.isSameCell(cell)(x)
         );
         if (index == -1) {
-          // not currently selecting and cell is not part of a selection so start a new curSelection
-          console.log(
-            "not currently selecting and cell is not part of a selection so start a new curSelection",
-            index
-          );
-          this.selections.push([{ i: cell.i, j: cell.j }]);
-          this.curSelection = this.selections.length - 1;
+          // cell does not exist in this selection so add it
+          this.selections[this.curSelection].push(cell);
         } else {
-          // not currently selecting and cell IS part of an existing selection, set curSelection to the existing selection
-          console.log(
-            "not currently selecting and cell IS part of an existing selection, set curSelection to the existing selection",
-            index
-          );
-          this.curSelection = index;
+          // cell alreaddy in selection so remove it (toggle it off)
+          this.selections[this.curSelection].splice(index, 1);
+          if (this.selections[this.curSelection].length == 0) {
+            this.selections.splice(this.curSelection, 1); // remove the empty selection
+            this.curSelection = -1;
+          }
         }
-        return;
-      }
-
-      // must already be in selection mode
-
-      // if reselect first cell in selection then stop selecting
-      if (this.isSameCell(cell)(this.selections[this.curSelection][0])) {
-        console.log("clicked first cell so stopping selection");
-        this.curSelection = -1; // TODO: do validity check and abort if invalid selection
-        return;
-      }
-
-      // add to cur selection
-
-      if (
-        !this.selections[this.curSelection].some(x => this.isSameCell(cell)(x))
-      ) {
-        console.log(
-          "clicked a new cell and adding to selection as it's not already there",
-          this.curSelection
-        );
-        this.selections[this.curSelection].push(cell);
       }
     }
   }
