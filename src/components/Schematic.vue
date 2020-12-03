@@ -144,6 +144,7 @@ export default {
     },
     buildNetlist() {
       if (this.width == null || !this.getAllGates) return; // prevent building before properly sized
+      if (!this.isCompiled) return;
       // console.log("Schematic buildNetList: ", this.width, this.height);
 
       this.svg.attr("width", this.width);

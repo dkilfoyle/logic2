@@ -18,6 +18,9 @@ import WindowController from "./windowcontroller.v";
 import ToggleFlopDivider from "./toggleflopdivider.v";
 import ShiftRegister from "./shiftregister.v";
 import BinaryUp from "./binaryup.v";
+import HalfAdder from "./halfadder.v";
+import FullAdder from "./fulladder.v";
+import RippleAdder from "./rippleadder.v";
 
 export const SourceTree = [
   {
@@ -29,7 +32,8 @@ export const SourceTree = [
     children: [
       { text: "Simplify", value: Simplify },
       { text: "SumProducts", value: SumProducts },
-      { text: "DeMorgans", value: DeMorgans }
+      { text: "DeMorgans", value: DeMorgans },
+      { text: "TruthTable", value: {} }
     ]
   },
   {
@@ -51,7 +55,12 @@ export const SourceTree = [
       },
       {
         text: "Math",
-        children: [{ text: "BitAdder", value: BitAdder }]
+        children: [
+          { text: "BitAdder", value: BitAdder },
+          { text: "HalfAdder", value: HalfAdder },
+          { text: "FullAdder", value: FullAdder },
+          { text: "RippleAdder", value: RippleAdder }
+        ]
       }
     ]
   },
@@ -117,5 +126,9 @@ export const SourceFiles = {
   WindowController,
   ToggleFlopDivider,
   ShiftRegister,
-  BinaryUp
+  BinaryUp,
+  HalfAdder,
+  FullAdder,
+  RippleAdder,
+  TruthTable: ""
 };

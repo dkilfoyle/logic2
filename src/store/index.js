@@ -14,7 +14,10 @@ export default new Vuex.Store({
       state.currentFileTab != "" ? state.openFiles[state.currentFileTab] : {},
 
     openEditorFiles: state =>
-      Object.values(state.openFiles).filter(file => file.name != "TruthTable"),
+      Object.values(state.openFiles).filter(file => file.type == "editor"),
+    openTruthTables: state =>
+      Object.values(state.openFiles).filter(file => file.type == "truthtable"),
+
     isCompiled: (state, getters) => {
       return (
         getters.currentFile &&
@@ -135,6 +138,20 @@ export default new Vuex.Store({
     },
     openFile(state, payload) {
       Vue.set(state.openFiles, payload.newSourceName, {
+        type: "editor",
+        name: payload.newSourceName,
+        code: payload.code,
+        parseResult: {},
+        walkResult: {},
+        compileResult: {},
+        simulation: { ready: false, gates: {}, time: [], maxTime: 0 },
+        status: "Parse Error",
+        selectedTime: 0
+      });
+    },
+    openTruthTable(state, payload) {
+      Vue.set(state.openFiles, payload.newSourceName, {
+        type: "truthtable",
         name: payload.newSourceName,
         code: payload.code,
         parseResult: {},

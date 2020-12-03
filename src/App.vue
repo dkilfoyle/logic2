@@ -52,19 +52,6 @@
         @node:selected="onInstanceTreeSelection"
       ></liquor-tree>
 
-      <TruthTable
-        id="truthTable"
-        area="main"
-        :closable="false"
-        title="Truth Table"
-        icon="ion-md-document"
-        ref="truthTable"
-        @passLint="onPassLint"
-        @failLint="onFailLint"
-        @compile="compile"
-        @simulate="simulate"
-      ></TruthTable>
-
       <template v-for="openFile in $store.getters.openEditorFiles">
         <Editor
           :id="openFile.name + '_editor'"
@@ -85,6 +72,23 @@
           @compile="compile"
           @simulate="simulate"
         />
+      </template>
+
+      <template v-for="openFile in $store.getters.openTruthTables">
+        <TruthTable
+          :id="openFile.name + '_truthtable'"
+          :name="openFile.name"
+          :key="openFile.name"
+          area="main"
+          :closable="false"
+          title="Truth Table"
+          icon="ion-md-document"
+          :ref="openFile.name + '_truthtable'"
+          @passLint="onPassLint"
+          @failLint="onFailLint"
+          @compile="compile"
+          @simulate="simulate"
+        ></TruthTable>
       </template>
 
       <TerminalView
@@ -194,10 +198,10 @@ export default {
     };
   },
   created() {
-    this.$store.commit("openFile", {
-      newSourceName: "TruthTable",
-      code: ""
-    });
+    // this.$store.commit("openFile", {
+    //   newSourceName: "TruthTable",
+    //   code: ""
+    // });
     this.addFileTab("Scratch");
   },
   mounted() {
@@ -224,10 +228,17 @@ export default {
       )
         ? sourceName + this.sourceCounter++
         : sourceName;
-      this.$store.commit("openFile", {
-        newSourceName,
-        code: this.sourceFiles[sourceName]
-      });
+      if (sourceName.startsWith("TruthTable")) {
+        this.$store.commit("openTruthTable", {
+          newSourceName,
+          code: this.sourceFiles[sourceName]
+        });
+      } else {
+        this.$store.commit("openFile", {
+          newSourceName,
+          code: this.sourceFiles[sourceName]
+        });
+      }
       this.$store.commit("setCurrentFileTab", newSourceName);
       // this.currentFileTab = newSourceName;
     },
@@ -270,9 +281,13 @@ export default {
           e.id.substring(0, e.id.indexOf("_editor"))
         );
       }
-      if (e.id == "truthTable") {
-        this.$refs.truthTable.focus();
-        this.$store.commit("setCurrentFileTab", "TruthTable");
+      if (e.id.endsWith("_truthtable")) {
+        this.$refs[e.id][0].resize();
+        this.$refs[e.id][0].focus();
+        this.$store.commit(
+          "setCurrentFileTab",
+          e.id.substring(0, e.id.indexOf("_truthtable"))
+        );
       }
     },
     onLuminoDeleted(e) {

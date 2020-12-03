@@ -71,6 +71,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       // if main_port.id already exists then just change it's logic to responsebuffer
 
       if (gates.some(x => x.id == "main_" + port.id)) {
+        console.log("main_" + port.id);
+        console.log(gates);
         console.log("responsebuffer");
       } else {
         const newGate = {
