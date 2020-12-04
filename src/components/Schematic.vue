@@ -28,6 +28,7 @@ import { mapGetters } from "vuex";
 import SevenSegRenderer from "./renderers/sevenseg.js";
 import NumberRenderer from "./renderers/number.js";
 import BufferRenderer from "./renderers/buffer.js";
+import { barData } from "./renderers/number.js";
 
 export default {
   // name: 'ComponentName',
@@ -44,11 +45,12 @@ export default {
     };
   },
   watch: {
-    compileStatus() {
-      // console.log("compileStatusWatcher: ");
-      this.$nextTick(() => this.buildNetlist());
+    compileStatus(status) {
+      // console.log("compileStatus watcher: ", status);
+      if (status) this.buildNetlist();
     },
     getGatesStateAtSelectedTime(timestate) {
+      if (Object.keys(timestate).length === 0) return;
       this.getAllGates
         .filter(gate => gate.logic == "sevenseg")
         .forEach(gate => {
@@ -65,14 +67,30 @@ export default {
           });
         });
 
+      const COLOR_ON = "#70fbfd";
+      const COLOR_OFF = "#181917";
+
       this.getAllGates
         .filter(gate => gate.logic == "number")
         .forEach(gate => {
-          let id = gate.id + "_gate_number";
-          let element = document.querySelector("#svgSchematic #" + id);
-          if (element) element.textContent = timestate[gate.id];
+          let id = gate.id + "_gate_NUMBER";
+          // let element = document.querySelector("#svgSchematic #" + id);
+          // if (element) element.textContent = timestate[gate.id];
+          d3.select("#svgSchematic #" + id)
+            .selectAll(".digit")
+            .data(
+              timestate[gate.id]
+                .toString()
+                .padStart(3, "0")
+                .split("")
+                .map(x => parseInt(x))
+            )
+            .selectAll(".bar")
+            .data(d => barData(d))
+            .attr("fill", d => (d.on ? COLOR_ON : COLOR_OFF));
         });
 
+      // animate the links, controls, and responses
       for (const [gateid, gatevalue] of Object.entries(
         this.getGatesStateAtSelectedTime
       )) {
@@ -136,19 +154,23 @@ export default {
     },
     resize(width, height) {
       // console.log("Schematic onResize: ", width, height);
-      this.width = width;
-      this.height = height;
-      this.svg.attr("width", width);
-      this.svg.attr("height", height);
-      this.buildNetlist();
+      let dx = Math.abs(width - (this.width || 0));
+      let dy = Math.abs(height - (this.height || 0));
+
+      if (dx > 2 || dy > 2) {
+        // stop resize if lumino has sent a fractional change in dimensions
+        this.width = width;
+        this.height = height;
+        this.buildNetlist();
+      }
     },
     buildNetlist() {
       if (this.width == null || !this.getAllGates) return; // prevent building before properly sized
       if (!this.isCompiled) return;
       // console.log("Schematic buildNetList: ", this.width, this.height);
 
-      this.svg.attr("width", this.width);
-      this.svg.attr("height", this.height);
+      this.svg.attr("width", this.width - 10);
+      this.svg.attr("height", this.height - 10);
 
       this.elkData = {
         id: "main",
@@ -436,6 +458,10 @@ body {
 
 .segment-1 {
   fill: red;
+}
+
+.d3-hwschematic {
+  margin: 5px;
 }
 
 .d3-hwschematic .link-wrap {

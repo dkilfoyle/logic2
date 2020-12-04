@@ -120,7 +120,7 @@ export default new Vuex.Store({
       );
     },
     getGatesStateAtSelectedTime: (state, getters) => {
-      if (!getters.isSimulated) return [];
+      if (!getters.isSimulated) return {};
       const gates = getters.currentFile.simulateResult.gates;
       let res = {};
       Object.keys(gates).forEach(
