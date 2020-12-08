@@ -82,36 +82,6 @@ export function barData(v) {
   ];
 }
 
-// function NUMBER_SHAPE(root) {
-//   // width="20" height="40"
-//   // const setTM = (element, m) =>
-//   //   element.transform.baseVal.initialize(
-//   //     element.ownerSVGElement.createSVGTransformFromMatrix(m)
-//   //   );
-
-//   root
-//     .append("rect")
-//     .attr("width", 20)
-//     .attr("height", 20);
-//   root
-//     .append("text")
-//     .text("X")
-//     .attr("x", 5)
-//     .attr("y", 15)
-//     .attr("id", d => d.id + "_number")
-//     .attr("class", "schematicnumber");
-//   // let bbox = text[0][0].getBBox();
-//   // let ctm = text[0][0].getCTM();
-//   // console.log(bbox, ctm);
-//   // let rect = text
-//   //   .append("rect")
-//   //   .attr("x", bbox.x)
-//   //   .attr("y", bbox.y)
-//   //   .attr("width", bbox.width)
-//   //   .attr("height", bbox.height);
-//   // setTM(rect[0][0], ctm);
-// }
-
 function NUMBER_SHAPE(root) {
   root
     .append("rect")

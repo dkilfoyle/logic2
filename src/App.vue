@@ -139,6 +139,16 @@
         dock-mode="split-bottom"
       ></traces>
 
+      <traces2
+        id="traces2"
+        area="main"
+        ref="traces2"
+        title="Traces"
+        icon="fa fa-tab-bar fa-line-chart"
+        dock-ref="traces"
+        dock-mode="tab-after"
+      ></traces2>
+
       <span id="statusbar-edpos" area="statusbar" align="right">
         Ln {{ cursorPosition.lineNumber }}, Col {{ cursorPosition.column }}
       </span>
@@ -158,6 +168,7 @@ import Lumino from "./components/lumino/Lumino";
 import Editor from "./components/Editor.vue";
 import Gates from "./components/Gates.vue";
 import Traces from "./components/Traces.vue";
+import Traces2 from "./components/Traces2.vue";
 import Schematic from "./components/Schematic.vue";
 import LiquorTree from "liquor-tree";
 import TerminalView from "./components/TerminalView";
@@ -185,6 +196,7 @@ export default {
     LiquorTree,
     Gates,
     Traces,
+    Traces2,
     Schematic,
     TruthTable
   },
@@ -265,6 +277,9 @@ export default {
       if (e.id == "terminalView") this.$refs.terminal.fit();
       if (e.id == "traces") {
         this.$refs.traces.resize(e.msg.width, e.msg.height);
+      }
+      if (e.id == "traces2") {
+        this.$refs.traces2.resize(e.msg.width, e.msg.height);
       }
       if (e.id == "schematic")
         this.$refs.schematic.resize(e.msg.width, e.msg.height);
