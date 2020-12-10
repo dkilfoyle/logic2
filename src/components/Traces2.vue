@@ -50,125 +50,171 @@ export default {
     drawTraces() {
       if (!this.$store.getters.isSimulated) return;
 
-      // let time = this.$store.getters.currentFile.simulateResult.time;
+      let time = this.$store.getters.currentFile.simulateResult.time;
+      let clock = this.$store.getters.currentFile.simulateResult.clock;
       let gates = this.filteredInstanceGates.map(id => ({
         id,
         values: this.$store.getters.currentFile.simulateResult.gates[id]
       }));
 
       if (!gates.length) return;
+
       const d3 = window.d3;
+      const svgHeight = this.height;
 
-      // this.svg
-      //   .append("g")
-      //   .attr("transform", `translate(0, ${this.height - 20})`)
-      //   .call(d3.axisBottom(scaleX).ticks(5));
+      const dims = {
+        top: 20,
+        bottom: 20,
+        left: 10,
+        right: 10,
+        pad: 20,
+        n: gates.length + 1, // +1 for clock
+        maxHeight: 50
+      };
 
-      const tracePad = 20;
-      const marginY = 20;
-
-      const traceHeight = Math.min(
-        (this.height - marginY * 2) / gates.length -
-          (gates.length - 1) * tracePad,
-        50
+      dims.height = Math.min(
+        (svgHeight - dims.top - dims.bottom - dims.n * dims.pad) / dims.n,
+        dims.maxHeight
       );
-
-      const top = i => marginY + i * (traceHeight + tracePad);
+      dims.width = this.width - dims.left - dims.right;
+      const top = i => dims.top + i * (dims.height + dims.pad);
 
       var y = d3
         .scaleLinear()
         .domain([0, 1])
-        .range([traceHeight, 0]);
+        .range([dims.height, 0]);
 
       var x = d3
         .scaleLinear()
-        .domain(d3.extent(this.$store.getters.currentFile.simulateResult.time))
-        .range([0, this.width])
+        .domain(d3.extent(time))
+        .range([0, dims.width])
         .nice();
 
-      let that = this;
+      var brush = d3
+        .brushX()
+        .extent([
+          [0, 0],
+          [dims.width, dims.height]
+        ])
+        .on("brush", brushed);
+
+      const makeGridlines = x => d3.axisBottom(x).ticks(time.length + 1);
       this.svg
+        .append("g")
+        .attr("class", "grid")
+        .attr(
+          "transform",
+          `translate(${dims.left}, ${top(dims.n - 2) + dims.height})`
+        )
+        .call(
+          makeGridlines(x)
+            .tickSize(-1000) // traceHeight * gates.length - )
+            .tickFormat("")
+        );
+
+      var area = (x, y) =>
+        d3
+          .area()
+          .x((d, i) => x(i))
+          .y0(dims.height)
+          .y1(d => y(d))
+          .curve(d3.curveStepAfter);
+
+      var line = (x, y) =>
+        d3
+          .line()
+          .x((d, i) => x(i))
+          .y(d => y(d))
+          .curve(d3.curveStepAfter);
+
+      let that = this;
+      let focus = this.svg
         .selectAll(".trace")
         .data(gates)
         .enter()
         .append("g")
-        .attr("transform", (d, i) => `translate(0, ${top(i)})`)
-        .each(function(p) {
+        .attr("transform", (d, i) => `translate(${dims.left}, ${top(i)})`)
+        .each(function(p, i) {
           var cur = d3.select(this);
-
-          console.log(p);
-
-          var area = d3
-            .area()
-            .x((d, i) => x(i))
-            .y0(traceHeight)
-            .y1(d => y(d))
-            .curve(d3.curveStepAfter);
-
-          var line = d3
-            .line()
-            .x((d, i) => x(i))
-            .y(d => y(d))
-            .curve(d3.curveStepAfter);
 
           cur
             .append("path")
             .attr("class", "area")
             .attr("fill", that.traceColor(p.id, true))
-            .attr("d", area(p.values));
+            .datum(p.values)
+            .attr("d", area(x, y));
 
           cur
             .append("path")
             .attr("class", "line")
             .attr("stroke", that.traceColor(p.id, false))
-            .attr("d", line(p.values));
+            .datum(p.values)
+            .attr("d", line(x, y));
 
-          // cur
-          //   .selectAll(".points")
-          //   .data(p.values)
-          //   .enter()
-          //   .append("circle")
-          //   .attr("cx", (d, i) => x(time[i]))
-          //   .attr("cy", d => y(d))
-          //   .attr("r", 2);
+          if (i == gates.length - 1) {
+            cur
+              .append("g")
+              .attr("class", "axisx")
+              .attr("transform", "translate(0," + dims.height + ")")
+              .call(d3.axisBottom(x));
+          }
         });
 
-      // graph
-      //   .append("path")
-      //   .attr("fill", d => this.traceColor(d.id))
-      //   .datum(d => d.values)
-      //   .attr("d", area);
+      var context = this.svg
+        .append("g")
+        .attr("class", "context")
+        .attr(
+          "transform",
+          `translate(${dims.left},${top(dims.n - 1) + dims.pad})`
+        );
 
-      // graph
-      //   .append("path")
-      //   .attr("stroke", d => this.traceColor(d.id))
-      //   .attr("stroke-width", 1.5)
-      //   .datum(d => d.values)
-      //   .attr("d", d => {
-      //     console.log("path: ", d);
-      //     return line(d);
-      //   });
+      context
+        .append("path")
+        .datum(clock)
+        .attr("class", "area2")
+        .attr("fill", that.traceColor("clock", true))
+        .attr("d", area(x, y));
 
-      // graph.selectAll(".points").each(d => {
-      //   console.log("points each: ", d);
-      // });
+      context
+        .append("path")
+        .attr("class", "line2")
+        .attr("stroke", that.traceColor("clock", false))
+        .datum(clock)
+        .attr("d", line(x, y));
 
-      // .attr("stroke", d => this.traceColor(d.id))
-      // .data(d => d.values)
-      // .enter()
-      // .append("circle")
-      // .attr("cx", (d, i) => scaleX(time[i]))
-      // .attr("cy", d => scaleY(d))
-      // .attr("r", 4);
+      context
+        .append("g")
+        .attr("class", "axisx2")
+        .attr("transform", `translate(0,${dims.height})`)
+        .call(d3.axisBottom(x));
 
-      // graph.call(d3.axisLeft(scaleY).ticks(5));
+      context
+        .append("g")
+        .attr("class", "brush")
+        .call(brush)
+        .call(brush.move, x.range());
+
+      function brushed({ selection }) {
+        var focusX = x.copy().domain(selection.map(x.invert, x));
+        var focusY = y.copy().domain([0, 1]);
+
+        focus.selectAll(".area").attr("d", area(focusX, focusY));
+        focus.selectAll(".line").attr("d", line(focusX, focusY));
+        focus.select(".axisx").call(d3.axisBottom(focusX));
+        that.svg.select(".grid").call(
+          makeGridlines(focusX)
+            .tickSize(-1000) // traceHeight * gates.length - )
+            .tickFormat("")
+        );
+      }
     },
 
     traceColor: function(id, outline = true) {
+      if (id == "clock") return outline ? "#e4e5e7" : "#c9cbcf";
       if (this.isOutput(this.$store.state.selectedInstanceID, id))
-        return "rgb(255,99,132)";
+        return outline ? "#ffb1c188" : "#ff6384";
       if (this.isInput(this.$store.state.selectedInstanceID, id)) {
-        return outline ? "lightsteelblue" : "steelblue";
+        return outline ? "#9ad0f588" : "#36a2eb";
       }
 
       return "darkgrey";
@@ -210,7 +256,28 @@ export default {
   fill: none;
   stroke-width: 1.4;
 }
+.line2 {
+  fill: none;
+  stroke-width: 1.4;
+}
+
 .point {
   fill: none;
+}
+
+.grid line {
+  stroke: lightgrey;
+  stroke-opacity: 0.7;
+  shape-rendering: crispEdges;
+}
+
+.grid path {
+  stroke-width: 0;
+}
+
+.zoom {
+  cursor: move;
+  fill: none;
+  pointer-events: all;
 }
 </style>
