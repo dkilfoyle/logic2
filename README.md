@@ -68,27 +68,27 @@ npm run serve
 ## TODO
 
 1. More sample code circuits
-   1. 4 bit ripple adder
+   1. 4 bit ripple adder (done)
    1. 4 to 1 multiplexer with bit vector select line
-   1. Ripple counter
-   1. Shift register
-   1. FSMs
-1. More custom nodes eg bits to number
+   1. Ripple counter (done)
+   1. Shift register (done)
+   1. FSMs (done)
+1. More custom nodes eg bits to number (done)
 1. Reuse intermediary gates
 1. Support bit vector type
-1. More linting
-1. Custom schematic node renderer eg seven segment
+1. More linting (WIP)
+1. Custom schematic node renderer eg seven segment (done)
 1. d3-hwschematic - how can import without webworker problem
 1. d3-hwschematic - remove need for custom line exports.GenericNodeRenderer = GenericNodeRenderer;
 1. Future?
-   a) Truth tables to generate optimised logic gates
+   a) Truth tables and Karnaugh maps to generate optimised logic gates (done)
+   b) Custom d3-based traces view instead of dygraphs (WIP)
 
 ## Acknowledgements
 
 1. [LowLevelJavascript Digital Circuit Simulator](https://www.youtube.com/c/LowLevelJavaScript)
 2. [Antlr](https://www.antlr.org/)
 3. [Monaco Editor](https://microsoft.github.io/monaco-editor/)
-4. [Dygraphs](https://www.dygraphs.com/)
-5. [d3-hwschematic](https://github.com/Nic30/d3-hwschematic)
-6. [Lumino Widgets](https://github.com/jupyterlab/lumino)
-7. Vue + Buefy
+4. [d3-hwschematic](https://github.com/Nic30/d3-hwschematic)
+5. [Lumino Widgets](https://github.com/jupyterlab/lumino)
+6. Vue + Buefy
