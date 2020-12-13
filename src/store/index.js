@@ -7,7 +7,8 @@ export default new Vuex.Store({
   state: {
     selectedInstanceID: "main",
     openFiles: {},
-    currentFileTab: "Scratch"
+    currentFileTab: "Scratch",
+    showWhichGates: "all"
   },
   getters: {
     currentFile: state =>
@@ -130,6 +131,9 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    setShowWhichGates(state, payload) {
+      state.showWhichGates = payload;
+    },
     setSelectedInstanceID(state, id) {
       state.selectedInstanceID = id;
     },

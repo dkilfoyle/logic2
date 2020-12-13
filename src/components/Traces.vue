@@ -1,9 +1,21 @@
 <template>
   <div ref="container" style="height:100%">
-    <div class="columns">
-      <div class="column">
-        <div class="traces" id="mytraces" ref="traces"></div>
+    <div class="rows">
+      <div class="row" style="height:40px">
+        <nav class="breadcrumb is-centered" style="line-height:40px">
+          <ul>
+            <li
+              v-for="node in $store.state.selectedInstanceID.split('_')"
+              :key="node"
+            >
+              <a @click="selectBreadcumb(node)">{{ node }}</a>
+            </li>
+          </ul>
+        </nav>
       </div>
+    </div>
+    <div class="row">
+      <div class="traces" id="mytraces" ref="traces"></div>
     </div>
   </div>
 </template>
@@ -41,19 +53,13 @@ export default {
       return this.$store.getters.currentFile.simulateResult.clock.map(
         (x, i) => [i, x]
       );
-    },
-    userWidth: function() {
-      return 100 - this.margins.left - this.margins.right;
-    },
-    userHeight: function() {
-      return 100 - this.margins.top - this.margins.bottom;
     }
   },
   watch: {
-    filteredInstanceGates: function(gates) {
+    filteredInstanceGates: function() {
       if (!this.$store.getters.isSimulated) return;
       this.$nextTick(() => {
-        console.log("filteredInstanceGates watcher: ", gates);
+        // console.log("filteredInstanceGates watcher: ", gates);
         this.drawTraces();
       });
     }
@@ -82,6 +88,8 @@ export default {
 
     chart.append("g").attr("class", "focus");
     chart.append("g").attr("class", "context");
+    // context.append("g").attr("class", "trace");
+    // context.append("g").attr("class", "brush");
 
     const crosshair = chart.append("g").attr("class", "crosshair");
     crosshair
@@ -125,21 +133,13 @@ export default {
       var y = d3
         .scaleLinear()
         .domain([0, 1])
-        .range([traceHeight, 0]);
+        .range([traceHeight, 2]); // dont draw up to y=0 to avoid line width clipping
 
       var x = d3
         .scaleLinear()
         .domain(d3.extent(time))
         .range([0, chartWidth])
         .nice();
-
-      var brush = d3
-        .brushX()
-        .extent([
-          [0, traceHeight - 20],
-          [chartWidth, traceHeight + 25]
-        ])
-        .on("brush", brushed);
 
       var area = (x, y) =>
         d3
@@ -156,25 +156,44 @@ export default {
           .y(d => y(d))
           .curve(d3.curveStepAfter);
 
-      function makeFilledPlot(d) {
+      function enterFilledPlot() {
         d3.select(this)
           .append("path")
-          .attr("class", "area")
+          .attr("class", "area");
+        d3.select(this)
+          .append("path")
+          .attr("class", "line");
+        d3.select(this)
+          .append("text")
+          .attr("class", "label")
+          .attr("x", 10);
+      }
+
+      function positionFocusFilledPlot(d, i) {
+        d3.select(this)
+          .transition()
+          .duration(1000)
+          .attr("transform", `translate(0, ${traceTop(i)})`);
+      }
+
+      function updateFilledPlot(d) {
+        d3.select(this)
+          .select(".axisx")
+          .remove();
+        d3.select(this)
+          .select(".area")
           .attr("fill", d => that.traceColor(d.id, true))
           .datum(d => d.values)
           .attr("d", area(x, y));
         d3.select(this)
-          .append("path")
-          .attr("class", "line")
+          .select(".line")
           .attr("stroke", d => that.traceColor(d.id, false))
           .datum(d => d.values)
           .attr("d", line(x, y));
         d3.select(this)
-          .append("text")
-          .attr("x", 10)
+          .select(".label")
           .attr("y", traceHeight / 2)
-          .text(d => d.id);
-
+          .text(d => that.getLocalId(d.id));
         if (d.options.xAxis)
           d3.select(this)
             .append("g")
@@ -211,13 +230,39 @@ export default {
           .selectAll(".trace")
           .data(data);
 
-        focus.exit().remove();
+        focus
+          .exit()
+          .transition()
+          .duration(1000)
+          .style("opacity", 0)
+          .remove();
         focus
           .enter()
           .append("g")
           .attr("class", "trace")
-          .attr("transform", (d, i) => `translate(0, ${traceTop(i)})`)
-          .each(makeFilledPlot);
+
+          .each(enterFilledPlot)
+          .merge(focus)
+          .each(positionFocusFilledPlot)
+          .each(updateFilledPlot);
+      }
+
+      var brush = d3
+        .brushX()
+        .extent([
+          [0, traceHeight],
+          [chartWidth, traceHeight + 25]
+        ])
+        .on("brush", brushed);
+
+      function brushed({ selection }) {
+        var focusX = x.copy().domain(selection.map(x.invert, x));
+        var focusY = y.copy().domain([0, 1]);
+
+        d3.selectAll(".focus .trace .area").attr("d", area(focusX, focusY));
+        d3.selectAll(".focus .trace .line").attr("d", line(focusX, focusY));
+        d3.select(".focus .axisx").call(d3.axisBottom(focusX));
+        d3.select(".grid").call(makeGridlines(focusX));
       }
 
       function updateContext(data) {
@@ -231,15 +276,30 @@ export default {
           .enter()
           .append("g")
           .attr("class", "trace")
+          .each(enterFilledPlot)
+          .merge(context)
+          .each(updateFilledPlot);
+
+        var brush2 = d3
+          .select(".context")
+          .selectAll(".brush")
+          .data(data);
+
+        brush2
+          .enter()
+          .append("g")
+          .attr("class", "brush")
+          .merge(brush2)
+          .call(brush)
+          .call(brush.move, x.range());
+
+        d3.select(".context")
+          .transition()
+          .duration(1000)
           .attr(
             "transform",
             `translate(0, ${traceTop(traceN - 1) + that.margins.pad})`
-          )
-          .each(makeFilledPlot)
-          .append("g")
-          .attr("class", "brush")
-          .call(brush)
-          .call(brush.move, x.range());
+          );
       }
 
       function updateCrosshair() {
@@ -265,6 +325,8 @@ export default {
               .attr("y1", 0)
               .attr("x2", mouse[0])
               .attr("y2", traceTop(traceN - 1));
+
+            // TODO: emit cursor event this.$store.commit("setSelectedTime", e.x);
           })
           .on("click", function() {
             console.log(d3.mouse(this));
@@ -276,16 +338,6 @@ export default {
       updateFocus(gates);
       updateContext([clock]);
       updateCrosshair();
-
-      function brushed({ selection }) {
-        var focusX = x.copy().domain(selection.map(x.invert, x));
-        var focusY = y.copy().domain([0, 1]);
-
-        d3.selectAll(".focus .trace .area").attr("d", area(focusX, focusY));
-        d3.selectAll(".focus .trace .line").attr("d", line(focusX, focusY));
-        d3.select(".focus .axisx").call(d3.axisBottom(focusX));
-        d3.select(".grid").call(makeGridlines(focusX));
-      }
     },
 
     traceColor: function(id, outline = true) {
@@ -316,7 +368,7 @@ export default {
       // this.width = container.style("width");
       // this.height = container.style("height");
       this.width = width;
-      this.height = height;
+      this.height = height - 40;
       this.svg.attr("width", this.width);
       this.svg.attr("height", this.height);
       this.drawTraces();

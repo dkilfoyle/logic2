@@ -235,7 +235,7 @@ class Listener extends vlgListener {
       default:
         throw new Error("invalid assign binary operator");
     }
-    const id = this.assign.id + "_" + this.assign.n;
+    const id = this.assign.id + this.assign.n;
     this.curModule.wires.push(id); // intermediary gates need a wire for namespace mapping
     this.assign.gates.push({
       type: "gate",

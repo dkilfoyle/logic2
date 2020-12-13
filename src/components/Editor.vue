@@ -1,6 +1,6 @@
 <template>
   <div class="columns" style="height:100%">
-    <div class="column">
+    <div class="column" style="width:100%">
       <nav class="level dktoolbar">
         <div class="level-left">
           <div class="level-item dkbuttongroup">

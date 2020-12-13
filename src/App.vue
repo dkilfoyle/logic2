@@ -41,16 +41,13 @@
         </span></liquor-tree
       >
 
-      <liquor-tree
+      <instance-tree
         id="outline"
         ref="outline"
         area="right"
-        class="jp-FileBrowser"
         icon="ion-md-menu"
-        :data="$store.getters.instanceTree"
-        :options="{ nodeIndent: 14 }"
-        @node:selected="onInstanceTreeSelection"
-      ></liquor-tree>
+        class="dk-Outline"
+      ></instance-tree>
 
       <template v-for="openFile in $store.getters.openEditorFiles">
         <Editor
@@ -161,9 +158,8 @@ import Traces from "./components/Traces.vue";
 import Schematic from "./components/Schematic.vue";
 import LiquorTree from "liquor-tree";
 import TerminalView from "./components/TerminalView";
+import InstanceTree from "./components/InstanceTree";
 import TruthTable from "./components/TruthTable";
-
-import { mapGetters } from "vuex";
 
 const Chalk = require("chalk");
 let options = { enabled: true, level: 2 };
@@ -186,7 +182,8 @@ export default {
     Gates,
     Traces,
     Schematic,
-    TruthTable
+    TruthTable,
+    InstanceTree
   },
   mixins: [UtilsMixin],
   data() {
@@ -207,13 +204,7 @@ export default {
   mounted() {
     setTimeout(() => this.about(), 3000);
   },
-  computed: {
-    ...mapGetters(["getInstanceTree"])
-  },
   watch: {
-    getInstanceTree(tree) {
-      this.$nextTick(() => this.$refs.outline.setModel(tree));
-    },
     currentFileTab() {
       this.$store.commit("setSelectedInstanceID", "main");
     }
@@ -251,9 +242,6 @@ export default {
       if (node.children.length == 0) this.addFileTab(node.text);
     },
 
-    onInstanceTreeSelection(node) {
-      this.$store.commit("setSelectedInstanceID", node.data.id);
-    },
     onLuminoResize(e) {
       // console.log("onLuminoResize: ", e);
       if (e.id.endsWith("_editor")) {
@@ -455,6 +443,13 @@ body {
   height: 100%;
 }
 
+.dk-Outline {
+  color: var(--jp-ui-font-color1);
+  background: var(--jp-layout-color1);
+  font-size: var(--jp-ui-font-size1);
+  height: 100%;
+}
+
 .tree-root {
   margin-top: 4px;
 }
@@ -464,5 +459,10 @@ body {
 
 .fa-tab-bar {
   line-height: var(--jp-private-horixontal-tab-height);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
 }
 </style>

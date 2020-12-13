@@ -16,29 +16,6 @@
             </li>
           </ul>
         </nav>
-        <div class="control is-centered is-small">
-          <b-radio
-            v-model="showWhichGates"
-            name="showWhichGates"
-            native-value="all"
-            size="is-small"
-            >All</b-radio
-          >
-          <b-radio
-            v-model="showWhichGates"
-            name="showWhichGates"
-            native-value="inputs"
-            size="is-small"
-            >Inputs</b-radio
-          >
-          <b-radio
-            v-model="showWhichGates"
-            name="showWhichGates"
-            native-value="outputs"
-            size="is-small"
-            >Outputs</b-radio
-          >
-        </div>
 
         <table class="table is-fullwidth">
           <thead class="bg-teal">

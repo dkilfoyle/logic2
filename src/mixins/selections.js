@@ -11,7 +11,7 @@ export default {
     ]),
     filteredInstanceGates: function() {
       if (!this.isCompiled) return [];
-      switch (this.showWhichGates) {
+      switch (this.$store.state.showWhichGates) {
         case "all":
           return this.allInstanceGates;
         case "wires":
