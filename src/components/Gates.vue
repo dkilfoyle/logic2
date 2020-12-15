@@ -1,22 +1,8 @@
 <template>
-  <div class="dkcontainer  mx-4 my-4" style="height:100%">
-    <div
-      v-if="$store.getters.isCompiled"
-      class="columns"
-      style="overflow-y: auto;height:100%"
-    >
-      <div class="column">
-        <nav class="breadcrumb is-centered">
-          <ul>
-            <li
-              v-for="node in $store.state.selectedInstanceID.split('_')"
-              :key="node"
-            >
-              <a @click="selectBreadcumb(node)">{{ node }}</a>
-            </li>
-          </ul>
-        </nav>
-
+  <div ref="container" style="height:100%">
+    <div class="rows" v-if="$store.getters.isCompiled">
+      <instance-crumbs @show-outline="$emit('show-outline')"></instance-crumbs>
+      <div class="row" style="padding: 0px 20px">
         <table class="table is-fullwidth">
           <thead class="bg-teal">
             <tr class="text-white">
@@ -55,19 +41,27 @@
         </table>
       </div>
     </div>
-    <div v-else><h5>Compile File First</h5></div>
+    <div
+      class="rows"
+      style="align-items:center; justify-content:center; height:100%"
+      v-else
+    >
+      <div class="row"><h4>Compile to show gates</h4></div>
+    </div>
   </div>
 </template>
 
 <script>
 import UtilsMixin from "../mixins/utils";
 import SelectionsMixin from "../mixins/selections";
+import InstanceCrumbs from "./InstanceCrumbs";
 
 export default {
   data() {
     return { showWhichGates: "all" };
   },
   mixins: [UtilsMixin, SelectionsMixin],
+  components: { InstanceCrumbs },
 
   methods: {
     selectBreadcumb(node) {

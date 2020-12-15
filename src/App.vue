@@ -10,41 +10,47 @@
       @simulate="simulate"
       @about="about"
     >
-      <liquor-tree
+      <div
         id="fileTree"
         area="left"
         class="jp-FileBrowser"
         icon="ion-md-folder-open"
-        :data="sourceTree"
-        :options="{ nodeIndent: 22 }"
-        @node:selected="onCodeTreeSelection"
       >
-        <span class="tree-text" slot-scope="{ node }">
-          <template v-if="!node.hasChildren()">
-            <template v-if="!node.data.icon">
-              <ion-icon name="document-text-outline"></ion-icon>
-              {{ node.text }}
+        <h4 style="padding-left:15px;padding-top:10px">CIRCUIT LIBRARY</h4>
+        <liquor-tree
+          :data="sourceTree"
+          :options="{ nodeIndent: 22 }"
+          @node:selected="onCodeTreeSelection"
+        >
+          <span class="tree-text" slot-scope="{ node }">
+            <template v-if="!node.hasChildren()">
+              <template v-if="!node.data.icon">
+                <ion-icon name="document-text-outline"></ion-icon>
+                {{ node.text }}
+              </template>
+
+              <template v-else>
+                <i :class="node.data.icon"></i>
+                {{ node.text }}
+              </template>
             </template>
 
             <template v-else>
-              <i :class="node.data.icon"></i>
-              {{ node.text }}
+              <i
+                :class="
+                  node.expanded() ? 'fa fa-folder-open' : 'fa fa-folder-o'
+                "
+              ></i>
+              <span style="margin-left: 8px">{{ node.text }}</span>
             </template>
-          </template>
-
-          <template v-else>
-            <i
-              :class="node.expanded() ? 'fa fa-folder-open' : 'fa fa-folder-o'"
-            ></i>
-            <span style="margin-left: 8px">{{ node.text }}</span>
-          </template>
-        </span></liquor-tree
-      >
+          </span></liquor-tree
+        >
+      </div>
 
       <instance-tree
         id="outline"
         ref="outline"
-        area="right"
+        area="left"
         icon="ion-md-menu"
         class="dk-Outline"
       ></instance-tree>
@@ -114,6 +120,7 @@
         icon="fa fa-tab-bar fa-table"
         dock-ref=""
         dock-mode="split-right"
+        @show-outline="$refs.lumino.shellWidget.activateById('outline')"
       />
 
       <schematic
@@ -134,6 +141,7 @@
         icon="fa fa-tab-bar fa-line-chart"
         dock-ref="gates"
         dock-mode="split-bottom"
+        @show-outline="$refs.lumino.shellWidget.activateById('outline')"
       ></traces>
 
       <span id="statusbar-edpos" area="statusbar" align="right">

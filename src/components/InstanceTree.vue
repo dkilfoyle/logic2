@@ -1,11 +1,13 @@
 <template>
   <div class="rows">
+    <h4 style="padding:10px">INSTANCES</h4>
     <liquor-tree
       ref="tree"
       :data="$store.getters.instanceTree"
       :options="{ nodeIndent: 14 }"
       @node:selected="onInstanceTreeSelection"
     ></liquor-tree>
+    <h4 style="padding:10px">GATE FILTER</h4>
     <div class="control mt-2" style="align-self:center">
       <b-radio v-model="showWhichGates" name="showWhichGates" native-value="all"
         >All</b-radio

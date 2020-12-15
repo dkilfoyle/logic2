@@ -1,6 +1,6 @@
 <template>
   <div class="dkcontainer">
-    <div class="level my-4" v-if="isSimulated">
+    <div class="level my-2" v-if="isSimulated">
       <div class="level-item has-text-centered">
         t = {{ $store.getters.currentFile.selectedTime }}
       </div>

@@ -104,7 +104,7 @@ export class LabShell extends Widget {
     rootLayout.direction = "top-to-bottom";
     rootLayout.spacing = 0;
 
-    hsplitPanel.setRelativeSizes([1, 2.5, 1]);
+    hsplitPanel.setRelativeSizes([1, 4.5, 2]);
 
     BoxLayout.setStretch(headerPanel, 0);
     // BoxLayout.setStretch(titleHandler.panel, 0);

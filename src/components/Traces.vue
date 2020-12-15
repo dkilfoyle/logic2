@@ -1,21 +1,17 @@
 <template>
   <div ref="container" style="height:100%">
-    <div class="rows">
-      <div class="row" style="height:40px">
-        <nav class="breadcrumb is-centered" style="line-height:40px">
-          <ul>
-            <li
-              v-for="node in $store.state.selectedInstanceID.split('_')"
-              :key="node"
-            >
-              <a @click="selectBreadcumb(node)">{{ node }}</a>
-            </li>
-          </ul>
-        </nav>
+    <div class="rows" v-show="isSimulated">
+      <instance-crumbs @show-outline="$emit('show-outline')"></instance-crumbs>
+      <div class="row">
+        <div class="traces" id="mytraces" ref="traces"></div>
       </div>
     </div>
-    <div class="row">
-      <div class="traces" id="mytraces" ref="traces"></div>
+    <div
+      class="rows"
+      style="align-items:center; justify-content:center; height:100%"
+      v-show="!isSimulated"
+    >
+      <div class="row"><h4>Simulate to show traces</h4></div>
     </div>
   </div>
 </template>
@@ -24,12 +20,13 @@
 import UtilsMixin from "../mixins/utils";
 import SelectionsMixin from "../mixins/selections";
 import { mapGetters } from "vuex";
+import InstanceCrumbs from "./InstanceCrumbs";
 
 const d3 = window.d3;
 
 export default {
   mixins: [UtilsMixin, SelectionsMixin],
-  components: {},
+  components: { InstanceCrumbs },
   data() {
     return {
       showWhichGates: "all",
@@ -326,7 +323,12 @@ export default {
               .attr("x2", mouse[0])
               .attr("y2", traceTop(traceN - 1));
 
-            // TODO: emit cursor event this.$store.commit("setSelectedTime", e.x);
+            console.log();
+
+            that.$store.commit(
+              "setSelectedTime",
+              Math.max(0, Math.floor(x.invert(mouse[0])))
+            );
           })
           .on("click", function() {
             console.log(d3.mouse(this));
@@ -350,7 +352,8 @@ export default {
 
       return "darkgrey";
     },
-    selectBreadcumb(node) {
+    onBreadcrumbEllipsis() {},
+    selectBreadcrumb(node) {
       if (node == "main") {
         this.$store.commit("setSelectedInstanceID", "main");
         return;
@@ -368,17 +371,10 @@ export default {
       // this.width = container.style("width");
       // this.height = container.style("height");
       this.width = width;
-      this.height = height - 40;
+      this.height = height - 60;
       this.svg.attr("width", this.width);
       this.svg.attr("height", this.height);
       this.drawTraces();
-    },
-    onClicked(e) {
-      this.$store.commit("setSelectedTime", e.x);
-    },
-    onHighlighted(e) {
-      // console.log(e);
-      this.$store.commit("setSelectedTime", e.x);
     }
   }
 };
