@@ -69,9 +69,9 @@ export default {
         this.$store.commit("setSelectedInstanceID", "main");
         return;
       }
-      const x = this.$store.state.selectedInstanceID.substring(
+      const x = this.$store.getters.selectedInstanceID.substring(
         0,
-        this.$store.state.selectedInstanceID.indexOf("_" + node) +
+        this.$store.getters.selectedInstanceID.indexOf("_" + node) +
           node.length +
           1
       );

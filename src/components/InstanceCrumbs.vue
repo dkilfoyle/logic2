@@ -3,7 +3,7 @@
     <nav class="breadcrumb is-centered" style="line-height:60px">
       <ul>
         <li
-          v-for="node in $store.state.selectedInstanceID.split('_')"
+          v-for="node in $store.getters.selectedInstanceID.split('_')"
           :key="node"
         >
           <a @click="selectBreadcrumb(node)">{{ node }}</a>
@@ -34,9 +34,9 @@ export default {
         this.$store.commit("setSelectedInstanceID", "main");
         return;
       }
-      const x = this.$store.state.selectedInstanceID.substring(
+      const x = this.$store.getters.selectedInstanceID.substring(
         0,
-        this.$store.state.selectedInstanceID.indexOf("_" + node) +
+        this.$store.getters.selectedInstanceID.indexOf("_" + node) +
           node.length +
           1
       );

@@ -5,7 +5,6 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    selectedInstanceID: "main",
     openFiles: {},
     currentFileTab: "Scratch",
     showWhichGates: "all"
@@ -33,6 +32,8 @@ export default new Vuex.Store({
       );
     },
 
+    selectedInstanceID: (state, getters) =>
+      getters.currentFile.selectedInstanceID,
     getAllInstances: (state, getters) =>
       getters.isCompiled ? getters.currentFile.compileResult.instances : [],
     getAllGates: (state, getters) =>
@@ -48,9 +49,9 @@ export default new Vuex.Store({
           data: { id: instance.id }
         };
         res.state = {};
-        if (state.selectedInstanceID.includes(id))
+        if (getters.currentFile.selectedInstanceID.includes(id))
           res.state = { expanded: true };
-        if (id == state.selectedInstanceID)
+        if (id == getters.currentFile.selectedInstanceID)
           res.state = { ...res.state, selected: true };
         if (instance.instances.length > 0)
           res.children = instance.instances.map(ci => buildNode(ci));
@@ -64,12 +65,13 @@ export default new Vuex.Store({
       return getters.getAllGates.find(x => x.id == gateid);
     },
     getInstance: (state, getters) => instanceID => {
-      const id = instanceID || state.selectedInstanceID;
+      const id = instanceID || getters.currentFile.selectedInstanceID;
       return getters.getAllInstances.find(x => x.id == id);
     },
 
     getInstanceInputs: (state, getters) => id => {
       if (!getters.isCompiled) return [];
+      console.log("getInstanceInputs: ", id, getters.currentFile);
       if (id == "main")
         return getters.currentFile.walkResult.modules
           .find(x => x.id == "Main")
@@ -96,11 +98,11 @@ export default new Vuex.Store({
     },
 
     getSelectedInstanceInputs: (state, getters) =>
-      getters.getInstanceInputs(state.selectedInstanceID),
+      getters.getInstanceInputs(getters.currentFile.selectedInstanceID),
     getSelectedInstanceOutputs: (state, getters) =>
-      getters.getInstanceOutputs(state.selectedInstanceID),
+      getters.getInstanceOutputs(getters.currentFile.selectedInstanceID),
     getSelectedInstanceGates: (state, getters) =>
-      getters.getInstanceGates(state.selectedInstanceID),
+      getters.getInstanceGates(getters.currentFile.selectedInstanceID),
 
     isInput: (state, getters) => (instanceid, gateid) => {
       return getters.getInstanceInputs(instanceid).some(x => x == gateid);
@@ -135,7 +137,7 @@ export default new Vuex.Store({
       state.showWhichGates = payload;
     },
     setSelectedInstanceID(state, id) {
-      state.selectedInstanceID = id;
+      state.openFiles[state.currentFileTab].selectedInstanceID = id;
     },
     setCurrentFileTab(state, payload) {
       state.currentFileTab = payload;
@@ -150,7 +152,8 @@ export default new Vuex.Store({
         compileResult: {},
         simulation: { ready: false, gates: {}, time: [], maxTime: 0 },
         status: "Parse Error",
-        selectedTime: 0
+        selectedTime: 0,
+        selectedInstanceID: "main"
       });
     },
     openTruthTable(state, payload) {
@@ -163,7 +166,8 @@ export default new Vuex.Store({
         compileResult: {},
         simulation: { ready: false, gates: {}, time: [], maxTime: 0 },
         status: "Parse Error",
-        selectedTime: 0
+        selectedTime: 0,
+        selectedInstanceID: "main"
       });
     },
     closeFile(state, payload) {

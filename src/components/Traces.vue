@@ -344,9 +344,9 @@ export default {
 
     traceColor: function(id, outline = true) {
       if (id == "clock") return outline ? "#e4e5e7" : "#c9cbcf";
-      if (this.isOutput(this.$store.state.selectedInstanceID, id))
+      if (this.isOutput(this.$store.getters.selectedInstanceID, id))
         return outline ? "#ffb1c188" : "#ff6384";
-      if (this.isInput(this.$store.state.selectedInstanceID, id)) {
+      if (this.isInput(this.$store.getters.selectedInstanceID, id)) {
         return outline ? "#9ad0f588" : "#36a2eb";
       }
 
@@ -358,9 +358,9 @@ export default {
         this.$store.commit("setSelectedInstanceID", "main");
         return;
       }
-      const x = this.$store.state.selectedInstanceID.substring(
+      const x = this.$store.getters.selectedInstanceID.substring(
         0,
-        this.$store.state.selectedInstanceID.indexOf("_" + node) +
+        this.$store.getters.selectedInstanceID.indexOf("_" + node) +
           node.length +
           1
       );
