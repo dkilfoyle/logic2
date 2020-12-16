@@ -126,6 +126,7 @@ export default {
       const traceTop = i => i * (traceHeight + this.margins.pad);
 
       let that = this;
+      this.svg.attr("height", traceTop(traceN + 2));
 
       var y = d3
         .scaleLinear()
@@ -373,7 +374,8 @@ export default {
       this.width = width;
       this.height = height - 60;
       this.svg.attr("width", this.width);
-      this.svg.attr("height", this.height);
+      // this.svg.attr("height", this.height);
+      d3.select("#mytraces").attr("style", `height: ${height - 60}px`);
       this.drawTraces();
     }
   }
@@ -381,6 +383,10 @@ export default {
 </script>
 
 <style>
+#mytraces {
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
 .line {
   fill: none;
   stroke-width: 1.4;
@@ -411,5 +417,18 @@ export default {
   fill: none;
   stroke: #00000000;
   pointer-events: all;
+}
+
+#mytraces::-webkit-scrollbar {
+  width: 6px;
+
+  /* border-left: #4a4a4a 1px solid; */
+}
+
+#mytraces::-webkit-scrollbar-thumb {
+  background-color: #808080;
+  /* border-left: #4a4a4a 1px solid; */
+  border-radius: 6px;
+  fill-opacity: 0.5;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="dkcontainer">
+  <!-- <div class="dkcontainer">
     <div class="level my-2" v-if="isSimulated">
       <div class="level-item has-text-centered">
         t = {{ $store.getters.currentFile.selectedTime }}
@@ -8,8 +8,20 @@
     <div class="mx-4 my-2" v-if="!isCompiled">Compile File First</div>
     <div class="columns">
       <div class="column">
-        <svg ref="svgSchematic" id="svgSchematic" />
+       
       </div>
+    </div>
+  </div> -->
+
+  <div ref="container" style="height:100%">
+    <div
+      class="rows"
+      style="height:100%;align-items:center; justify-content:center;"
+    >
+      <span style="height:60px;line-height:60px"
+        >t = {{ $store.getters.currentFile.selectedTime }}</span
+      >
+      <svg ref="svgSchematic" id="svgSchematic" />
     </div>
   </div>
 </template>
@@ -154,23 +166,24 @@ export default {
     },
     resize(width, height) {
       // console.log("Schematic onResize: ", width, height);
-      let dx = Math.abs(width - (this.width || 0));
-      let dy = Math.abs(height - (this.height || 0));
+      let dx = Math.abs(width - 10 - (this.width || 0));
+      let dy = Math.abs(height - 65 - (this.height || 0));
 
       if (dx > 2 || dy > 2) {
-        // stop resize if lumino has sent a fractional change in dimensions
-        this.width = width;
-        this.height = height;
+        // // stop resize if lumino has sent a fractional change in dimensions
+        this.width = width - 10;
+        this.height = height - 70;
         this.buildNetlist();
       }
     },
     buildNetlist() {
+      // console.log(this.width, this.getAllGates, this.isCompiled);
       if (this.width == null || !this.getAllGates) return; // prevent building before properly sized
       if (!this.isCompiled) return;
       // console.log("Schematic buildNetList: ", this.width, this.height);
 
-      this.svg.attr("width", this.width - 10);
-      this.svg.attr("height", this.height - 10);
+      this.svg.attr("width", this.width);
+      this.svg.attr("height", this.height);
 
       this.elkData = {
         id: "main",
