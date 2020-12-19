@@ -5,6 +5,7 @@
 <script>
 import "xterm/css/xterm.css";
 import { Terminal } from "xterm";
+import { WebLinksAddon } from "xterm-addon-web-links";
 // import { FitAddon } from "xterm-addon-fit";
 
 const defaultTheme = {
@@ -109,6 +110,7 @@ export default {
         theme: this.theme
         // ...this.options,
       });
+      this.terminal.loadAddon(new WebLinksAddon());
       // this.fitAddon = new FitAddon();
       // this.terminal.loadAddon(this.fitAddon);
       this.terminal.open(this.$el); //$refs.render);

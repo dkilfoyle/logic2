@@ -477,4 +477,62 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+.dk-flex-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.dk-flex-cols {
+  display: flex;
+  flex-direction: row;
+}
+
+.dk-justify-end {
+  justify-content: flex-end;
+}
+
+.dk-justify-center {
+  justify-content: center;
+}
+
+.dk-justify-between {
+  justify-content: space-between;
+}
+
+.dk-align-start {
+  align-items: flex-start;
+}
+
+.dk-align-center {
+  align-items: center;
+}
+
+.dk-align-baseline {
+  align-items: baseline;
+}
+
+.dk-push-right {
+  margin-left: auto;
+}
+
+.dk-push-down {
+  margin-top: auto;
+}
+
+.dk-grow-0 {
+  flex-grow: 0;
+}
+.dk-grow-1 {
+  flex-grow: 1;
+}
+.dk-grow-2 {
+  flex-grow: 2;
+}
+.dk-grow-3 {
+  flex-grow: 3;
+}
+.dk-grow-4 {
+  flex-grow: 4;
+}
 </style>

@@ -32,7 +32,8 @@
     "vue-monaco": "^1.2.1",
     "vuex": "^3.4.0",
     "xterm": "^4.9.0",
-    "xterm-addon-fit": "^0.4.0"
+    "xterm-addon-fit": "^0.4.0",
+    "xterm-addon-web-links": "^0.4.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",

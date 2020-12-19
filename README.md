@@ -82,7 +82,7 @@ npm run serve
 1. d3-hwschematic - remove need for custom line exports.GenericNodeRenderer = GenericNodeRenderer;
 1. Future?
    a) Truth tables and Karnaugh maps to generate optimised logic gates (done)
-   b) Custom d3-based traces view instead of dygraphs (WIP)
+   b) Custom d3-based traces view instead of dygraphs (done)
 
 ## Acknowledgements
 
