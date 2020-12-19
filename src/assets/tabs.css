@@ -25,13 +25,11 @@
   font-size: var(--jp-ui-font-size1);
 }
 
-.lm-DockPanel-tabBar[data-orientation='horizontal'] {
-  min-height: calc(
-    var(--jp-private-horizontal-tab-height) + 2 * var(--jp-border-width)
-  );
+.lm-DockPanel-tabBar[data-orientation="horizontal"] {
+  min-height: calc(var(--jp-private-horizontal-tab-height) + 2 * var(--jp-border-width));
 }
 
-.lm-DockPanel-tabBar[data-orientation='vertical'] {
+.lm-DockPanel-tabBar[data-orientation="vertical"] {
   min-width: 80px;
 }
 
@@ -43,9 +41,7 @@
 
 .lm-DockPanel-tabBar .lm-TabBar-tab {
   flex: 0 1 var(--jp-private-horizontal-tab-width);
-  min-height: calc(
-    var(--jp-private-horizontal-tab-height) + var(--jp-border-width)
-  );
+  min-height: calc(var(--jp-private-horizontal-tab-height) + var(--jp-border-width));
   min-width: 0px;
   margin-left: calc(-1 * var(--jp-border-width));
   line-height: var(--jp-private-horizontal-tab-height);
@@ -68,9 +64,7 @@
 .lm-DockPanel-tabBar .lm-TabBar-tab.lm-mod-current {
   background: var(--jp-layout-color1);
   color: var(--jp-ui-font-color0);
-  min-height: calc(
-    var(--jp-private-horizontal-tab-height) + 2 * var(--jp-border-width)
-  );
+  min-height: calc(var(--jp-private-horizontal-tab-height) + 2 * var(--jp-border-width));
   transform: translateY(var(--jp-border-width));
 }
 
@@ -79,7 +73,7 @@
   position: absolute;
   top: calc(-1 * var(--jp-border-width));
   left: calc(-1 * var(--jp-border-width));
-  content: '';
+  content: "";
   height: var(--jp-private-horizontal-tab-active-top-border);
   width: calc(100% + 2 * var(--jp-border-width));
   background: var(--jp-brand-color1);

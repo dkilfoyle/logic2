@@ -237,24 +237,33 @@ export default {
       feMerge.append("feMergeNode").attr("in", "blurred");
       feMerge.append("feMergeNode").attr("in", "SourceGraphic");
 
+      let that = this;
+
       this.g.bindData(this.elkData).then(() => {
         // add click handlers to all non-port gates
         // console.log("buildNetList bind data: ", this.elkData);
         this.getAllInstances.forEach(instance =>
           instance.gates.forEach(gateId => {
-            const node = this.g.root.select("#node-id-" + gateId + "_gate");
-            node.on("click", d => {
+            const node = this.g.root.select("." + gateId + "_internal");
+            node.on("click", function(ev, d) {
               const id = d.id.substr(0, d.id.indexOf("_gate"));
-              const index = this.selectedGates.indexOf(id);
+              const index = that.selectedGates.indexOf(id);
               if (index != -1) {
                 // gate is already selected, so deselect it
-                this.selectedGates.splice(index, 1);
+                that.selectedGates.splice(index, 1);
                 node.style("filter", "none");
               } else {
                 // newly selected gate
-                this.selectedGates.push(id);
+                that.selectedGates.push(id);
                 node.style("filter", "url(#glow)");
               }
+            });
+            node.on("mouseover", function(ev, d) {
+              const id = d.id.substr(0, d.id.indexOf("_gate"));
+              setTimeout(() => that.g.tooltip.show(ev, id), 1000);
+            });
+            node.on("mouseout", function() {
+              that.g.tooltip.hide();
             });
           })
         );
@@ -281,7 +290,7 @@ export default {
             cssClass:
               gate.logic == "control" || gate.logic == "response"
                 ? gate.id + "_external"
-                : "",
+                : gate.id + "_internal",
             name:
               gate.logic == "control" ||
               gate.logic == "portbuffer" ||
@@ -451,7 +460,8 @@ body {
 }
 
 .hwschematic-tooltip {
-  background: cornsilk;
+  /* background: cornsilk; */
+  background: pink;
   border: 1px solid black;
   border-radius: 5px;
   padding: 5px;
@@ -475,6 +485,9 @@ body {
 
 .d3-hwschematic {
   margin: 5px;
+}
+.node text {
+  font-size: 8pt;
 }
 
 .d3-hwschematic .link-wrap {

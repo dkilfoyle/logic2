@@ -64,7 +64,7 @@
           dock-ref="truthtable"
           dock-mode="tab-after"
           :closable="openFile.name !== 'Scratch'"
-          :title="openFile.name"
+          :label="openFile.name"
           icon="ion-md-document"
           :ref="openFile.name + '_editor'"
           v-model="openFile.code"
@@ -84,7 +84,7 @@
           :key="openFile.name"
           area="main"
           :closable="false"
-          title="Truth Table"
+          label="Truth Table"
           icon="ion-md-document"
           :ref="openFile.name + '_truthtable'"
           @passLint="onPassLint"
@@ -99,7 +99,7 @@
         class="console"
         ref="terminal"
         area="main"
-        title="Console"
+        label="Console"
         icon="fa fa-tab-bar fa-terminal"
         dock-ref=""
         dock-mode="split-bottom"
@@ -116,7 +116,7 @@
         id="gates"
         area="main"
         ref="gates"
-        title="Gates"
+        label="Gates"
         icon="fa fa-tab-bar fa-table"
         dock-ref=""
         dock-mode="split-right"
@@ -127,7 +127,7 @@
         id="schematic"
         area="main"
         ref="schematic"
-        title="Schematic"
+        label="Schematic"
         icon="ion-md-git-branch"
         dock-ref="gates"
         dock-mode="tab-after"
@@ -137,7 +137,7 @@
         id="traces"
         area="main"
         ref="traces"
-        title="Traces"
+        label="Traces"
         icon="fa fa-tab-bar fa-line-chart"
         dock-ref="gates"
         dock-mode="split-bottom"
@@ -311,9 +311,13 @@ export default {
       // compile turns [modules] into instances and gates
       // needed for updating of gates table and schematic
 
-      const compileResult = vlgCompile(e.walkResult.modules);
-      this.$store.commit("setCompileResult", { ...compileResult });
-      this.$store.commit("setStatus", "Compile OK");
+      if (this.$store.getters.currentFile.autoCompile) {
+        const compileResult = vlgCompile(e.walkResult.modules);
+        this.$store.commit("setCompileResult", { ...compileResult });
+        this.$store.commit("setStatus", "Compile OK");
+      } else {
+        this.$store.commit("setStatus", "Parse OK");
+      }
 
       console.log("app onPassLint: walkResult = ", e.walkResult);
     },

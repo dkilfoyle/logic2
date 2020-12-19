@@ -261,7 +261,7 @@ export default {
           // console.log("syncWidgets: ", id, mode, ref);
 
           this.addWidget(id, area, {
-            title: newChild.data.attrs.title || undefined,
+            label: newChild.data.attrs.label || undefined,
             icon: newChild.data.attrs.icon || undefined,
             closable,
             ref: newChild.data.attrs["dock-ref"] || undefined,

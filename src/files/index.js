@@ -21,6 +21,7 @@ import BinaryUp from "./binaryup.v";
 import HalfAdder from "./halfadder.v";
 import FullAdder from "./fulladder.v";
 import RippleAdder from "./rippleadder.v";
+import RippleSubtractor from "./ripplesubtractor.v";
 
 export const SourceTree = [
   {
@@ -59,7 +60,8 @@ export const SourceTree = [
           { text: "BitAdder", value: BitAdder },
           { text: "HalfAdder", value: HalfAdder },
           { text: "FullAdder", value: FullAdder },
-          { text: "RippleAdder", value: RippleAdder }
+          { text: "RippleAdder", value: RippleAdder },
+          { text: "RippleSubtractor", value: RippleSubtractor }
         ]
       }
     ]
@@ -130,5 +132,6 @@ export const SourceFiles = {
   HalfAdder,
   FullAdder,
   RippleAdder,
+  RippleSubtractor,
   TruthTable: ""
 };

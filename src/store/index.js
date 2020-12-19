@@ -133,6 +133,11 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    toggleAutoCompile(state) {
+      state.openFiles[state.currentFileTab].autoCompile = !state.openFiles[
+        state.currentFileTab
+      ].autoCompile;
+    },
     setShowWhichGates(state, payload) {
       state.showWhichGates = payload;
     },
@@ -153,7 +158,8 @@ export default new Vuex.Store({
         simulation: { ready: false, gates: {}, time: [], maxTime: 0 },
         status: "Parse Error",
         selectedTime: 0,
-        selectedInstanceID: "main"
+        selectedInstanceID: "main",
+        autoCompile: true
       });
     },
     openTruthTable(state, payload) {
@@ -167,7 +173,8 @@ export default new Vuex.Store({
         simulation: { ready: false, gates: {}, time: [], maxTime: 0 },
         status: "Parse Error",
         selectedTime: 0,
-        selectedInstanceID: "main"
+        selectedInstanceID: "main",
+        autoCompile: true
       });
     },
     closeFile(state, payload) {

@@ -25,13 +25,25 @@
           <span v-if="$store.getters.isCompiled" class="tag is-success"
             >Compiled</span
           >
+          <span
+            v-else-if="$store.getters.currentFile.status == 'Parse OK'"
+            class="tag is-info"
+            >Parsed OK</span
+          >
           <span v-else class="tag is-danger">Errors</span>
         </div>
         <div class="level-right">
           <div class="level-item dkbuttongroup">
-            <button class="button is-small is-info">
+            <button
+              class="button is-small is-info"
+              @click="$store.commit('toggleAutoCompile')"
+            >
               <span class="icon is-small">
-                <i class="fa fa-check"></i>
+                <i
+                  v-if="$store.getters.currentFile.autoCompile"
+                  class="fa fa-check"
+                ></i>
+                <i v-else class="fa fa-times"></i>
               </span>
               <span>Auto Compile</span>
             </button>

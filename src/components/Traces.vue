@@ -78,10 +78,7 @@ export default {
         `translate(${this.margins.left}, ${this.margins.top})`
       );
 
-    chart
-      .append("g")
-      .attr("class", "grid")
-      .style("stroke-dasharray", "3, 3");
+    chart.append("g").attr("class", "grid");
 
     chart.append("g").attr("class", "focus");
     chart.append("g").attr("class", "context");
@@ -91,7 +88,7 @@ export default {
     const crosshair = chart.append("g").attr("class", "crosshair");
     crosshair
       .append("g")
-      .attr("class", "line")
+      .attr("class", "crosshairline")
       .append("line")
       .attr("id", "crosshairX")
       .attr("class", "crosshairX");
@@ -146,6 +143,7 @@ export default {
           .y0(traceHeight)
           .y1(d => y(d))
           .curve(d3.curveStepAfter);
+      // .curve(curveTrace);
 
       var line = (x, y) =>
         d3
@@ -153,6 +151,74 @@ export default {
           .x((d, i) => x(i))
           .y(d => y(d))
           .curve(d3.curveStepAfter);
+      // .curve(curveTrace);
+
+      // function Step(context, t) {
+      //   this._context = context;
+      //   this._t = t;
+      // }
+
+      // Step.prototype = {
+      //   areaStart: function() {
+      //     this._line = 0;
+      //     console.log("areaStart: _line = 0");
+      //   },
+      //   areaEnd: function() {
+      //     console.log("areaEnd: _line = ", this._line);
+      //     this._line = NaN;
+      //   },
+      //   lineStart: function() {
+      //     this._x = this._y = NaN;
+      //     this._point = 0;
+      //     console.log("lineStart: ", this._line, this._point, this._t);
+      //   },
+      //   lineEnd: function() {
+      //     if (this._line || (this._line !== 0 && this._point === 1))
+      //       this._context.closePath();
+      //     if (this._line >= 0)
+      //       (this._t = 1 - this._t), (this._line = 1 - this._line);
+      //     console.log(
+      //       "lineEnd: ",
+      //       this._x,
+      //       this._y,
+      //       this._line,
+      //       this._point,
+      //       this._t
+      //     );
+      //   },
+      //   point: function(x, y) {
+      //     (x = +x), (y = +y);
+      //     console.log("point: ", x, y, this._point, this._line);
+      //     switch (this._point) {
+      //       case 0:
+      //         this._point = 1;
+      //         this._line
+      //           ? this._context.lineTo(x, y)
+      //           : this._context.moveTo(x, y);
+      //         break;
+      //       case 1:
+      //         this._point = 2; // proceed
+      //       // eslint-disable-next-line no-fallthrough
+      //       default: {
+      //         if (this._t <= 0) {
+      //           this._context.lineTo(this._x, y);
+      //           this._context.lineTo(x, y);
+      //         } else {
+      //           // var x1 = this._x * (1 - this._t) + x * this._t;
+      //           // var x1 = this._x * (1 - this._t) + x * this._t;
+      //           this._context.lineTo(x - 5, this._y);
+      //           this._context.lineTo(x, y);
+      //         }
+      //         break;
+      //       }
+      //     }
+      //     (this._x = x), (this._y = y);
+      //   }
+      // };
+
+      // function curveTrace(context) {
+      //   return new Step(context, 1);
+      // }
 
       function enterFilledPlot() {
         d3.select(this)
@@ -307,12 +373,12 @@ export default {
           .attr("height", traceTop(traceN - 1))
           .on("mouseover", function() {
             d3.select(".crosshair")
-              .select(".line")
+              .select(".crosshairline")
               .style("display", null);
           })
           .on("mouseout", function() {
             d3.select(".crosshair")
-              .select(".line")
+              .select(".crosshairline")
               .style("display", "none");
           })
           .on("mousemove", function(event) {
@@ -320,11 +386,9 @@ export default {
             d3.select(".crosshair")
               .select("#crosshairX")
               .attr("x1", mouse[0])
-              .attr("y1", 0)
+              .attr("y1", -10)
               .attr("x2", mouse[0])
               .attr("y2", traceTop(traceN - 1));
-
-            console.log();
 
             that.$store.commit(
               "setSelectedTime",
@@ -401,16 +465,18 @@ export default {
   stroke: lightgrey;
   stroke-opacity: 0.7;
   shape-rendering: crispEdges;
+  stroke-dasharray: 3, 3;
 }
 
 .grid path {
   stroke-width: 0;
 }
 
-.line #crosshairX {
-  stroke: red;
+.crosshairline #crosshairX {
+  stroke: darkgrey;
   fill: none;
   stroke-width: 1px;
+  stroke-dasharray: 5, 5;
 }
 
 .overlay {

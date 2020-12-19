@@ -36,9 +36,9 @@ export default class LuminoWidget extends Widget {
   constructor(id, options) {
     super({ node: LuminoWidget.createNode(id) });
     this.id = id;
-    this.name = options.title;
+    this.name = options.label;
 
-    this.title.label = options.title;
+    this.title.label = options.label;
     this.title.iconClass = options.icon;
     this.closable = options.closable;
     this.title.closable = options.closable;
