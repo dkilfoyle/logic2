@@ -71,7 +71,6 @@ export default new Vuex.Store({
 
     getInstanceInputs: (state, getters) => id => {
       if (!getters.isCompiled) return [];
-      console.log("getInstanceInputs: ", id, getters.currentFile);
       if (id == "main")
         return getters.currentFile.walkResult.modules
           .find(x => x.id == "Main")

@@ -31,7 +31,7 @@ const logicFunctions = {
   nor: ([a, b, c]) => (c ? not(a || b || c) : not(a || b)),
   xor: ([a, b, c]) => (c ? a ^ b ^ c : a ^ b),
   xnor: ([a, b, c]) => (c ? not(a ^ b ^ c) : not(a ^ b)),
-  sevenseg7: () => 0,
+  sevenseg: () => 0,
   number: bits => parseInt(bits.reverse().join(""), 2)
 };
 
@@ -53,6 +53,8 @@ const evaluate = (components, componentLookup) => {
       console.log("Gate evaluation error - sevenseg must have 7 inputs");
       return;
     }
+
+    console.log(logicFn);
 
     component.state = inputs.some(input => input.state === "x")
       ? "x"

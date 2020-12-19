@@ -51,6 +51,7 @@ export default {
       elkData: {},
       g: {},
       svg: null,
+      tooltip: null,
       selectedGates: [],
       width: null,
       height: null
@@ -156,6 +157,12 @@ export default {
     var zoom = d3.zoom();
     zoom.on("zoom", this.onZoom);
     this.svg.call(zoom).on("dblclick.zoom", null);
+
+    this.tooltip = d3
+      .select("body")
+      .append("div")
+      .attr("class", "schematic-tooltip")
+      .style("opacity", 0);
   },
   methods: {
     onZoom(ev) {
@@ -260,10 +267,27 @@ export default {
             });
             node.on("mouseover", function(ev, d) {
               const id = d.id.substr(0, d.id.indexOf("_gate"));
-              setTimeout(() => that.g.tooltip.show(ev, id), 1000);
+              // setTimeout(() => that.g.tooltip.show(ev, id), 1000);
+              that.tooltip.style("opacity", 0);
+
+              // Note that we are also using d3.event pageX and pageY properties
+              // to position the tooltip
+
+              that.tooltip
+                .html(id)
+                .style("left", ev.pageX + "px")
+                .style("top", ev.pageY - 25 + "px");
+
+              that.tooltip
+                .transition()
+                .delay(300)
+                .duration(500)
+                .style("opacity", 0.9);
             });
             node.on("mouseout", function() {
-              that.g.tooltip.hide();
+              // that.g.tooltip.hide();
+              that.tooltip.interrupt().transition();
+              that.tooltip.style("opacity", 0);
             });
           })
         );
@@ -459,13 +483,14 @@ body {
   margin: 0;
 }
 
-.hwschematic-tooltip {
+.schematic-tooltip {
   /* background: cornsilk; */
-  background: pink;
+  background: cornsilk;
   border: 1px solid black;
   border-radius: 5px;
   padding: 5px;
-  position: fixed;
+  position: absolute;
+  display: block;
 }
 
 .sevenseg-segment {

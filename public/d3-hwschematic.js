@@ -1180,7 +1180,7 @@
       var t = (this.tooltip = document.createElement("div"));
       t.className = "d3-hwschematic-tooltip";
       t.style.display = "none";
-      t.style.possition = "absolute";
+      t.style.position = "absolute";
       root.appendChild(t);
     }
 
