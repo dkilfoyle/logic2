@@ -1,5 +1,22 @@
 <template>
-  <div class="row" style="height:60px">
+  <div class="dk-flex-cols dk-align-baseline">
+    <nav class="breadcrumb" style="margin-bottom:0px">
+      <ul>
+        <li
+          v-for="node in $store.getters.selectedInstanceID.split('_')"
+          :key="node"
+        >
+          <a @click="selectBreadcrumb(node)">{{ node }}</a>
+        </li>
+      </ul>
+    </nav>
+    <button class="button is-small" @click="$emit('show-outline')">
+      <span class="icon is-small">
+        <i class="fa fa-ellipsis-h"></i>
+      </span>
+    </button>
+  </div>
+  <!-- <div class="row" style="height:60px">
     <nav class="breadcrumb is-centered" style="line-height:60px">
       <ul>
         <li
@@ -19,7 +36,7 @@
         </button>
       </ul>
     </nav>
-  </div>
+  </div> -->
 </template>
 
 <script>

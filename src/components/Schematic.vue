@@ -1,28 +1,6 @@
 <template>
-  <!-- <div class="dkcontainer">
-    <div class="level my-2" v-if="isSimulated">
-      <div class="level-item has-text-centered">
-        t = {{ $store.getters.currentFile.selectedTime }}
-      </div>
-    </div>
-    <div class="mx-4 my-2" v-if="!isCompiled">Compile File First</div>
-    <div class="columns">
-      <div class="column">
-       
-      </div>
-    </div>
-  </div> -->
-
-  <div ref="container" style="height:100%">
-    <div
-      class="rows"
-      style="height:100%;align-items:center; justify-content:center;"
-    >
-      <span style="height:60px;line-height:60px"
-        >t = {{ $store.getters.currentFile.selectedTime }}</span
-      >
-      <svg ref="svgSchematic" id="svgSchematic" />
-    </div>
+  <div class="dk-flex-cols dk-h100 dk-align-center">
+    <svg ref="svgSchematic" id="svgSchematic" />
   </div>
 </template>
 

@@ -1,5 +1,28 @@
 <template>
-  <div ref="container" style="height:100%">
+  <div class="dk-h100">
+    <div class="dk-flex-rows" v-show="isSimulated">
+      <div
+        class="dk-flex-cols dk-align-center"
+        style="height:60px;padding:0 20px"
+      >
+        <instance-crumbs
+          @show-outline="$emit('show-outline')"
+        ></instance-crumbs>
+        <span class="dk-push-right">
+          t = {{ $store.getters.currentFile.selectedTime }}</span
+        >
+      </div>
+
+      <div class="traces" id="mytraces" ref="traces"></div>
+    </div>
+    <div
+      class="dk-flex-rows dk-h100 dk-justify-center dk-align-center"
+      v-show="!isSimulated"
+    >
+      <h4>Simulate to show traces</h4>
+    </div>
+  </div>
+  <!-- <div ref="container" style="height:100%">
     <div class="rows" v-show="isSimulated">
       <instance-crumbs @show-outline="$emit('show-outline')"></instance-crumbs>
       <div class="row">
@@ -13,7 +36,7 @@
     >
       <div class="row"><h4>Simulate to show traces</h4></div>
     </div>
-  </div>
+  </div> -->
 </template>
 
 <script>

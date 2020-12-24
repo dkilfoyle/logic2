@@ -1,8 +1,19 @@
 <template>
-  <div ref="container" style="height:100%">
-    <div class="rows" v-if="$store.getters.isCompiled">
-      <instance-crumbs @show-outline="$emit('show-outline')"></instance-crumbs>
-      <div class="row" style="padding: 0px 20px">
+  <div class="dk-h100">
+    <div class="dk-flex-rows dk-h100" v-if="$store.getters.isCompiled">
+      <div
+        class="dk-flex-cols dk-align-center"
+        style="height:60px;padding:0 20px"
+      >
+        <instance-crumbs
+          @show-outline="$emit('show-outline')"
+        ></instance-crumbs>
+        <span class="dk-push-right">
+          t = {{ $store.getters.currentFile.selectedTime }}</span
+        >
+      </div>
+
+      <div style="padding-left:10px;padding-right:10px">
         <table class="table is-fullwidth">
           <thead class="bg-teal">
             <tr class="text-white">
@@ -41,12 +52,9 @@
         </table>
       </div>
     </div>
-    <div
-      class="rows"
-      style="align-items:center; justify-content:center; height:100%"
-      v-else
-    >
-      <div class="row"><h4>Compile to show gates</h4></div>
+
+    <div class="dk-flex-rows dk-h100 dk-justify-center dk-align-center" v-else>
+      <h4>Compile to show gates</h4>
     </div>
   </div>
 </template>

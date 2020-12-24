@@ -54,8 +54,6 @@ const evaluate = (components, componentLookup) => {
       return;
     }
 
-    console.log(logicFn);
-
     component.state = inputs.some(input => input.state === "x")
       ? "x"
       : logicFunctions[logicFn](inputs);

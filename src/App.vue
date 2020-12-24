@@ -535,4 +535,18 @@ body {
 .dk-grow-4 {
   flex-grow: 4;
 }
+
+.dk-h100 {
+  height: 100%;
+}
+
+.dk-pad5 {
+  padding: 5px;
+}
+.dk-pad10 {
+  padding: 10px;
+}
+.dk-pad20 {
+  padding: 20px;
+}
 </style>
