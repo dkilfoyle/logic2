@@ -1,6 +1,4 @@
-// SR Latch with Enable with data line instead of separate set and reset lines
-// the clock signals the latch to follow the data line
-// when clock is 0 the latch holds the last Q
+// D-Latch with data line captured on clock rising edge
 
 module DLatch (
   input d, c,

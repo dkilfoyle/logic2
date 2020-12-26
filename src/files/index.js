@@ -1,40 +1,43 @@
-import BitAdder from "./1bitadder.v";
-import DFF from "./dff.v";
-import Scratch from "./scratch.v";
-import OneHotDecoder from "./onehotdecoder.v";
-import SevenSeg from "./7seg.v";
-import Mux2_1 from "./mux.v";
-import DeMux from "./demux.v";
-import RippleCounter from "./ripplecounter.v";
-import Simplify from "./simplify.v";
-import SumProducts from "./sumproducts.v";
-import DeMorgans from "./demorgan.v";
-import SRLatch from "./srlatch.v";
-import SRLatchComplement from "./srlatchcomplement.v";
-import SRLatchEnable from "./srlatchenable.v";
-import DLatch from "./dlatch.v";
-import DFlipFlop from "./dflipflop.v";
-import WindowController from "./windowcontroller.v";
-import ToggleFlopDivider from "./toggleflopdivider.v";
-import ShiftRegister from "./shiftregister.v";
-import BinaryUp from "./binaryup.v";
-import HalfAdder from "./halfadder.v";
-import FullAdder from "./fulladder.v";
-import RippleAdder from "./rippleadder.v";
-import RippleSubtractor from "./ripplesubtractor.v";
+export const SourceFiles = {
+  BitAdder: require("./1bitadder.v").default,
+  DFF: require("./dff.v").default,
+  Scratch: require("./scratch.v").default,
+  OneHotDecoder: require("./onehotdecoder.v").default,
+  SevenSeg: require("./7seg.v").default,
+  Mux2_1: require("./mux.v").default,
+  DeMux: require("./demux.v").default,
+  RippleCounter: require("./ripplecounter.v").default,
+  Simplify: require("./simplify.v").default,
+  SumProducts: require("./sumproducts.v").default,
+  DeMorgans: require("./demorgan.v").default,
+  SRLatch: require("./srlatch.v").default,
+  SRLatchComplement: require("./srlatchcomplement.v").default,
+  SRLatchEnable: require("./srlatchenable.v").default,
+  DLatch: require("./dlatch.v").default,
+  DFlipFlop: require("./dflipflop.v").default,
+  WindowController: require("./windowcontroller.v").default,
+  ToggleFlopDivider: require("./toggleflopdivider.v").default,
+  ShiftRegister: require("./shiftregister.v").default,
+  BinaryUp: require("./binaryup.v").default,
+  BinaryUpDown: require("./binaryupdown.v").default,
+  HalfAdder: require("./halfadder.v").default,
+  FullAdder: require("./fulladder.v").default,
+  RippleAdder: require("./rippleadder.v").default,
+  RippleSubtractor: require("./ripplesubtractor.v").default
+};
 
 export const SourceTree = [
   {
     text: "Templates",
-    children: [{ text: "Scratch", value: Scratch }]
+    children: [{ text: "Scratch" }]
   },
   {
     text: "Theory",
     children: [
-      { text: "Simplify", value: Simplify },
-      { text: "SumProducts", value: SumProducts },
-      { text: "DeMorgans", value: DeMorgans },
-      { text: "TruthTable", value: {} }
+      { text: "Simplify" },
+      { text: "SumProducts" },
+      { text: "DeMorgans" },
+      { text: "TruthTable" }
     ]
   },
   {
@@ -42,26 +45,20 @@ export const SourceTree = [
     children: [
       {
         text: "Multiplexers",
-        children: [
-          { text: "Mux2_1", value: Mux2_1 },
-          { text: "DeMux", value: DeMux }
-        ]
+        children: [{ text: "Mux2_1" }, { text: "DeMux" }]
       },
       {
         text: "En/Decoders",
-        children: [
-          { text: "OneHotDecoder", value: OneHotDecoder },
-          { text: "SevenSeg", value: SevenSeg }
-        ]
+        children: [{ text: "OneHotDecoder" }, { text: "SevenSeg" }]
       },
       {
         text: "Math",
         children: [
-          { text: "BitAdder", value: BitAdder },
-          { text: "HalfAdder", value: HalfAdder },
-          { text: "FullAdder", value: FullAdder },
-          { text: "RippleAdder", value: RippleAdder },
-          { text: "RippleSubtractor", value: RippleSubtractor }
+          { text: "BitAdder" },
+          { text: "HalfAdder" },
+          { text: "FullAdder" },
+          { text: "RippleAdder" },
+          { text: "RippleSubtractor" }
         ]
       }
     ]
@@ -73,20 +70,20 @@ export const SourceTree = [
       {
         text: "Latches",
         children: [
-          { text: "SRLatch", value: SRLatch },
-          { text: "SRLatchComplement", value: SRLatchComplement },
-          { text: "SRLatchEnable", value: SRLatchEnable },
-          { text: "DLatch", value: DLatch },
-          { text: "DFlipFlop", value: DFlipFlop },
-          { text: "DFF", value: DFF }
+          { text: "SRLatch" },
+          { text: "SRLatchComplement" },
+          { text: "SRLatchEnable" },
+          { text: "DLatch" },
+          { text: "DFlipFlop" },
+          { text: "DFF" }
         ]
       },
       {
         text: "Circuits",
         children: [
-          { text: "ToggleFlopDivider", value: ToggleFlopDivider },
-          { text: "RippleCounter", value: RippleCounter },
-          { text: "ShiftRegister", value: ShiftRegister }
+          { text: "ToggleFlopDivider" },
+          { text: "RippleCounter" },
+          { text: "ShiftRegister" }
         ]
       }
     ]
@@ -94,44 +91,11 @@ export const SourceTree = [
   {
     text: "Finite State Machine",
     children: [
-      { text: "WindowController", value: WindowController },
+      { text: "WindowController" },
       {
         text: "Counters",
-        children: [
-          {
-            text: "BinaryUp",
-            value: BinaryUp
-          }
-        ]
+        children: [{ text: "BinaryUp" }, { text: "BinaryUpDown" }]
       }
     ]
   }
 ];
-
-export const SourceFiles = {
-  BitAdder,
-  DFF,
-  Scratch,
-  OneHotDecoder,
-  SevenSeg,
-  Mux2_1,
-  DeMux,
-  RippleCounter,
-  Simplify,
-  SumProducts,
-  DeMorgans,
-  SRLatch,
-  SRLatchComplement,
-  SRLatchEnable,
-  DLatch,
-  DFlipFlop,
-  WindowController,
-  ToggleFlopDivider,
-  ShiftRegister,
-  BinaryUp,
-  HalfAdder,
-  FullAdder,
-  RippleAdder,
-  RippleSubtractor,
-  TruthTable: ""
-};

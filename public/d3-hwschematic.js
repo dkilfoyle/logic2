@@ -3,8 +3,7 @@
     ? factory(exports, require("d3"), require("elkjs"))
     : typeof define === "function" && define.amd
     ? define(["exports", "d3", "elkjs"], factory)
-    : ((global =
-        typeof globalThis !== "undefined" ? globalThis : global || self),
+    : ((global = typeof globalThis !== "undefined" ? globalThis : global || self),
       factory((global.d3 = global.d3 || {}), global.d3, global.ELK));
 })(this, function(exports, d3, ELK) {
   "use strict";
@@ -18,20 +17,20 @@
   var PORT_MARKERS = {
     WEST: {
       INPUT: "#westInPortMarker",
-      OUTPUT: "#westOutPortMarker"
+      OUTPUT: "#westOutPortMarker",
     },
     EAST: {
       INPUT: "#eastInPortMarker",
-      OUTPUT: "#eastOutPortMarker"
+      OUTPUT: "#eastOutPortMarker",
     },
     NORTH: {
       INPUT: "#northInPortMarker",
-      OUTPUT: "#northOutPortMarker"
+      OUTPUT: "#northOutPortMarker",
     },
     SOUTH: {
       INPUT: "#southInPortMarker",
-      OUTPUT: "#southOutPortMarker"
-    }
+      OUTPUT: "#southOutPortMarker",
+    },
   };
 
   function addMarkers(defs, PORT_PIN_SIZE) {
@@ -44,8 +43,7 @@
       var trans = "";
 
       if (arrowTranslate[0] != 0 || arrowTranslate[1] != 0)
-        trans +=
-          "translate(" + arrowTranslate[0] + ", " + arrowTranslate[1] + ")";
+        trans += "translate(" + arrowTranslate[0] + ", " + arrowTranslate[1] + ")";
 
       if (arrowRotate != 0) trans += "rotate(" + arrowRotate + ")";
 
@@ -134,7 +132,7 @@
         WEST: [0, 0],
         EAST: [0, 0],
         SOUTH: [0, 0],
-        NORTH: [0, 0]
+        NORTH: [0, 0],
       };
       var PORT_PIN_SIZE_x = schematic.PORT_PIN_SIZE[0],
         PORT_PIN_SIZE_y = schematic.PORT_PIN_SIZE[1];
@@ -232,8 +230,7 @@
 
         if (bodyTextLines && (!d.children || d.children.length == 0)) {
           bodyTextLines.forEach(function(line, dy) {
-            if (line.length > _MBT[0])
-              line = line.slice(0, _MBT[0] - 3) + "...";
+            if (line.length > _MBT[0]) line = line.slice(0, _MBT[0] - 3) + "...";
             if (dy > _MBT[1]) return;
             bodyText
               .append("tspan")
@@ -322,8 +319,8 @@
         })
         .enter()
         .append("g")
-        .attr("style", d => d.hwMeta.cssStyle)
-        .attr("class", d => {
+        .attr("style", (d) => d.hwMeta.cssStyle)
+        .attr("class", (d) => {
           if (d.hwMeta.cssStyle) {
             return "port " + d.hwMeta.cssClass;
           } else {
@@ -538,8 +535,7 @@
     negationCircle(root, 34, 12.5);
   }
 
-  var OR_SHAPE_PATH =
-    "M3,0 A30 25 0 0 1 3,25 A30 25 0 0 0 33,12.5 A30 25 0 0 0 3,0";
+  var OR_SHAPE_PATH = "M3,0 A30 25 0 0 1 3,25 A30 25 0 0 0 33,12.5 A30 25 0 0 0 3,0";
   /**
    * Draw a OR gate symbol
    */
@@ -693,7 +689,7 @@
       nodeCircleWithText(root, "/");
     },
 
-    FF: FF
+    FF: FF,
   };
 
   /*
@@ -723,10 +719,7 @@
     }
 
     selector(node) {
-      return (
-        node.hwMeta.cls == "Operator" &&
-        typeof this.SHAPES[node.hwMeta.name] !== "undefined"
-      );
+      return node.hwMeta.cls == "Operator" && typeof this.SHAPES[node.hwMeta.name] !== "undefined";
     }
 
     addShapeToDefs(defs, id, shape) {
@@ -753,8 +746,8 @@
           }
           return "translate(" + d.x + " " + d.y + ")";
         })
-        .attr("class", d => d.hwMeta.cssClass)
-        .attr("style", d => d.hwMeta.cssStyle)
+        .attr("class", (d) => d.hwMeta.cssClass)
+        .attr("style", (d) => d.hwMeta.cssStyle)
         .append("use")
         .attr("href", function(d) {
           return "#" + d.hwMeta.name;
@@ -828,8 +821,8 @@
           }
           return "translate(" + d.x + " " + d.y + ")";
         })
-        .attr("class", d => d.hwMeta.cssClass)
-        .attr("style", d => d.hwMeta.cssStyle)
+        .attr("class", (d) => d.hwMeta.cssClass)
+        .attr("style", (d) => d.hwMeta.cssStyle)
         .append("use")
         .attr("href", function(d) {
           return "#" + d.hwMeta.name;
@@ -847,9 +840,7 @@
     }
 
     render(root, nodeG) {
-      nodeG
-        .attr("class", d => d.hwMeta.cssClass)
-        .attr("style", d => d.hwMeta.cssStyle);
+      nodeG.attr("class", (d) => d.hwMeta.cssClass).attr("style", (d) => d.hwMeta.cssStyle);
 
       // spot node main body and set dimensions and style of node
       nodeG
@@ -904,7 +895,7 @@
     "sourcePoint",
     "targetPoint",
     "junctionPoints",
-    "properties"
+    "properties",
   ].reduce(function(p, c) {
     p[c] = 1;
     return p;
@@ -925,8 +916,7 @@
     // init d3Objs
     d3Objs[dstGraph.id] = dstGraph;
     (dstGraph.edges || []).forEach(function(e) {
-      if (e.id in d3Objs && d3Objs[e.id] !== e)
-        throw new Error("Duplicit edge" + e.id);
+      if (e.id in d3Objs && d3Objs[e.id] !== e) throw new Error("Duplicit edge" + e.id);
       d3Objs[e.id] = e;
     });
     (dstGraph.children || []).forEach(function(n) {
@@ -1213,7 +1203,7 @@
               source: src[0],
               sourcePort: src[1],
               target: dst[0],
-              targetPort: dst[1]
+              targetPort: dst[1],
             });
           }
         }
@@ -1282,7 +1272,7 @@
   function computeLayoutCacheKey(n, res) {
     res.push(n.id);
     if (n.children) {
-      n.children.forEach(d => {
+      n.children.forEach((d) => {
         computeLayoutCacheKey(d, res);
       });
     }
@@ -1297,7 +1287,7 @@
       x: n.x,
       y: n.y,
       width: n.width,
-      height: n.height
+      height: n.height,
     };
     if (n.ports) {
       res["ports"] = n.ports.map(function(p) {
@@ -1306,7 +1296,7 @@
           x: p.x,
           y: p.y,
           width: p.width,
-          height: p.height
+          height: p.height,
         };
       });
     }
@@ -1315,7 +1305,7 @@
         return {
           id: e.id,
           sections: e.sections,
-          junctionPoints: e.junctionPoints
+          junctionPoints: e.junctionPoints,
         };
       });
     }
@@ -1378,7 +1368,7 @@
 
       // the layouter instance
       this.layouter = new ELK__default["default"]({
-        algorithms: ["layered"]
+        algorithms: ["layered"],
       });
       this._invalidateCaches();
     }
@@ -1569,9 +1559,7 @@
       toAbsolutePositions(kgraph, { x: 0, y: 0 }, nodeMap);
       toAbsolutePositionsEdges(kgraph, nodeMap);
       copyElkProps(kgraph, this.graph, this._d3ObjMap);
-      this._layoutCache[this._currentLayoutCacheKey] = serializeLayout(
-        this.graph
-      );
+      this._layoutCache[this._currentLayoutCacheKey] = serializeLayout(this.graph);
 
       return this.graph;
     }
@@ -1648,7 +1636,7 @@
       this.layouter = new d3elk();
       this.layouter
         .options({
-          edgeRouting: "ORTHOGONAL"
+          edgeRouting: "ORTHOGONAL",
         })
         .transformGroup(this.root);
 
@@ -1678,14 +1666,8 @@
     }
 
     updateGlobalSize() {
-      var width = parseInt(
-        this.svg.style("width") || this.svg.attr("width"),
-        10
-      );
-      var height = parseInt(
-        this.svg.style("height") || this.svg.attr("height"),
-        10
-      );
+      var width = parseInt(this.svg.style("width") || this.svg.attr("width"), 10);
+      var height = parseInt(this.svg.style("height") || this.svg.attr("height"), 10);
 
       this.layouter.size([width, height]);
     }
@@ -1788,7 +1770,7 @@
       edges.forEach(function(e) {
         netToLink[getNet(e).id] = {
           core: [],
-          wrap: []
+          wrap: [],
         };
       });
       linkWrap._groups.forEach(function(lg) {
