@@ -258,7 +258,7 @@ export default {
 
       if (e.id == "truthTable") this.$refs.truthTable.resize();
 
-      if (e.id == "terminalView") this.$refs.terminal.fit();
+      if (e.id == "terminalview") this.$refs.terminal.fit();
       if (e.id == "traces") {
         this.$refs.traces.resize(e.msg.width, e.msg.height);
       }

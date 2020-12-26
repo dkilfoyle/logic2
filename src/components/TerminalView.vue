@@ -7,6 +7,7 @@ import "xterm/css/xterm.css";
 import { Terminal } from "xterm";
 import { WebLinksAddon } from "xterm-addon-web-links";
 // import { FitAddon } from "xterm-addon-fit";
+// const stripAnsi = require("strip-ansi");
 
 const defaultTheme = {
   foreground: "#2c3e50",
@@ -126,10 +127,38 @@ export default {
       }
     },
 
+    filterAnsi(str, len) {
+      if (!len || len < 10) return str; // probably not a valid console -- send back the whole line
+      var count = 0, // number of visible chars on line so far
+        esc = false, // in an escape sequence
+        longesc = false; // in a multi-character escape sequence
+      var outp = true; // should output this character
+      return str
+        .split("")
+        .filter(function(c) {
+          // filter characters...
+          if (esc && !longesc && c == "[") longesc = true; // have seen an escape, now '[', start multi-char escape
+          if (c == "\x1b") esc = true; // start of escape sequence
+
+          outp = count < len || esc; // if length exceeded, don't output non-escape chars
+          if (!esc && !longesc) count++; // if not in escape, count visible char
+
+          if (esc && !longesc && c != "\x1b") esc = false; // out of single char escape
+          if (longesc && c != "[" && c >= "@" && c <= "~") {
+            esc = false;
+            longesc = false;
+          } // end of multi-char escape
+
+          return outp; // result for filter
+        })
+        .join(""); // glue chars back into string
+    },
+
     truncate(x) {
-      // console.log(this.terminal.cols);
-      if (x.length < this.terminal.cols - 4) return x;
-      else return x.slice(0, this.terminal.cols - 4) + "...";
+      var full = this.filterAnsi(x, 1000);
+      var trunc = this.filterAnsi(x, this.terminal.cols - 4);
+
+      return trunc.length === full.length ? trunc : trunc + "...";
     },
 
     setContent(value, ln = true) {
@@ -137,7 +166,6 @@ export default {
         this.open();
         this.openedYet = true;
       }
-      console.log(value);
       if (value.indexOf("\n") !== -1) {
         value.split("\n").forEach(t => this.setContent(t));
         return;
@@ -190,7 +218,6 @@ export default {
       await this.$nextTick();
       // this.fitAddon.fit();
       const dims = this.proposeDimensions();
-      // console.log("Dims: ", dims);
       this.terminal._core._renderService.clear();
       this.terminal.resize(dims.cols, dims.rows);
       this.terminal.element.style.display = "";
