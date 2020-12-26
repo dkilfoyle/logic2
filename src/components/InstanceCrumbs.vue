@@ -1,5 +1,5 @@
 <template>
-  <div class="dk-flex-cols dk-align-baseline">
+  <div class="dk-flex-row dk-align-baseline">
     <nav class="breadcrumb" style="margin-bottom:0px">
       <ul>
         <li

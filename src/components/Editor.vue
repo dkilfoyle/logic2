@@ -35,21 +35,9 @@
         <div class="level-right">
           <div class="level-item dkbuttongroup">
             <button
-              class="button is-small is-info"
-              @click="$store.commit('toggleAutoCompile')"
-            >
-              <span class="icon is-small">
-                <i
-                  v-if="$store.getters.currentFile.autoCompile"
-                  class="fa fa-check"
-                ></i>
-                <i v-else class="fa fa-times"></i>
-              </span>
-              <span>Auto Compile</span>
-            </button>
-            <button
               class="button is-primary is-small is-info"
               @click="$emit('compile')"
+              title="Compile"
             >
               <span class="icon is-small">
                 <i class="fa fa-refresh"></i>
@@ -58,11 +46,11 @@
             <button
               class="button is-primary is-small"
               @click="$emit('simulate')"
+              title="Simulate"
             >
               <span class="icon is-small">
                 <i class="fa fa-play"></i>
               </span>
-              <span>Simulate</span>
             </button>
           </div>
         </div>

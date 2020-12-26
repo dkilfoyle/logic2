@@ -1,5 +1,5 @@
 <template>
-  <div class="dk-flex-cols dk-h100 dk-align-center">
+  <div class="dk-flex-row dk-h-100 dk-align-center">
     <svg ref="svgSchematic" id="svgSchematic" />
   </div>
 </template>
@@ -186,7 +186,7 @@ export default {
 
       // await here
       this.buildInstance(this.elkData);
-      console.log("elkData: ", this.stripReactive(this.elkData));
+      // console.log("elkData: ", this.stripReactive(this.elkData));
 
       const filter = this.g.defs
         .append("filter")

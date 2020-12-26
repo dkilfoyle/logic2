@@ -1,30 +1,28 @@
 <template>
-  <div class="rows">
-    <h4 style="padding:10px">INSTANCES</h4>
+  <div class="dk-flex-col dk-pad-10 dk-gap-10">
+    <h4>INSTANCES</h4>
     <liquor-tree
       ref="tree"
       :data="$store.getters.instanceTree"
       :options="{ nodeIndent: 14 }"
       @node:selected="onInstanceTreeSelection"
     ></liquor-tree>
-    <h4 style="padding:10px">GATE FILTER</h4>
-    <div class="control mt-2" style="align-self:center">
-      <b-radio v-model="showWhichGates" name="showWhichGates" native-value="all"
-        >All</b-radio
-      >
-      <b-radio
-        v-model="showWhichGates"
-        name="showWhichGates"
-        native-value="inputs"
-        >Inputs</b-radio
-      >
-      <b-radio
-        v-model="showWhichGates"
-        name="showWhichGates"
-        native-value="outputs"
-        >Outputs</b-radio
-      >
-    </div>
+    <h4>GATE FILTER</h4>
+    <b-radio v-model="showWhichGates" name="showWhichGates" native-value="all"
+      >All</b-radio
+    >
+    <b-radio
+      v-model="showWhichGates"
+      name="showWhichGates"
+      native-value="inputs"
+      >Inputs</b-radio
+    >
+    <b-radio
+      v-model="showWhichGates"
+      name="showWhichGates"
+      native-value="outputs"
+      >Outputs</b-radio
+    >
   </div>
 </template>
 

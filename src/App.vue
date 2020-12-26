@@ -52,8 +52,15 @@
         ref="outline"
         area="left"
         icon="ion-md-menu"
-        class="dk-Outline"
+        class="dk-SideBarPanel"
       ></instance-tree>
+
+      <settings
+        id="settings"
+        class="dk-SideBarPanel"
+        area="left"
+        icon="fa fa-wrench"
+      ></settings>
 
       <template v-for="openFile in $store.getters.openEditorFiles">
         <Editor
@@ -121,6 +128,8 @@
         dock-ref=""
         dock-mode="split-right"
         @show-outline="$refs.lumino.shellWidget.activateById('outline')"
+        @compile="compile"
+        @simulate="simulate"
       />
 
       <schematic
@@ -142,6 +151,8 @@
         dock-ref="gates"
         dock-mode="split-bottom"
         @show-outline="$refs.lumino.shellWidget.activateById('outline')"
+        @compile="compile"
+        @simulate="simulate"
       ></traces>
 
       <span id="statusbar-edpos" area="statusbar" align="right">
@@ -167,6 +178,7 @@ import Schematic from "./components/Schematic.vue";
 import LiquorTree from "liquor-tree";
 import TerminalView from "./components/TerminalView";
 import InstanceTree from "./components/InstanceTree";
+import Settings from "./components/Settings";
 import TruthTable from "./components/TruthTable";
 
 const Chalk = require("chalk");
@@ -191,7 +203,8 @@ export default {
     Traces,
     Schematic,
     TruthTable,
-    InstanceTree
+    InstanceTree,
+    Settings
   },
   mixins: [UtilsMixin],
   data() {
@@ -455,7 +468,7 @@ body {
   height: 100%;
 }
 
-.dk-Outline {
+.dk-SideBarPanel {
   color: var(--jp-ui-font-color1);
   background: var(--jp-layout-color1);
   font-size: var(--jp-ui-font-size1);
@@ -478,14 +491,14 @@ body {
   flex-direction: column;
 }
 
-.dk-flex-rows {
-  display: flex;
-  flex-direction: column;
-}
-
-.dk-flex-cols {
+.dk-flex-row {
   display: flex;
   flex-direction: row;
+}
+
+.dk-flex-col {
+  display: flex;
+  flex-direction: column;
 }
 
 .dk-justify-end {
@@ -536,17 +549,26 @@ body {
   flex-grow: 4;
 }
 
-.dk-h100 {
+.dk-h-100 {
   height: 100%;
 }
 
-.dk-pad5 {
+.dk-pad-5 {
   padding: 5px;
 }
-.dk-pad10 {
+.dk-pad-10 {
   padding: 10px;
 }
-.dk-pad20 {
+.dk-pad-20 {
   padding: 20px;
+}
+.dk-gap-5 {
+  gap: 5px;
+}
+.dk-gap-10 {
+  gap: 10px;
+}
+.dk-gap-20 {
+  gap: 20px;
 }
 </style>

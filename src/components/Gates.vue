@@ -1,8 +1,8 @@
 <template>
-  <div class="dk-h100">
-    <div class="dk-flex-rows dk-h100" v-if="$store.getters.isCompiled">
+  <div class="dk-h-100">
+    <div class="dk-flex-col dk-h-100" v-if="$store.getters.isCompiled">
       <div
-        class="dk-flex-cols dk-align-center"
+        class="dk-flex-row dk-align-center"
         style="height:60px;padding:0 20px"
       >
         <instance-crumbs
@@ -53,8 +53,20 @@
       </div>
     </div>
 
-    <div class="dk-flex-rows dk-h100 dk-justify-center dk-align-center" v-else>
-      <h4>Compile to show gates</h4>
+    <div class="dk-flex-col dk-h-100 dk-justify-center dk-align-center" v-else>
+      <h4>
+        Compile
+        <button
+          class="button is-primary is-small is-info"
+          @click="$emit('compile')"
+          title="Compile"
+        >
+          <span class="icon is-small">
+            <i class="fa fa-refresh"></i>
+          </span>
+        </button>
+        to show gates
+      </h4>
     </div>
   </div>
 </template>

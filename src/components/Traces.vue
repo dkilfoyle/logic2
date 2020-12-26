@@ -1,8 +1,8 @@
 <template>
-  <div class="dk-h100">
-    <div class="dk-flex-rows" v-show="isSimulated">
+  <div class="dk-h-100">
+    <div class="dk-flex-col" v-show="isSimulated">
       <div
-        class="dk-flex-cols dk-align-center"
+        class="dk-flex-row dk-align-center"
         style="height:60px;padding:0 20px"
       >
         <instance-crumbs
@@ -16,10 +16,22 @@
       <div class="traces" id="mytraces" ref="traces"></div>
     </div>
     <div
-      class="dk-flex-rows dk-h100 dk-justify-center dk-align-center"
+      class="dk-flex-col dk-h-100 dk-justify-center dk-align-center"
       v-show="!isSimulated"
     >
-      <h4>Simulate to show traces</h4>
+      <h4>
+        Simulate
+        <button
+          class="button is-primary is-small"
+          @click="$emit('simulate')"
+          title="Simulate"
+        >
+          <span class="icon is-small">
+            <i class="fa fa-play"></i>
+          </span>
+        </button>
+        to show traces
+      </h4>
     </div>
   </div>
   <!-- <div ref="container" style="height:100%">
