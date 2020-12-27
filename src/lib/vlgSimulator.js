@@ -16,8 +16,6 @@ const indexBy = (array, prop) =>
 
 const getLocalId = x => x.substr(x.lastIndexOf("_") + 1);
 
-const EVALS_PER_STEP = 15;
-
 const not = x => ~x & 1;
 
 const logicFunctions = {
@@ -32,7 +30,8 @@ const logicFunctions = {
   xor: ([a, b, c]) => (c ? a ^ b ^ c : a ^ b),
   xnor: ([a, b, c]) => (c ? not(a ^ b ^ c) : not(a ^ b)),
   sevenseg: () => 0,
-  number: bits => parseInt(bits.reverse().join(""), 2)
+  number: bits => parseInt(bits.reverse().join(""), 2),
+  ledbar: bits => parseInt(bits.reverse().join(""), 2)
 };
 
 const evaluate = (components, componentLookup) => {
@@ -65,7 +64,7 @@ const evaluate = (components, componentLookup) => {
   });
 };
 
-const simulate = (gates, instances, modules, logger) => {
+const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
   const newSimulation = {
     gates: {},
     clock: [],

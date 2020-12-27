@@ -7,7 +7,9 @@ export default new Vuex.Store({
   state: {
     openFiles: {},
     currentFileTab: "Scratch",
-    showWhichGates: "all"
+    showWhichGates: "all",
+    evals_per_step: 15,
+    traceHeight: 30
   },
   getters: {
     currentFile: state =>
@@ -136,6 +138,12 @@ export default new Vuex.Store({
       state.openFiles[state.currentFileTab].autoCompile = !state.openFiles[
         state.currentFileTab
       ].autoCompile;
+    },
+    setEvalsPerStep(state, payload) {
+      state.evals_per_step = payload;
+    },
+    setTraceHeight(state, payload) {
+      state.traceHeight = payload;
     },
     setShowWhichGates(state, payload) {
       state.showWhichGates = payload;

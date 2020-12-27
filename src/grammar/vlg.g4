@@ -61,7 +61,8 @@ gate_type:
 	| 'response'
 	| 'buffer'
 	| 'sevenseg'
-	| 'number';
+	| 'number'
+	| 'ledbar';
 
 continuous_assign: 'assign' list_of_assignments ';';
 list_of_assignments: assignment (',' assignment)*;

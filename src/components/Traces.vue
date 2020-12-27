@@ -74,8 +74,8 @@ export default {
         left: 20,
         right: 20,
         pad: 20
-      },
-      maxTraceHeight: 50
+      }
+      // maxTraceHeight: 50
     };
   },
   computed: {
@@ -85,6 +85,9 @@ export default {
       return this.$store.getters.currentFile.simulateResult.clock.map(
         (x, i) => [i, x]
       );
+    },
+    maxTraceHeight: function() {
+      return this.$store.state.traceHeight;
     }
   },
   watch: {

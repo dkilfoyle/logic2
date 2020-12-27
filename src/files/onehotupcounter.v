@@ -1,5 +1,4 @@
-// Binary UpDown Controller from Chapter 7.5.2 of Introduction to Logic Circuits and Logic Design LaMeres
-// TODO: Why is up = 1 counting down and vice versa
+// One-hot up counter from Chapter 7.5.5 of Introduction to Logic Circuits and Logic Design LaMeres
 
 module DLatch (
   input d, c,
@@ -34,35 +33,32 @@ module DFlipFlop (
 endmodule
 
 module NextState (
-  input up, Q1cur, Q0cur,
-  output Q1nxt, Q0nxt);
+  input Q0cur, Q1cur, Q2cur,
+  output Q0nxt, Q1nxt, Q2nxt);
 
-  assign Q1nxt = Q1cur ^ Q0cur ^ up;
-  assign Q0nxt = ~Q0cur;
+  buffer(Q0nxt, Q2cur);
+  buffer(Q1nxt, Q0cur);
+  buffer(Q2nxt, Q1cur);
 
 endmodule
 
 module Main(
-  input clock, up,
-  output Q1cur, Q0cur
+  input clock,
+  output Q2cur, Q1cur, Q0cur
 ); 
 
-  wire Q1nxt, Q0nxt;
-  buffer(Q1nxt);
+  wire Q0nxt, Q1nxt, Q2nxt;
   buffer(Q0nxt);
+  buffer(Q1nxt);
+  buffer(Q2nxt);
 
   NextState nextState(
-    .up(up),
-    .Q1cur(Q1cur),
     .Q0cur(Q0cur),
+    .Q1cur(Q1cur),
+    .Q2cur(Q2cur),
+    .Q0nxt(Q0nxt),
     .Q1nxt(Q1nxt),
-    .Q0nxt(Q0nxt)
-  );
-
-  DFlipFlop Q1dff(
-    .d(Q1nxt),
-		.c(clock),
-		.Q(Q1cur)
+    .Q2nxt(Q2nxt)
   );
 
   DFlipFlop Q0dff(
@@ -70,13 +66,23 @@ module Main(
 		.c(clock),
 		.Q(Q0cur)
   );
+  
+  DFlipFlop Q1dff(
+    .d(Q1nxt),
+		.c(clock),
+		.Q(Q1cur)
+  );
 
-  wire dec;
-  number(dec, Q0cur, Q1cur);
+  DFlipFlop Q2dff(
+    .d(Q2nxt),
+		.c(clock),
+		.Q(Q2cur)
+  );
+
+  wire bar3;
+  ledbar(bar3, Q0cur, Q1cur, Q2cur);
 
   test begin
-    #0  { up = 1 };
-    #20 { up = 0 };
-    #40;
+    #20;
   end
 endmodule

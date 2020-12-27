@@ -20,6 +20,7 @@ export const SourceFiles = {
   ShiftRegister: require("./shiftregister.v").default,
   BinaryUp: require("./binaryup.v").default,
   BinaryUpDown: require("./binaryupdown.v").default,
+  OneHotUpCounter: require("./onehotupcounter.v").default,
   HalfAdder: require("./halfadder.v").default,
   FullAdder: require("./fulladder.v").default,
   RippleAdder: require("./rippleadder.v").default,
@@ -94,7 +95,11 @@ export const SourceTree = [
       { text: "WindowController" },
       {
         text: "Counters",
-        children: [{ text: "BinaryUp" }, { text: "BinaryUpDown" }]
+        children: [
+          { text: "BinaryUp" },
+          { text: "BinaryUpDown" },
+          { text: "OneHotUpCounter" }
+        ]
       }
     ]
   }

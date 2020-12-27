@@ -18,6 +18,7 @@ import { mapGetters } from "vuex";
 import SevenSegRenderer from "./renderers/sevenseg.js";
 import NumberRenderer from "./renderers/number.js";
 import BufferRenderer from "./renderers/buffer.js";
+import LedBarRenderer from "./renderers/ledbar.js";
 import { barData } from "./renderers/number.js";
 
 export default {
@@ -42,6 +43,20 @@ export default {
     },
     getGatesStateAtSelectedTime(timestate) {
       if (Object.keys(timestate).length === 0) return;
+
+      var COLOR_ON = "#00c853";
+      var COLOR_OFF = "white";
+
+      this.getAllGates
+        .filter(gate => gate.logic == "ledbar")
+        .forEach(gate => {
+          d3.select("#svgSchematic #" + gate.id + "_gate_LEDBAR")
+            .selectAll(".bar")
+            .data(gate.inputs.map(input => timestate[input]))
+            .attr("id", d => d)
+            .attr("fill", d => (d ? COLOR_ON : COLOR_OFF));
+        });
+
       this.getAllGates
         .filter(gate => gate.logic == "sevenseg")
         .forEach(gate => {
@@ -58,8 +73,8 @@ export default {
           });
         });
 
-      const COLOR_ON = "#70fbfd";
-      const COLOR_OFF = "#181917";
+      COLOR_ON = "#70fbfd";
+      COLOR_OFF = "#181917";
 
       this.getAllGates
         .filter(gate => gate.logic == "number")
@@ -131,6 +146,7 @@ export default {
     this.g.nodeRenderers.registerCustomRenderer(new SevenSegRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new NumberRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new BufferRenderer(this.g));
+    this.g.nodeRenderers.registerCustomRenderer(new LedBarRenderer(this.g));
 
     var zoom = d3.zoom();
     zoom.on("zoom", this.onZoom);
