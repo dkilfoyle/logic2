@@ -1,35 +1,26 @@
 // One-hot up counter from Chapter 7.5.5 of Introduction to Logic Circuits and Logic Design LaMeres
 
-module DLatch (
-  input d, c,
-  output Q, Qn);
-
-  wire dn;
-  not(dn, d);
-
-  wire u1, u2, Qn;
-  assign u1 = d ~& c;
-  assign u2 = dn ~& c;
-  assign Q = u1 ~& Qn;
-  assign Qn = Q ~& u2;
-endmodule
-
 module DFlipFlop (
-  input d, c,
+  input d, c, clear, preset,
   output Q, Qn);
 
-  wire cn, cnn;
-  not(cn, c);
-  not(cnn, cn);
+  wire notd, notc;
+  not(notd, d);
+  not(notc, c);
 
-  wire Qmaster;
-  buffer(Qmaster);
+  wire u1, u2, u3, u4, u5, u6, u7, u8;
 
-  buffer(Q);
-  buffer(Qn);
+  // master
+  nand(u3, d, notc, clear);
+  nand(u4, notd, notc, preset);
+  nand(u5, u3, u6, preset);
+  nand(u6, u4, u5, clear);
 
-  DLatch master(.d(d), .c(cn), .Q(Qmaster));
-  DLatch slave(.d(Qmaster), .c(cnn), .Q(Q), .Qn(Qn));
+  // slave
+  nand(u7, u5, c);
+  nand(u8, u6, c);
+  nand(Q,  u7, Qn, preset);
+  nand(Qn, u8, Q, clear);
 endmodule
 
 module NextState (
@@ -43,7 +34,7 @@ module NextState (
 endmodule
 
 module Main(
-  input clock,
+  input clock, preset, reset,
   output Q2cur, Q1cur, Q0cur
 ); 
 
@@ -64,6 +55,8 @@ module Main(
   DFlipFlop Q0dff(
     .d(Q0nxt),
 		.c(clock),
+    .preset(preset),
+    .reset(reset)
 		.Q(Q0cur)
   );
   
@@ -71,18 +64,24 @@ module Main(
     .d(Q1nxt),
 		.c(clock),
 		.Q(Q1cur)
+    .preset(reset),
+    .reset(reset)
   );
 
   DFlipFlop Q2dff(
     .d(Q2nxt),
 		.c(clock),
-		.Q(Q2cur)
+		.Q(Q2cur),
+    .preset(reset),
+    .reset(reset)
   );
 
   wire bar3;
   ledbar(bar3, Q0cur, Q1cur, Q2cur);
 
   test begin
+    #0 {preset = 0, reset = 1};
+    #1 {preset = 1, reset = 1};
     #20;
   end
 endmodule

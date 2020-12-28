@@ -2,43 +2,30 @@
 // the clock signals the latch to follow the data line
 // when clock is 0 the latch holds the last Q
 
-module SRLatchEnable (
-  input s, r, c,
-  output Q );
-
-  wire u1, u2, Qn;
-  assign u1 = s ~& c;
-  assign u2 = r ~& c;
-  assign Q = u1 ~& Qn;
-  assign Qn = Q ~& u2;
-endmodule
-
 module DLatch (
   input d, c,
-  output Qd);
+  output Q, Qn);
 
-  wire dn;
-  not(dn, d);
+  initial Q = 0;
+  initial Qn = 1;
 
-  buffer(Qd);
+  wire u3, u4;
+  assign u3 = d ~& c;
+  assign u4 = ~d ~& c;
 
-  SRLatchEnable srlatch (
-    .s(d),
-    .r(dn),
-    .c(c),
-    .Q(Qd)
-  );
+  assign Q = u3 ~& Qn;
+  assign Qn = u4 ~& Q;
 endmodule
 
 module Main(
   input d, c,
-  output Qm
+  output Q, Qn
 ); 
 
   DLatch latch(
     .d(d),
 		.c(c),
-		.Qd(Qm)
+		.Q(Q)
   );
 
   test begin

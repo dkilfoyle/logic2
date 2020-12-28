@@ -1,17 +1,18 @@
-// D-Latch with data line captured on clock rising edge
+// Master-slave d-flipflop
 
 module DLatch (
   input d, c,
   output Q, Qn);
 
-  wire dn;
-  not(dn, d);
+  initial Q = 0;
+  initial Qn = 1;
 
-  wire u1, u2, Qn;
-  assign u1 = d ~& c;
-  assign u2 = dn ~& c;
-  assign Q = u1 ~& Qn;
-  assign Qn = Q ~& u2;
+  wire u3, u4;
+  assign u3 = d ~& c;
+  assign u4 = ~d ~& c;
+
+  assign Q = u3 ~& Qn;
+  assign Qn = u4 ~& Q;
 endmodule
 
 module DFlipFlop (

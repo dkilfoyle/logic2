@@ -28,7 +28,9 @@ module_item:
 	net_declaration			# net
 	| gate_declaration		# gate
 	| continuous_assign		# assign
-	| module_instantiation	# instance;
+	| module_instantiation	# instance
+	| initial_statement # initial
+	;
 
 /* Test bench ====================================================== */
 
@@ -46,6 +48,8 @@ time_assignment: id = IDENTIFIER '=' val = UNSIGNED_NUMBER;
 // module statements ==============================================  
 
 net_declaration: 'wire' identifier_list ';';
+
+initial_statement: 'initial' id = IDENTIFIER '=' val = UNSIGNED_NUMBER  ';';
 
 gate_declaration:
 	gate_type (instanceid = IDENTIFIER)? '(' ids = identifier_list ')' ';';

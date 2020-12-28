@@ -23,12 +23,12 @@ const logicFunctions = {
   buffer: ([a]) => a,
   portbuffer: ([a]) => a,
   response: ([a]) => a,
-  and: ([a, b, c]) => (c ? a && b && c : a && b),
-  nand: ([a, b, c]) => (c ? not(a && b && c) : not(a && b)),
-  or: ([a, b, c]) => (c ? a || b || c : a || b),
-  nor: ([a, b, c]) => (c ? not(a || b || c) : not(a || b)),
-  xor: ([a, b, c]) => (c ? a ^ b ^ c : a ^ b),
-  xnor: ([a, b, c]) => (c ? not(a ^ b ^ c) : not(a ^ b)),
+  and: ([a, b, c]) => (c == undefined ? a && b : a && b && c),
+  nand: ([a, b, c]) => (c == undefined ? not(a && b) : not(a && b && c)),
+  or: ([a, b, c]) => (c == undefined ? a || b : a || b || c),
+  nor: ([a, b, c]) => (c == undefined ? not(a || b) : not(a || b || c)),
+  xor: ([a, b, c]) => (c == undefined ? a ^ b : a ^ b ^ c),
+  xnor: ([a, b, c]) => (c == undefined ? not(a ^ b) : not(a ^ b ^ c)),
   sevenseg: () => 0,
   number: bits => parseInt(bits.reverse().join(""), 2),
   ledbar: bits => parseInt(bits.reverse().join(""), 2)
@@ -53,6 +53,16 @@ const evaluate = (components, componentLookup) => {
       return;
     }
 
+    // if (component.id == "main_dff_u6") {
+    //   console.log(
+    //     "main_dff_u6: ",
+    //     inputs,
+    //     logicFunctions[logicFn](inputs),
+    //     logicFn,
+    //     ~(inputs[0] && inputs[1] && inputs[2]) & 1
+    //   );
+    // }
+
     component.state = inputs.some(input => input.state === "x")
       ? "x"
       : logicFunctions[logicFn](inputs);
@@ -73,7 +83,7 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
   };
 
   gates.forEach(g => {
-    g.state = 0;
+    g.state = g.initial || 0;
     newSimulation.gates[g.id] = [];
   });
 

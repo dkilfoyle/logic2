@@ -98,6 +98,7 @@ class Listener extends vlgListener {
       ports: [],
       wires: [],
       statements: [],
+      initials: []
     };
   }
   exitModule() {
@@ -120,6 +121,7 @@ class Listener extends vlgListener {
       ports: [],
       wires: [],
       statements: [],
+      initials: [],
       clock: [],
     };
   }
@@ -143,6 +145,14 @@ class Listener extends vlgListener {
 
   exitNet_declaration(ctx) {
     this.curModule.wires.push(...ctx.identifier_list().ids);
+  }
+
+  exitInitial_statement(ctx) {
+    console.log(ctx);
+    this.curModule.initials.push({
+      id: ctx.id.text,
+      value: parseInt(ctx.val.text,10)
+    })
   }
 
   // test bench =============================================

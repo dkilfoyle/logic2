@@ -110,6 +110,15 @@ vlgListener.prototype.exitInstance = function(ctx) {
 };
 
 
+// Enter a parse tree produced by vlgParser#initial.
+vlgListener.prototype.enterInitial = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#initial.
+vlgListener.prototype.exitInitial = function(ctx) {
+};
+
+
 // Enter a parse tree produced by vlgParser#test_bench.
 vlgListener.prototype.enterTest_bench = function(ctx) {
 };
@@ -161,6 +170,15 @@ vlgListener.prototype.enterNet_declaration = function(ctx) {
 
 // Exit a parse tree produced by vlgParser#net_declaration.
 vlgListener.prototype.exitNet_declaration = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#initial_statement.
+vlgListener.prototype.enterInitial_statement = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#initial_statement.
+vlgListener.prototype.exitInitial_statement = function(ctx) {
 };
 
 

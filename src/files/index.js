@@ -15,6 +15,7 @@ export const SourceFiles = {
   SRLatchEnable: require("./srlatchenable.v").default,
   DLatch: require("./dlatch.v").default,
   DFlipFlop: require("./dflipflop.v").default,
+  DFlipFlopPC: require("./dflipflopPC.v").default,
   WindowController: require("./windowcontroller.v").default,
   ToggleFlopDivider: require("./toggleflopdivider.v").default,
   ShiftRegister: require("./shiftregister.v").default,
@@ -76,6 +77,7 @@ export const SourceTree = [
           { text: "SRLatchEnable" },
           { text: "DLatch" },
           { text: "DFlipFlop" },
+          { text: "DFlipFlopPC" },
           { text: "DFF" }
         ]
       },

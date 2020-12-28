@@ -15,7 +15,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     inputs: [], // input port gate ids
     outputs: [], // output port gate ids
     instances: [], // child instance ids
-    gates: [] // non port gate ids
+    gates: [], // non port gate ids
+    initials: []
   };
 
   // console.log("createInstance: ", newInstance.id);
@@ -174,6 +175,11 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
   newInstance.varMap = varMap;
   instances.push(newInstance);
+
+  instanceModule.initials.forEach(initial => {
+    console.log(initial, varMap[initial.id], gates);
+    gates.find(gate => gate.id == varMap[initial.id]).initial = initial.value;
+  });
   return newInstance;
 };
 
