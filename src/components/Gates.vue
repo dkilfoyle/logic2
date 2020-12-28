@@ -13,13 +13,17 @@
         >
       </div>
 
-      <div style="padding-left:10px;padding-right:10px">
-        <table class="table is-fullwidth">
+      <div
+        id="gatestable"
+        class="dk-h-100"
+        style="padding-left:10px;padding-right:10px;overflow:auto;"
+      >
+        <table class="table is-fullwidth is-narrow">
           <thead class="bg-teal">
             <tr class="text-white">
               <th class="text-left">GlobalID</th>
               <!-- <th>InstanceID</th> -->
-              <th class="text-left">Function</th>
+              <th class="text-left">Fn</th>
               <th class="text-left">Inputs</th>
               <th class="text-right">State</th>
             </tr>
@@ -38,14 +42,17 @@
               <td>{{ getGate(g).inputs.join(", ") }}</td>
               <td
                 class="text-right"
-                v-if="$store.getters.getGateStateAtSelectedTime(g)"
+                v-if="$store.getters.getGateStateAtSelectedTime(g) == 1"
               >
                 <!-- <i class="fa fa-check"></i> -->
                 <img src="@/assets/icons8-number-1-48.png" class="gateicon" />
               </td>
-              <td v-else>
+              <td v-else-if="$store.getters.getGateStateAtSelectedTime(g) == 0">
                 <!-- <i class="fa fa-times"></i> -->
                 <img src="@/assets/icons8-0-52.png" class="gateicon" />
+              </td>
+              <td v-else>
+                {{ $store.getters.getGateStateAtSelectedTime(g) }}
               </td>
             </tr>
           </tbody>
@@ -106,5 +113,23 @@ export default {
   width: 1.5em;
   height: 1.5em;
   vertical-align: middle;
+}
+
+#gatestable {
+  font-size: 10pt;
+}
+
+#gatestable::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+
+  /* border-left: #4a4a4a 1px solid; */
+}
+
+#gatestable::-webkit-scrollbar-thumb {
+  background-color: #808080;
+  /* border-left: #4a4a4a 1px solid; */
+  border-radius: 6px;
+  fill-opacity: 0.5;
 }
 </style>

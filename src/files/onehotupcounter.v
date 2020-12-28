@@ -56,16 +56,16 @@ module Main(
     .d(Q0nxt),
 		.c(clock),
     .preset(preset),
-    .reset(reset)
+    .clear(reset),
 		.Q(Q0cur)
   );
   
   DFlipFlop Q1dff(
     .d(Q1nxt),
 		.c(clock),
-		.Q(Q1cur)
+		.Q(Q1cur),
     .preset(reset),
-    .reset(reset)
+    .clear(reset)
   );
 
   DFlipFlop Q2dff(
@@ -73,7 +73,7 @@ module Main(
 		.c(clock),
 		.Q(Q2cur),
     .preset(reset),
-    .reset(reset)
+    .clear(reset)
   );
 
   wire bar3;

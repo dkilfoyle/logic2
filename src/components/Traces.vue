@@ -147,6 +147,10 @@ export default {
         values: this.$store.getters.currentFile.simulateResult.gates[id],
         options: { xAxis: false }
       }));
+      gates.forEach(gate => {
+        const maxVal = Math.max(...gate.values);
+        if (maxVal > 1) gate.values = gate.values.map(y => y / maxVal);
+      });
       gates[gates.length - 1].options.xAxis = true;
 
       if (!gates.length) return;

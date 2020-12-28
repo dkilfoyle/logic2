@@ -10,42 +10,13 @@
       @simulate="simulate"
       @about="about"
     >
-      <div
+      <library
         id="fileTree"
         area="left"
-        class="jp-FileBrowser"
+        class="dk-SideBarPanel"
         icon="ion-md-folder-open"
-      >
-        <h4 style="padding-left:15px;padding-top:10px">CIRCUIT LIBRARY</h4>
-        <liquor-tree
-          :data="sourceTree"
-          :options="{ nodeIndent: 22 }"
-          @node:selected="onCodeTreeSelection"
-        >
-          <span class="tree-text" slot-scope="{ node }">
-            <template v-if="!node.hasChildren()">
-              <template v-if="!node.data.icon">
-                <ion-icon name="document-text-outline"></ion-icon>
-                {{ node.text }}
-              </template>
-
-              <template v-else>
-                <i :class="node.data.icon"></i>
-                {{ node.text }}
-              </template>
-            </template>
-
-            <template v-else>
-              <i
-                :class="
-                  node.expanded() ? 'fa fa-folder-open' : 'fa fa-folder-o'
-                "
-              ></i>
-              <span style="margin-left: 8px">{{ node.text }}</span>
-            </template>
-          </span></liquor-tree
-        >
-      </div>
+        @onCodeTreeSelection="onCodeTreeSelection"
+      ></library>
 
       <instance-tree
         id="outline"
@@ -175,7 +146,7 @@ import Editor from "./components/Editor.vue";
 import Gates from "./components/Gates.vue";
 import Traces from "./components/Traces.vue";
 import Schematic from "./components/Schematic.vue";
-import LiquorTree from "liquor-tree";
+import Library from "./components/Library.vue";
 import TerminalView from "./components/TerminalView";
 import InstanceTree from "./components/InstanceTree";
 import Settings from "./components/Settings";
@@ -198,7 +169,7 @@ export default {
     Lumino,
     TerminalView,
     Editor,
-    LiquorTree,
+    Library,
     Gates,
     Traces,
     Schematic,
@@ -210,7 +181,6 @@ export default {
   data() {
     return {
       sourceFiles: require("./files").SourceFiles,
-      sourceTree: require("./files").SourceTree,
       sourceCounter: 0,
       cursorPosition: { lineNumber: "", column: "" }
     };
@@ -259,8 +229,8 @@ export default {
       this.updateOutline();
     },
 
-    onCodeTreeSelection(node) {
-      if (node.children.length == 0) this.addFileTab(node.text);
+    onCodeTreeSelection(file) {
+      this.addFileTab(file);
     },
 
     onLuminoResize(e) {
@@ -563,6 +533,27 @@ body {
 }
 .dk-pad-20 {
   padding: 20px;
+}
+.dk-pad-t5 {
+  padding-top: 5px;
+}
+.dk-pad-t10 {
+  padding-top: 10px;
+}
+.dk-pad-t20 {
+  padding-top: 20px;
+}
+.dk-pad-x5 {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+.dk-pad-x10 {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.dk-pad-x20 {
+  padding-left: 20px;
+  padding-right: 20px;
 }
 .dk-gap-5 {
   gap: 5px;
