@@ -87,7 +87,7 @@ npm run serve
 ## Next
 
 1. bit vector eg 4 bit ripple adder with vector input/output
-2. behavioural logic eg d flip flop
+2. behavioural logic eg d flip flop (done)
 
 ## Acknowledgements
 
