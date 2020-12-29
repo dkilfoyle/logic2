@@ -53,15 +53,7 @@ const evaluate = (components, componentLookup) => {
       return;
     }
 
-    // if (component.id == "main_dff_u6") {
-    //   console.log(
-    //     "main_dff_u6: ",
-    //     inputs,
-    //     logicFunctions[logicFn](inputs),
-    //     logicFn,
-    //     ~(inputs[0] && inputs[1] && inputs[2]) & 1
-    //   );
-    // }
+    if (logicFn == "reg") return;
 
     component.state = inputs.some(input => input.state === "x")
       ? "x"
@@ -117,9 +109,31 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
     if (gatesLookup["main_clock"])
       gatesLookup["main_clock"].state = ~gatesLookup["main_clock"].state & 1;
 
-    // run gate evaluation for this time step (not t=0)
+    // run gate evaluation and instance always for this time step (not t=0)
     for (let i = 0; i < EVALS_PER_STEP; i++) {
       evaluate(gates, gatesLookup);
+      // run always section for each instance
+      instances.forEach(instance => {
+        if (!instance.always) return;
+
+        const { sensitivities, assigns } = instance.always;
+
+        const last = sensitivities[0].last;
+        const current = gatesLookup[sensitivities[0].id].state;
+        const edge =
+          last == 0 && current == 1
+            ? "posedge"
+            : last == 1 && current == 0
+            ? "negedge"
+            : "same";
+
+        if (sensitivities[0].type == edge) {
+          assigns.forEach(assign => {
+            gatesLookup[assign.id].state = gatesLookup[assign.val].state;
+            // console.log("posedge: ", assign.id, gatesLookup[assign.id].state);
+          });
+        }
+      });
     }
 
     // and store gate results in newSimulation
@@ -127,6 +141,14 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
       newSimulation.gates[g.id].push(gatesLookup[g.id].state);
     });
     newSimulation.clock.push(clock % 2);
+
+    // update always last
+    instances.forEach(instance => {
+      if (instance.always) {
+        instance.always.sensitivities[0].last =
+          gatesLookup[instance.always.sensitivities[0].id].state;
+      }
+    });
 
     modulesLookup.Main.clock.forEach((x, index, all) => {
       if (x.time != clock) return;
@@ -147,6 +169,9 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
       );
     });
   }
+
+  // iterate through all instances and apply always statements
+
   newSimulation.maxTime = newSimulation.time[newSimulation.time.length - 1];
   newSimulation.timestamp = Date.now();
   newSimulation.ready = true;

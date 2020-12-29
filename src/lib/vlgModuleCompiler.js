@@ -28,6 +28,9 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   instanceModule.wires.forEach(wire => {
     varMap[wire] = `${namespace}_${wire}`;
   });
+  instanceModule.regs.forEach(reg => {
+    varMap[reg] = `${namespace}_${reg}`;
+  });
   instanceModule.ports.forEach(port => {
     varMap[port.id] = `${namespace}_${port.id}`;
   });
@@ -53,6 +56,19 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       newInstance.gates.push(newGate.id);
     });
 
+  instanceModule.regs.forEach(reg => {
+    const newGate = {
+      id: varMap[reg],
+      logic: "reg",
+      inputs: [],
+      instance: namespace,
+      state: 0,
+      type: "gate"
+    };
+    gates.push(newGate);
+    newInstance.gates.push(newGate.id);
+  });
+
   // console.log("-- instance gates: ", newInstance.gates);
   // create a buffer gate for each port in the instance's module definition
   // each port is mapped to {parentNamespace}_{connection.value.id}
@@ -72,9 +88,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       // if main_port.id already exists then just change it's logic to responsebuffer
 
       if (gates.some(x => x.id == "main_" + port.id)) {
-        console.log("main_" + port.id);
-        console.log(gates);
-        console.log("responsebuffer");
+        // console.log("main_" + port.id);
       } else {
         const newGate = {
           id: "main_" + port.id,
@@ -173,13 +187,27 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       newInstance.instances.push(childInstance.id);
     });
 
+  instanceModule.statements
+    .filter(statement => statement.type == "initial")
+    .forEach(initial => {
+      var initialGate = gates.find(gate => gate.id == varMap[initial.id]);
+      initialGate.initial = initial.value;
+    });
+
+  if (instanceModule.always) {
+    newInstance.always = { ...instanceModule.always };
+    newInstance.always.sensitivities.forEach(sensitivity => {
+      sensitivity.id = varMap[sensitivity.id];
+    });
+    newInstance.always.assigns.forEach(assign => {
+      assign.val = varMap[assign.val];
+      assign.id = varMap[assign.id];
+    });
+  }
+
   newInstance.varMap = varMap;
   instances.push(newInstance);
 
-  instanceModule.initials.forEach(initial => {
-    console.log(initial, varMap[initial.id], gates);
-    gates.find(gate => gate.id == varMap[initial.id]).initial = initial.value;
-  });
   return newInstance;
 };
 

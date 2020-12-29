@@ -254,7 +254,7 @@ export default {
       // console.log(this.$refs.lumino.shellWidget._dockPanel.saveLayout());
     },
     onLuminoActivated(e) {
-      console.log("onLuminoActivated: ", e);
+      // console.log("onLuminoActivated: ", e);
       if (e.id.endsWith("_editor")) {
         this.$refs[e.id][0].resize();
         this.$refs[e.id][0].editor.focus();
@@ -273,7 +273,7 @@ export default {
       }
     },
     onLuminoDeleted(e) {
-      console.log("Lumino deleted: ", e);
+      // console.log("Lumino deleted: ", e);
       this.$store.commit("closeFile", e.name);
       // this.onLuminoActivated({ id: "Scratch_editor" });
       this.$store.commit("setCurrentFileTab", "Scratch"); // unnecessary because luminoActivated is called?

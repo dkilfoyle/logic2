@@ -183,7 +183,9 @@ export default {
           "output",
           "endmodule",
           "test",
-          "assign"
+          "assign",
+          "always",
+          "initial"
         ],
         typeKeywords: [
           "and",
@@ -195,7 +197,10 @@ export default {
           "buffer",
           "wire",
           "control",
-          "response"
+          "response",
+          "reg",
+          "posedge",
+          "negedge"
         ],
         operators: ["=", "&", "|", "~", "^"],
         symbols: /[=><!~?:&|+\-*/^%]+/,

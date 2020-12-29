@@ -25,7 +25,8 @@ export const SourceFiles = {
   HalfAdder: require("./halfadder.v").default,
   FullAdder: require("./fulladder.v").default,
   RippleAdder: require("./rippleadder.v").default,
-  RippleSubtractor: require("./ripplesubtractor.v").default
+  RippleSubtractor: require("./ripplesubtractor.v").default,
+  DFlipFlopB: require("./dflipflopb.v").default
 };
 
 export const SourceTree = [
@@ -104,5 +105,9 @@ export const SourceTree = [
         ]
       }
     ]
+  },
+  {
+    text: "Behavioural Models",
+    children: [{ text: "DFlipFlopB" }]
   }
 ];

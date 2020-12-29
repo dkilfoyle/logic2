@@ -66,6 +66,12 @@ vlgVisitor.prototype.visitGate = function(ctx) {
 };
 
 
+// Visit a parse tree produced by vlgParser#reg.
+vlgVisitor.prototype.visitReg = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by vlgParser#assign.
 vlgVisitor.prototype.visitAssign = function(ctx) {
   return this.visitChildren(ctx);
@@ -80,6 +86,12 @@ vlgVisitor.prototype.visitInstance = function(ctx) {
 
 // Visit a parse tree produced by vlgParser#initial.
 vlgVisitor.prototype.visitInitial = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#always.
+vlgVisitor.prototype.visitAlways = function(ctx) {
   return this.visitChildren(ctx);
 };
 
@@ -116,6 +128,12 @@ vlgVisitor.prototype.visitTime_assignment = function(ctx) {
 
 // Visit a parse tree produced by vlgParser#net_declaration.
 vlgVisitor.prototype.visitNet_declaration = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#reg_declaration.
+vlgVisitor.prototype.visitReg_declaration = function(ctx) {
   return this.visitChildren(ctx);
 };
 
@@ -204,6 +222,30 @@ vlgVisitor.prototype.visitBinary_operator = function(ctx) {
 };
 
 
+// Visit a parse tree produced by vlgParser#always_section.
+vlgVisitor.prototype.visitAlways_section = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#sensitivity.
+vlgVisitor.prototype.visitSensitivity = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#sensitivity_type.
+vlgVisitor.prototype.visitSensitivity_type = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#always_statement.
+vlgVisitor.prototype.visitAlways_statement = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by vlgParser#defined_connection_id.
 vlgVisitor.prototype.visitDefined_connection_id = function(ctx) {
   return this.visitChildren(ctx);
@@ -224,6 +266,12 @@ vlgVisitor.prototype.visitIdentifier_list = function(ctx) {
 
 // Visit a parse tree produced by vlgParser#number.
 vlgVisitor.prototype.visitNumber = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#range.
+vlgVisitor.prototype.visitRange = function(ctx) {
   return this.visitChildren(ctx);
 };
 

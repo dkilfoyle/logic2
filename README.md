@@ -73,7 +73,7 @@ npm run serve
    1. Ripple counter (done)
    1. Shift register (done)
    1. FSMs (done)
-1. More custom nodes eg bits to number (done)
+1. More custom nodes eg bits to number (done), led bar (done)
 1. Reuse intermediary gates
 1. Support bit vector type
 1. More linting (WIP)
@@ -83,6 +83,11 @@ npm run serve
 1. Future?
    a) Truth tables and Karnaugh maps to generate optimised logic gates (done)
    b) Custom d3-based traces view instead of dygraphs (done)
+
+## Next
+
+1. bit vector eg 4 bit ripple adder with vector input/output
+2. behavioural logic eg d flip flop
 
 ## Acknowledgements
 

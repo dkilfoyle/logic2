@@ -92,6 +92,15 @@ vlgListener.prototype.exitGate = function(ctx) {
 };
 
 
+// Enter a parse tree produced by vlgParser#reg.
+vlgListener.prototype.enterReg = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#reg.
+vlgListener.prototype.exitReg = function(ctx) {
+};
+
+
 // Enter a parse tree produced by vlgParser#assign.
 vlgListener.prototype.enterAssign = function(ctx) {
 };
@@ -116,6 +125,15 @@ vlgListener.prototype.enterInitial = function(ctx) {
 
 // Exit a parse tree produced by vlgParser#initial.
 vlgListener.prototype.exitInitial = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#always.
+vlgListener.prototype.enterAlways = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#always.
+vlgListener.prototype.exitAlways = function(ctx) {
 };
 
 
@@ -170,6 +188,15 @@ vlgListener.prototype.enterNet_declaration = function(ctx) {
 
 // Exit a parse tree produced by vlgParser#net_declaration.
 vlgListener.prototype.exitNet_declaration = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#reg_declaration.
+vlgListener.prototype.enterReg_declaration = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#reg_declaration.
+vlgListener.prototype.exitReg_declaration = function(ctx) {
 };
 
 
@@ -299,6 +326,42 @@ vlgListener.prototype.exitBinary_operator = function(ctx) {
 };
 
 
+// Enter a parse tree produced by vlgParser#always_section.
+vlgListener.prototype.enterAlways_section = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#always_section.
+vlgListener.prototype.exitAlways_section = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#sensitivity.
+vlgListener.prototype.enterSensitivity = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#sensitivity.
+vlgListener.prototype.exitSensitivity = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#sensitivity_type.
+vlgListener.prototype.enterSensitivity_type = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#sensitivity_type.
+vlgListener.prototype.exitSensitivity_type = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#always_statement.
+vlgListener.prototype.enterAlways_statement = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#always_statement.
+vlgListener.prototype.exitAlways_statement = function(ctx) {
+};
+
+
 // Enter a parse tree produced by vlgParser#defined_connection_id.
 vlgListener.prototype.enterDefined_connection_id = function(ctx) {
 };
@@ -332,6 +395,15 @@ vlgListener.prototype.enterNumber = function(ctx) {
 
 // Exit a parse tree produced by vlgParser#number.
 vlgListener.prototype.exitNumber = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#range.
+vlgListener.prototype.enterRange = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#range.
+vlgListener.prototype.exitRange = function(ctx) {
 };
 
 

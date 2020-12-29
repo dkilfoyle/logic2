@@ -27,9 +27,11 @@ port_direction: 'input' | 'output';
 module_item:
 	net_declaration			# net
 	| gate_declaration		# gate
+	| reg_declaration # reg
 	| continuous_assign		# assign
 	| module_instantiation	# instance
 	| initial_statement # initial
+	| always_section # always
 	;
 
 /* Test bench ====================================================== */
@@ -48,6 +50,7 @@ time_assignment: id = IDENTIFIER '=' val = UNSIGNED_NUMBER;
 // module statements ==============================================  
 
 net_declaration: 'wire' identifier_list ';';
+reg_declaration: 'reg' range? identifier_list ';';
 
 initial_statement: 'initial' id = IDENTIFIER '=' val = UNSIGNED_NUMBER  ';';
 
@@ -96,6 +99,13 @@ expr:
 
 binary_operator: AND | NAND | OR | NOR | XOR;
 
+/* Always section===================================================== */
+
+always_section: 'always' '@' '(' sensitivity ')' 'begin' always_statement+ 'end';
+sensitivity: type = sensitivity_type id = IDENTIFIER;
+sensitivity_type: 'posedge' | 'negedge';
+always_statement: id = IDENTIFIER '=' val = IDENTIFIER ';';
+
 /* Token groups ====================================================== */
 
 defined_connection_id: IDENTIFIER;
@@ -103,6 +113,7 @@ defined_connection_id_list:
 	defined_connection_id (',' defined_connection_id)*;
 identifier_list: IDENTIFIER (',' IDENTIFIER)*;
 number: UNSIGNED_NUMBER | BINARY_NUMBER;
+range: '[' start = UNSIGNED_NUMBER ':' end = UNSIGNED_NUMBER ']';
 
 /* Tokens ============================================================= */
 
