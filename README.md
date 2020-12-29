@@ -2,7 +2,7 @@
 
 A work-in-progress/experimental IDE for experimentation with Francis Stokes ([Low Level Javascript](https://www.youtube.com/c/LowLevelJavaScript/featured)) [Digital Circuit Simulator](https://github.com/LowLevelJavaScript/Digital-Logic-Simulator)
 
-[Online Version](https://dkilfoyle.github.io/logic2/)
+[Live Web Version](https://dkilfoyle.github.io/logic2/)
 
 ![Screenshot](https://raw.githubusercontent.com/dkilfoyle/logic2/master/ScreenShot.png)
 
@@ -17,10 +17,11 @@ npm run serve
 
 1. Micro-subset verilog-like DSL for coding the array of logic gates (parsed using Antlr)
 2. Monaco-based code editor with automatic linting/error reporting, smart indentation, code folding, hints
-3. Schematic visualisation courtesy of d3-hwschematic
-4. Testbench simulation with graphical trace output
-5. Coming soon: simulation timeline animation
-6. IDE ui courtesy of JupyterLab's Lumino widgets
+3. IDE docking ui courtesy of JupyterLab's Lumino widgets
+4. Schematic visualisation courtesy of d3-hwschematic
+5. Testbench simulation with graphical trace output and schematic animation
+6. Circuit description as gates, boolean logic or verilog behavioural model
+7. Generate arbitrary outputs from truth table and Sum of Products or Karnaugh Map
 
 ## DSL
 
@@ -68,26 +69,23 @@ npm run serve
 ## TODO
 
 1. More sample code circuits
-   1. 4 bit ripple adder (done)
-   1. 4 to 1 multiplexer with bit vector select line
-   1. Ripple counter (done)
-   1. Shift register (done)
-   1. FSMs (done)
-1. More custom nodes eg bits to number (done), led bar (done)
-1. Reuse intermediary gates
-1. Support bit vector type
-1. More linting (WIP)
-1. Custom schematic node renderer eg seven segment (done)
-1. d3-hwschematic - how can import without webworker problem
-1. d3-hwschematic - remove need for custom line exports.GenericNodeRenderer = GenericNodeRenderer;
-1. Future?
-   a) Truth tables and Karnaugh maps to generate optimised logic gates (done)
-   b) Custom d3-based traces view instead of dygraphs (done)
-
-## Next
-
-1. bit vector eg 4 bit ripple adder with vector input/output
-2. behavioural logic eg d flip flop (done)
+    1. 4 bit ripple adder (done)
+    2. 4 to 1 multiplexer with bit vector select line
+    3. Ripple counter (done)
+    4. Shift register (done)
+    5. FSMs (done)
+2. More custom nodes eg bits to number (done), led bar (done)
+3. Reuse intermediary gates
+4. Support bit vector type
+5. More linting (WIP)
+6. Custom schematic node renderer eg seven segment (done)
+7. d3-hwschematic - how can import without webworker problem
+8. d3-hwschematic - remove need for custom line exports.GenericNodeRenderer = GenericNodeRenderer;
+9. Future?
+    1. Truth tables and Karnaugh maps to generate optimised logic gates (done)
+    2. Custom d3-based traces view instead of dygraphs (done)
+    3. bit vector eg 4 bit ripple adder with vector input/output
+    4. behavioural logic eg d flip flop (initial support done)
 
 ## Acknowledgements
 
@@ -96,4 +94,5 @@ npm run serve
 3. [Monaco Editor](https://microsoft.github.io/monaco-editor/)
 4. [d3-hwschematic](https://github.com/Nic30/d3-hwschematic)
 5. [Lumino Widgets](https://github.com/jupyterlab/lumino)
-6. Vue + Buefy
+6. [Vue](https://vuejs.org) 
+7. [Buefy](https://buefy.org/)
