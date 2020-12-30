@@ -11,14 +11,14 @@ module DFlipFlop (
   wire u1, u2, u3, u4, u5, u6, u7, u8;
 
   // master
-  nand(u3, d, notc, clear);
-  nand(u4, notd, notc, preset);
+  nand(u3, d, c, clear);
+  nand(u4, notd, c, preset);
   nand(u5, u3, u6, preset);
   nand(u6, u4, u5, clear);
 
   // slave
-  nand(u7, u5, c);
-  nand(u8, u6, c);
+  nand(u7, u5, notc);
+  nand(u8, u6, notc);
   nand(Q,  u7, Qn, preset);
   nand(Qn, u8, Q, clear);
 endmodule

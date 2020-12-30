@@ -194,15 +194,20 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       initialGate.initial = initial.value;
     });
 
+  const processStatement = s => {
+    if (s.type == "seq_block") s.statements.forEach(ss => processStatement(ss));
+    else if (s.type == "blocking_assignment") {
+      if (s.lhs != +s.lhs) s.lhs = varMap[s.lhs];
+      if (s.rhs != +s.rhs) s.rhs = varMap[s.rhs];
+    }
+  };
+
   if (instanceModule.always) {
     newInstance.always = { ...instanceModule.always };
     newInstance.always.sensitivities.forEach(sensitivity => {
       sensitivity.id = varMap[sensitivity.id];
     });
-    newInstance.always.assigns.forEach(assign => {
-      assign.val = varMap[assign.val];
-      assign.id = varMap[assign.id];
-    });
+    processStatement(newInstance.always.statement);
   }
 
   newInstance.varMap = varMap;

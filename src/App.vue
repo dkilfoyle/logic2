@@ -281,12 +281,12 @@ export default {
     termWriteln(str) {
       this.$refs.terminal.setContent(str);
     },
-    onFailLint(e) {
-      console.log("onFailLint: ", e);
+    onFailLint() {
+      // console.log("onFailLint: ", e);
       this.$store.commit("setStatus", "Parse Error");
     },
     onPassLint(e) {
-      console.log("onPassLint: ", e);
+      // console.log("onPassLint: ", e);
 
       // if simulate on pass lint
       this.$store.commit("setParseResult", { ...e.parseResult });
@@ -303,7 +303,7 @@ export default {
         this.$store.commit("setStatus", "Parse OK");
       }
 
-      console.log("app onPassLint: walkResult = ", e.walkResult);
+      // console.log("app onPassLint: walkResult = ", e.walkResult);
     },
     compile() {
       this.termWriteln(

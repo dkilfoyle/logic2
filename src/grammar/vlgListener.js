@@ -335,30 +335,66 @@ vlgListener.prototype.exitAlways_section = function(ctx) {
 };
 
 
-// Enter a parse tree produced by vlgParser#sensitivity.
-vlgListener.prototype.enterSensitivity = function(ctx) {
+// Enter a parse tree produced by vlgParser#event_list.
+vlgListener.prototype.enterEvent_list = function(ctx) {
 };
 
-// Exit a parse tree produced by vlgParser#sensitivity.
-vlgListener.prototype.exitSensitivity = function(ctx) {
-};
-
-
-// Enter a parse tree produced by vlgParser#sensitivity_type.
-vlgListener.prototype.enterSensitivity_type = function(ctx) {
-};
-
-// Exit a parse tree produced by vlgParser#sensitivity_type.
-vlgListener.prototype.exitSensitivity_type = function(ctx) {
+// Exit a parse tree produced by vlgParser#event_list.
+vlgListener.prototype.exitEvent_list = function(ctx) {
 };
 
 
-// Enter a parse tree produced by vlgParser#always_statement.
-vlgListener.prototype.enterAlways_statement = function(ctx) {
+// Enter a parse tree produced by vlgParser#event_every.
+vlgListener.prototype.enterEvent_every = function(ctx) {
 };
 
-// Exit a parse tree produced by vlgParser#always_statement.
-vlgListener.prototype.exitAlways_statement = function(ctx) {
+// Exit a parse tree produced by vlgParser#event_every.
+vlgListener.prototype.exitEvent_every = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#event_primary.
+vlgListener.prototype.enterEvent_primary = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#event_primary.
+vlgListener.prototype.exitEvent_primary = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#event_type.
+vlgListener.prototype.enterEvent_type = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#event_type.
+vlgListener.prototype.exitEvent_type = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#statement.
+vlgListener.prototype.enterStatement = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#statement.
+vlgListener.prototype.exitStatement = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#blocking_assignment.
+vlgListener.prototype.enterBlocking_assignment = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#blocking_assignment.
+vlgListener.prototype.exitBlocking_assignment = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#seq_block.
+vlgListener.prototype.enterSeq_block = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#seq_block.
+vlgListener.prototype.exitSeq_block = function(ctx) {
 };
 
 

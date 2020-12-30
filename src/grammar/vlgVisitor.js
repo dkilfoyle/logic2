@@ -228,20 +228,44 @@ vlgVisitor.prototype.visitAlways_section = function(ctx) {
 };
 
 
-// Visit a parse tree produced by vlgParser#sensitivity.
-vlgVisitor.prototype.visitSensitivity = function(ctx) {
+// Visit a parse tree produced by vlgParser#event_list.
+vlgVisitor.prototype.visitEvent_list = function(ctx) {
   return this.visitChildren(ctx);
 };
 
 
-// Visit a parse tree produced by vlgParser#sensitivity_type.
-vlgVisitor.prototype.visitSensitivity_type = function(ctx) {
+// Visit a parse tree produced by vlgParser#event_every.
+vlgVisitor.prototype.visitEvent_every = function(ctx) {
   return this.visitChildren(ctx);
 };
 
 
-// Visit a parse tree produced by vlgParser#always_statement.
-vlgVisitor.prototype.visitAlways_statement = function(ctx) {
+// Visit a parse tree produced by vlgParser#event_primary.
+vlgVisitor.prototype.visitEvent_primary = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#event_type.
+vlgVisitor.prototype.visitEvent_type = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#statement.
+vlgVisitor.prototype.visitStatement = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#blocking_assignment.
+vlgVisitor.prototype.visitBlocking_assignment = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#seq_block.
+vlgVisitor.prototype.visitSeq_block = function(ctx) {
   return this.visitChildren(ctx);
 };
 

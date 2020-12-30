@@ -101,10 +101,43 @@ binary_operator: AND | NAND | OR | NOR | XOR;
 
 /* Always section===================================================== */
 
-always_section: 'always' '@' '(' sensitivity ')' 'begin' always_statement+ 'end';
-sensitivity: type = sensitivity_type id = IDENTIFIER;
-sensitivity_type: 'posedge' | 'negedge';
-always_statement: id = IDENTIFIER '=' val = IDENTIFIER ';';
+always_section
+	: 'always' '@' '(' event_list ')' statement
+	;
+
+event_list
+	: event_every
+	| event_primary ('or' event_primary | ',' event_primary)*
+  ;
+
+event_every
+	: '*'
+	;
+
+event_primary
+	: event_type? IDENTIFIER
+	;
+
+event_type
+	: 'posedge' 
+	| 'negedge' 
+  ;
+
+
+/* statements ======================================================== */
+
+statement
+	: blocking_assignment ';'
+	| seq_block
+	;
+
+blocking_assignment
+	: lhs = IDENTIFIER '=' rhs = (IDENTIFIER | UNSIGNED_NUMBER)
+	;
+
+seq_block
+	: 'begin' statement* 'end'
+	;
 
 /* Token groups ====================================================== */
 

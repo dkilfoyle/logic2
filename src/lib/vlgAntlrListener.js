@@ -172,20 +172,54 @@ class Listener extends vlgListener {
   // always =================================================
 
   exitAlways_section(ctx) {
-    const sensitivity_type = ctx.sensitivity().type.getText();
-    const sensitivity_id = ctx.sensitivity().id.text;
-    this.curModule.always = {
-      sensitivities: [{
-        id: sensitivity_id,
-        type: sensitivity_type,
+    this.curModule.always = {}
+
+    if (ctx.event_list().event_every() != null) {
+      this.curModule.always.sensitivities = [{
+        type: "everytime",
         last: undefined
-      }],
-      assigns: []
+      }]
+    } else {
+      this.curModule.always.sensitivities = ctx.event_list().event_primary().map(e => ({
+        id: e.IDENTIFIER().getText(),
+        type: e.event_type() != null ? e.event_type().getText() : "changed",
+        last: undefined
+      }))
     }
-    ctx.always_statement().forEach(x => {
-      this.curModule.always.assigns.push({id:x.id.text, val:x.val.text})}
-    );
-    console.log(this.curModule.always)
+
+    this.curModule.always.statement = ctx.statement().children[0].statementDescription;
+    console.log("always = ", this.curModule.always);
+
+    // const sensitivity_type = ctx.sensitivity().type.getText();
+    // const sensitivity_id = ctx.sensitivity().id.text;
+    // this.curModule.always = {
+    //   sensitivities: [{
+    //     id: sensitivity_id,
+    //     type: sensitivity_type,
+    //     last: undefined
+    //   }],
+    //   assigns: []
+    // }
+    // ctx.always_statement().forEach(x => {
+    //   this.curModule.always.assigns.push({id:x.id.text, val:x.val.text})}
+    // );
+    // console.log(this.curModule.always)
+  }
+
+  exitBlocking_assignment(ctx) {
+    // console.log("blocking_assignment = ", ctx.lhs.text, ctx.rhs.text)
+    ctx.statementDescription = {
+      statement_type: "blocking_assignment",
+      lhs: ctx.lhs.text,
+      rhs: ctx.rhs.text
+    }
+  }
+
+  exitSeq_block(ctx) {
+    ctx.statementDescription = {
+      statement_type: "seq_block",
+      statements: ctx.statement().map(s => s.children[0].statementDescription)
+    }
   }
 
   // test bench =============================================
