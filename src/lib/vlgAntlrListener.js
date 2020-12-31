@@ -106,7 +106,7 @@ class Listener extends vlgListener {
       ports: [],
       wires: [],
       regs: [],
-      statements: [],
+      instantiations: []
     };
   }
   exitModule() {
@@ -129,7 +129,7 @@ class Listener extends vlgListener {
       ports: [],
       wires: [],
       regs: [],
-      statements: [],
+      instantiations: [],
       clock: [],
     };
   }
@@ -160,19 +160,21 @@ class Listener extends vlgListener {
   }
 
   exitInitial_statement(ctx) {
-    this.curModule.statements.push({
-      type: "initial",
-      id: ctx.id.text,
-      value: parseInt(ctx.val.text,10),
+    this.curModule.initial = {
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
       sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
-    });
+      statement: ctx.statement().children[0].statementDescription
+    }
+    console.log("initial = ", this.curModule.initial)
   }
 
   // always =================================================
 
-  exitAlways_section(ctx) {
-    this.curModule.always = {}
+  exitAlways_statement(ctx) {
+    this.curModule.always = {
+      sourceStart: { column: ctx.start.column, line: ctx.start.line },
+      sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
+    }
 
     if (ctx.event_list().event_every() != null) {
       this.curModule.always.sensitivities = [{
@@ -189,29 +191,15 @@ class Listener extends vlgListener {
 
     this.curModule.always.statement = ctx.statement().children[0].statementDescription;
     console.log("always = ", this.curModule.always);
-
-    // const sensitivity_type = ctx.sensitivity().type.getText();
-    // const sensitivity_id = ctx.sensitivity().id.text;
-    // this.curModule.always = {
-    //   sensitivities: [{
-    //     id: sensitivity_id,
-    //     type: sensitivity_type,
-    //     last: undefined
-    //   }],
-    //   assigns: []
-    // }
-    // ctx.always_statement().forEach(x => {
-    //   this.curModule.always.assigns.push({id:x.id.text, val:x.val.text})}
-    // );
-    // console.log(this.curModule.always)
   }
 
   exitBlocking_assignment(ctx) {
-    // console.log("blocking_assignment = ", ctx.lhs.text, ctx.rhs.text)
+    const rhs = ctx.rhs.getText();
+    // console.log("blocking_assignment = ", ctx.lhs.text, rhs)
     ctx.statementDescription = {
       statement_type: "blocking_assignment",
       lhs: ctx.lhs.text,
-      rhs: ctx.rhs.text
+      rhs: rhs == +rhs ? parseInt(rhs,10) : rhs // rhs.result
     }
   }
 
@@ -221,6 +209,10 @@ class Listener extends vlgListener {
       statements: ctx.statement().map(s => s.children[0].statementDescription)
     }
   }
+
+  // Expressions ============================================
+
+  // todo: expressions should set ctx.result which can be evaluated recursively
 
   // test bench =============================================
 
@@ -262,7 +254,7 @@ class Listener extends vlgListener {
       this.addSemanticError(idctx.symbol, `'${gateOutput}' is not defined as a wire or module output`);
     }
 
-    this.curModule.statements.push({
+    this.curModule.instantiations.push({
       type: "gate",
       id: gateOutput,
       gate: gateType,
@@ -286,7 +278,7 @@ class Listener extends vlgListener {
 
   exitAssignment(ctx) {
     this.assign.gates[this.assign.gates.length - 1].id = this.assign.id;
-    this.curModule.statements.push(...this.assign.gates);
+    this.curModule.instantiations.push(...this.assign.gates);
   }
 
   exitBinaryExpr(ctx) {
@@ -381,7 +373,7 @@ class Listener extends vlgListener {
         );
     });
 
-    this.curModule.statements.push({
+    this.curModule.instantiations.push({
       type: "instance",
       id: instanceid,
       module: moduleid,

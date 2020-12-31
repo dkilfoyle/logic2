@@ -182,6 +182,33 @@ vlgListener.prototype.exitTime_assignment = function(ctx) {
 };
 
 
+// Enter a parse tree produced by vlgParser#module_instantiation.
+vlgListener.prototype.enterModule_instantiation = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#module_instantiation.
+vlgListener.prototype.exitModule_instantiation = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#module_connections_list.
+vlgListener.prototype.enterModule_connections_list = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#module_connections_list.
+vlgListener.prototype.exitModule_connections_list = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#named_port_connection.
+vlgListener.prototype.enterNamed_port_connection = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#named_port_connection.
+vlgListener.prototype.exitNamed_port_connection = function(ctx) {
+};
+
+
 // Enter a parse tree produced by vlgParser#net_declaration.
 vlgListener.prototype.enterNet_declaration = function(ctx) {
 };
@@ -197,15 +224,6 @@ vlgListener.prototype.enterReg_declaration = function(ctx) {
 
 // Exit a parse tree produced by vlgParser#reg_declaration.
 vlgListener.prototype.exitReg_declaration = function(ctx) {
-};
-
-
-// Enter a parse tree produced by vlgParser#initial_statement.
-vlgListener.prototype.enterInitial_statement = function(ctx) {
-};
-
-// Exit a parse tree produced by vlgParser#initial_statement.
-vlgListener.prototype.exitInitial_statement = function(ctx) {
 };
 
 
@@ -254,33 +272,6 @@ vlgListener.prototype.exitAssignment = function(ctx) {
 };
 
 
-// Enter a parse tree produced by vlgParser#module_instantiation.
-vlgListener.prototype.enterModule_instantiation = function(ctx) {
-};
-
-// Exit a parse tree produced by vlgParser#module_instantiation.
-vlgListener.prototype.exitModule_instantiation = function(ctx) {
-};
-
-
-// Enter a parse tree produced by vlgParser#module_connections_list.
-vlgListener.prototype.enterModule_connections_list = function(ctx) {
-};
-
-// Exit a parse tree produced by vlgParser#module_connections_list.
-vlgListener.prototype.exitModule_connections_list = function(ctx) {
-};
-
-
-// Enter a parse tree produced by vlgParser#named_port_connection.
-vlgListener.prototype.enterNamed_port_connection = function(ctx) {
-};
-
-// Exit a parse tree produced by vlgParser#named_port_connection.
-vlgListener.prototype.exitNamed_port_connection = function(ctx) {
-};
-
-
 // Enter a parse tree produced by vlgParser#negateExpr.
 vlgListener.prototype.enterNegateExpr = function(ctx) {
 };
@@ -326,12 +317,57 @@ vlgListener.prototype.exitBinary_operator = function(ctx) {
 };
 
 
-// Enter a parse tree produced by vlgParser#always_section.
-vlgListener.prototype.enterAlways_section = function(ctx) {
+// Enter a parse tree produced by vlgParser#primaryExpression.
+vlgListener.prototype.enterPrimaryExpression = function(ctx) {
 };
 
-// Exit a parse tree produced by vlgParser#always_section.
-vlgListener.prototype.exitAlways_section = function(ctx) {
+// Exit a parse tree produced by vlgParser#primaryExpression.
+vlgListener.prototype.exitPrimaryExpression = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#binaryExpression.
+vlgListener.prototype.enterBinaryExpression = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#binaryExpression.
+vlgListener.prototype.exitBinaryExpression = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#unaryPrimaryExpression.
+vlgListener.prototype.enterUnaryPrimaryExpression = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#unaryPrimaryExpression.
+vlgListener.prototype.exitUnaryPrimaryExpression = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#primary.
+vlgListener.prototype.enterPrimary = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#primary.
+vlgListener.prototype.exitPrimary = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#initial_statement.
+vlgListener.prototype.enterInitial_statement = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#initial_statement.
+vlgListener.prototype.exitInitial_statement = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#always_statement.
+vlgListener.prototype.enterAlways_statement = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#always_statement.
+vlgListener.prototype.exitAlways_statement = function(ctx) {
 };
 
 

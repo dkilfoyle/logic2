@@ -2,6 +2,8 @@ const Chalk = require("chalk");
 let options = { enabled: true, level: 2 };
 const chalk = new Chalk.Instance(options);
 
+let gatesLookup, modulesLookup, instancesLookup;
+
 const shortJoin = strs => {
   const x = strs.join(", ");
   if (x.length < 21) return x;
@@ -34,10 +36,10 @@ const logicFunctions = {
   ledbar: bits => parseInt(bits.reverse().join(""), 2)
 };
 
-const evaluate = (components, componentLookup) => {
-  const logicOperation = component => {
-    let logicFn = component.logic;
-    let inputs = component.inputs.map(input => componentLookup[input].state);
+const evaluateGates = gates => {
+  const logicOperation = gate => {
+    let logicFn = gate.logic;
+    let inputs = gate.inputs.map(input => gatesLookup[input].state);
 
     if (["not", "buffer", "response", "portbuffer"].includes(logicFn)) {
       if (inputs.length > 1) {
@@ -55,15 +57,38 @@ const evaluate = (components, componentLookup) => {
 
     if (logicFn == "reg") return;
 
-    component.state = inputs.some(input => input.state === "x")
+    gate.state = inputs.some(input => input.state === "x")
       ? "x"
       : logicFunctions[logicFn](inputs);
   };
 
-  components.forEach(component => {
-    if (component.logic === "control") return;
-    logicOperation(component);
+  gates.forEach(gate => {
+    if (gate.logic === "control") return;
+    logicOperation(gate);
   });
+};
+
+const evaluateSensitivities = sensitivities => {
+  return sensitivities.some(sens => {
+    const current = gatesLookup[sens.id].state;
+    const edge =
+      sens.last == 0 && current == 1
+        ? "posedge"
+        : sens.last == 1 && current == 0
+        ? "negedge"
+        : "same";
+    return sens.type == edge || (sens.type == "changed" && edge != "same");
+  });
+};
+
+const evaluateStatements = s => {
+  if (s.statement_type == "seq_block")
+    s.statements.forEach(ss => evaluateStatements(ss));
+  else if (s.statement_type == "blocking_assignment") {
+    // TODO: lhs and nonnumeric rhs could be variables rather than gates
+    gatesLookup[s.lhs].state =
+      s.rhs == +s.rhs ? s.rhs : gatesLookup[s.rhs].state;
+  }
 };
 
 const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
@@ -74,14 +99,21 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
     ready: false
   };
 
+  gatesLookup = indexBy(gates, "id");
+  instancesLookup = indexBy(instances, "id");
+  modulesLookup = indexBy(modules, "id");
+
+  // reset all gates to state = 0
+  // TODO: should set state to 'x'??
   gates.forEach(g => {
-    g.state = g.initial || 0;
+    g.state = 0;
     newSimulation.gates[g.id] = [];
   });
 
-  var gatesLookup = indexBy(gates, "id");
-  var instancesLookup = indexBy(instances, "id");
-  var modulesLookup = indexBy(modules, "id");
+  // process each instances initial section to set initial gate or register states
+  instances.forEach(instance => {
+    if (instance.initial) evaluateStatements(instance.initial.statement);
+  });
 
   const maxClock = modulesLookup.Main.clock.reduce(
     (acc, val) => Math.max(val.time, acc),
@@ -111,28 +143,14 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
 
     // run gate evaluation and instance always for this time step (not t=0)
     for (let i = 0; i < EVALS_PER_STEP; i++) {
-      evaluate(gates, gatesLookup);
+      evaluateGates(gates);
       // run always section for each instance
       instances.forEach(instance => {
-        if (!instance.always) return;
-
-        const { sensitivities, assigns } = instance.always;
-
-        const last = sensitivities[0].last;
-        const current = gatesLookup[sensitivities[0].id].state;
-        const edge =
-          last == 0 && current == 1
-            ? "posedge"
-            : last == 1 && current == 0
-            ? "negedge"
-            : "same";
-
-        if (sensitivities[0].type == edge) {
-          assigns.forEach(assign => {
-            gatesLookup[assign.id].state = gatesLookup[assign.val].state;
-            // console.log("posedge: ", assign.id, gatesLookup[assign.id].state);
-          });
-        }
+        if (
+          instance.always &&
+          evaluateSensitivities(instance.always.sensitivities)
+        )
+          evaluateStatements(instance.always.statement);
       });
     }
 

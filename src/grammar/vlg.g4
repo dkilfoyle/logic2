@@ -24,40 +24,48 @@ module_ports:
 ansi_port_declaration: port_direction identifier_list;
 port_direction: 'input' | 'output';
 
-module_item:
-	net_declaration			# net
+module_item
+	:	net_declaration			# net
 	| gate_declaration		# gate
 	| reg_declaration # reg
 	| continuous_assign		# assign
 	| module_instantiation	# instance
 	| initial_statement # initial
-	| always_section # always
+	| always_statement # always
 	;
 
 /* Test bench ====================================================== */
 
 test_bench: 'test' 'begin' test_time* 'end';
-
 test_time: time_stamp time_assignment_list? ';';
-
 time_stamp: '#' num = UNSIGNED_NUMBER;
-
 time_assignment_list:
 	'{' time_assignment (',' time_assignment)* '}';
-
 time_assignment: id = IDENTIFIER '=' val = UNSIGNED_NUMBER;
 
 // module statements ==============================================  
 
+module_instantiation
+	:	moduleid = IDENTIFIER instanceid = IDENTIFIER module_connections_list ';'
+	;
+
+module_connections_list
+	: '(' named_port_connection (',' named_port_connection)* ')'
+	;
+
+named_port_connection
+	:	'.' port = IDENTIFIER '(' value = IDENTIFIER ')'
+	;
+
 net_declaration: 'wire' identifier_list ';';
 reg_declaration: 'reg' range? identifier_list ';';
 
-initial_statement: 'initial' id = IDENTIFIER '=' val = UNSIGNED_NUMBER  ';';
+gate_declaration
+	:	gate_type (instanceid = IDENTIFIER)? '(' ids = identifier_list ')' ';'
+	;
 
-gate_declaration:
-	gate_type (instanceid = IDENTIFIER)? '(' ids = identifier_list ')' ';';
-gate_type:
-	'and'
+gate_type
+	:	'and'
 	| 'or'
 	| 'xor'
 	| 'nand'
@@ -69,39 +77,41 @@ gate_type:
 	| 'buffer'
 	| 'sevenseg'
 	| 'number'
-	| 'ledbar';
+	| 'ledbar'
+	;
 
 continuous_assign: 'assign' list_of_assignments ';';
 list_of_assignments: assignment (',' assignment)*;
 assignment: IDENTIFIER '=' expr;
 
-module_instantiation:
-	moduleid = IDENTIFIER instanceid = IDENTIFIER module_connections_list ';';
-module_connections_list:
-	'(' named_port_connection (',' named_port_connection)* ')';
-named_port_connection:
-	'.' port = IDENTIFIER '(' value = IDENTIFIER ')';
-
 /* Expressions ======================================================= */
 
-// expression: primary | unary_operator primary | expression binary_operator expression;
-
-// primary: number | IDENTIFIER | '(' expression ')';
-
-// unary_operator: NOT | NEG | AMPERSAND | NAND | BAR | NOR | XOR; binary_operator: AMPERSAND | BAR
-// | XOR;
-
-expr:
-	NEG expr					# negateExpr
-	| expr binary_operator expr	# binaryExpr
-	| '(' expr ')'				# parenExpr
-	| IDENTIFIER				# idExpr;
+expr: // For gate assign only
+	NEG expr											# negateExpr
+	| expr binary_operator expr		# binaryExpr
+	| '(' expr ')'								# parenExpr
+	| IDENTIFIER									# idExpr;
 
 binary_operator: AND | NAND | OR | NOR | XOR;
 
-/* Always section===================================================== */
+expression // for general expresions
+	: primary																		# primaryExpression
+	| UNARY_OPERATOR primary										# unaryPrimaryExpression
+	| expression BINARY_OPERATOR expression			# binaryExpression
+	;
 
-always_section
+primary
+	: UNSIGNED_NUMBER
+	| IDENTIFIER
+	;
+
+/* Initial and Always statements ============================================ */
+
+initial_statement
+	: 'initial' statement
+	;
+
+always_statement
 	: 'always' '@' '(' event_list ')' statement
 	;
 
@@ -132,7 +142,7 @@ statement
 	;
 
 blocking_assignment
-	: lhs = IDENTIFIER '=' rhs = (IDENTIFIER | UNSIGNED_NUMBER)
+	: lhs = IDENTIFIER '=' rhs = expression
 	;
 
 seq_block
@@ -141,10 +151,19 @@ seq_block
 
 /* Token groups ====================================================== */
 
+UNARY_OPERATOR
+	: PLUS | MINUS | NOT
+	;
+
+BINARY_OPERATOR
+	: PLUS | MINUS | MUL | DIV | EQUAL | NOTEQUAL
+	;
+
 defined_connection_id: IDENTIFIER;
 defined_connection_id_list:
 	defined_connection_id (',' defined_connection_id)*;
 identifier_list: IDENTIFIER (',' IDENTIFIER)*;
+
 number: UNSIGNED_NUMBER | BINARY_NUMBER;
 range: '[' start = UNSIGNED_NUMBER ':' end = UNSIGNED_NUMBER ']';
 
@@ -160,6 +179,13 @@ PLUS: '+';
 MINUS: '-';
 AND: '&';
 OR: '|';
+MUL: '*';
+DIV: '/';
+LT: '<';
+GT: '>';
+EQUAL: '==';
+NOTEQUAL: '!=';
+
 
 ONE_LINE_COMMENT:
 	'//' .*? ('\r')? (EOF | '\n') -> channel(HIDDEN);

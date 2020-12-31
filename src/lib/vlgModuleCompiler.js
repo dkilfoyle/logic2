@@ -15,8 +15,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     inputs: [], // input port gate ids
     outputs: [], // output port gate ids
     instances: [], // child instance ids
-    gates: [], // non port gate ids
-    initials: []
+    gates: [] // non port gate ids
   };
 
   // console.log("createInstance: ", newInstance.id);
@@ -40,7 +39,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   // create all the gates defined in the instance's module statements
   // gate declaration has the form { id: "X", gate: "and", inputs: ["a", "b"], type: "gate"}
   // if the gate has the same id as an output port then map that id to id.gate and set the output ports input to id.gate
-  instanceModule.statements
+  instanceModule.instantiations
     .filter(statement => statement.type == "gate")
     .forEach(gateDeclaration => {
       // if this gate shares an output id, ie is connected to an output port then add ! to indicate last gate before output
@@ -180,34 +179,33 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   });
 
   // instantiate a module
-  instanceModule.statements
+  instanceModule.instantiations
     .filter(x => x.type == "instance")
     .forEach(statement => {
       var childInstance = createInstance(namespace, statement);
       newInstance.instances.push(childInstance.id);
     });
 
-  instanceModule.statements
-    .filter(statement => statement.type == "initial")
-    .forEach(initial => {
-      var initialGate = gates.find(gate => gate.id == varMap[initial.id]);
-      initialGate.initial = initial.value;
-    });
-
-  const processStatement = s => {
-    if (s.type == "seq_block") s.statements.forEach(ss => processStatement(ss));
-    else if (s.type == "blocking_assignment") {
-      if (s.lhs != +s.lhs) s.lhs = varMap[s.lhs];
-      if (s.rhs != +s.rhs) s.rhs = varMap[s.rhs];
+  const varMapStatement = s => {
+    if (s.statement_type == "seq_block")
+      s.statements.forEach(ss => varMapStatement(ss));
+    else if (s.statement_type == "blocking_assignment") {
+      s.lhs = varMap[s.lhs];
+      if (s.rhs != +s.rhs) s.rhs = varMap[s.rhs]; // varMap rhs if it is not a number
     }
   };
+
+  if (instanceModule.initial) {
+    newInstance.initial = { ...instanceModule.initial };
+    varMapStatement(newInstance.initial.statement);
+  }
 
   if (instanceModule.always) {
     newInstance.always = { ...instanceModule.always };
     newInstance.always.sensitivities.forEach(sensitivity => {
       sensitivity.id = varMap[sensitivity.id];
     });
-    processStatement(newInstance.always.statement);
+    varMapStatement(newInstance.always.statement);
   }
 
   newInstance.varMap = varMap;

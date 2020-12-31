@@ -61,7 +61,7 @@
           :name="openFile.name"
           :key="openFile.name"
           area="main"
-          :closable="false"
+          :closable="true"
           label="Truth Table"
           icon="ion-md-document"
           :ref="openFile.name + '_truthtable'"
