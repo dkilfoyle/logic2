@@ -1,0 +1,19 @@
+// Master-slave d-flipflop
+
+module DFlipFlop (
+  input d, clk,
+  output Q);
+
+  reg Q;
+
+  initial Q=1-3;
+
+endmodule
+
+
+module Main(
+  input d, c,
+  output Qm
+); 
+
+endmodule

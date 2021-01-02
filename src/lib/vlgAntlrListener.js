@@ -2,6 +2,7 @@
 
 import { tree, CommonToken, TerminalNode } from "antlr4";
 import { vlgListener } from "../grammar/vlgListener.js";
+import { vlgParser } from "../grammar/vlgParser.js";
 
 class Listener extends vlgListener {
   constructor() {
@@ -170,6 +171,17 @@ class Listener extends vlgListener {
 
   // always =================================================
 
+  enterStatement(ctx) {
+    console.group(`statement: ${ctx.getText()}`);
+  }
+  exitStatement(ctx) {
+    const childCtx = ctx.getChild(0);
+    if (!childCtx.statementDescription) throw new Error("Not implemented yet")
+    ctx.statementDescription =childCtx.statementDescription;
+    console.log("description: ", ctx.statementDescription);
+    console.groupEnd();
+  }
+
   exitAlways_statement(ctx) {
     this.curModule.always = {
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
@@ -193,26 +205,178 @@ class Listener extends vlgListener {
     console.log("always = ", this.curModule.always);
   }
 
+  enterBlocking_assignment(ctx) {
+    console.group(`Blocking_assignment: ${ctx.getText()}`);
+  }
+
   exitBlocking_assignment(ctx) {
-    const rhs = ctx.rhs.getText();
-    // console.log("blocking_assignment = ", ctx.lhs.text, rhs)
     ctx.statementDescription = {
       statement_type: "blocking_assignment",
-      lhs: ctx.lhs.text,
-      rhs: rhs == +rhs ? parseInt(rhs,10) : rhs // rhs.result
-    }
+      lhs: JSON.stringify(ctx.lhs.value),
+      rhs: JSON.stringify(ctx.rhs.value)
+    };;
+    console.log("statementDescription: ", ctx.statementDescription.lhs, ctx.statementDescription.rhs);
+    console.groupEnd();
   }
 
   exitSeq_block(ctx) {
     ctx.statementDescription = {
       statement_type: "seq_block",
-      statements: ctx.statement().map(s => s.children[0].statementDescription)
+      statements: ctx.statement().map(s => JSON.stringify(s.children[0].statementDescription))
     }
   }
 
   // Expressions ============================================
 
-  // todo: expressions should set ctx.result which can be evaluated recursively
+  // lvalue
+	// : identifier
+  // | concatenation
+
+  enterLvalue(ctx) {
+    console.group(`lValue: ${ctx.getText()}`);
+  }
+  
+  exitLvalue(ctx) {
+    const childCtx = ctx.getChild(0);
+    if (!childCtx.value) throw new Error("Not implemented yet")
+    ctx.value = childCtx.value;
+    console.log("value: ", ctx.value);
+    console.groupEnd();
+  }
+
+  // expression // for general expresions, provides ctx.value
+  // : primary																	# primaryExpression
+  // | UNARY_OPERATOR primaryExpression         # unaryPrimaryExpression
+  // | expression BINARY_OPERATOR expression		# binaryExpression
+
+  enterExpression(ctx) {
+    console.group(`expression: ${ctx.getText()}`);
+  }
+
+  exitExpression(ctx) {
+    const childCtx = ctx.getChild(0);
+    if (!childCtx.value) throw new Error("Not implemented yet")
+    ctx.value = childCtx.value;
+    console.log("value: ", ctx.value);
+    console.groupEnd()
+  }
+
+  enterPrimary(ctx) {
+    console.group(`primary: ${ctx.getText()}`);
+  }
+
+  exitPrimary(ctx) {
+    const childCtx = ctx.getChild(0);
+    if (!childCtx.value) throw new Error("Not implemented yet")
+    ctx.value = childCtx.value;
+    console.log("value: ", ctx.value);
+    console.groupEnd();
+  }
+
+  exitUnaryPrimaryExpression(ctx) {
+    ctx.value = {
+      type: "unary_expression",
+      operator: ctx.UNARY_OPERATOR().getText(),
+      operand: ctx.primaryExpression().value
+    }
+  }
+
+  enterBinaryExpression(ctx) {
+    console.group(`binaryExpression: ${ctx.getText()}`);
+  }
+
+  exitBinaryExpression(ctx) {
+    ctx.value = {
+      type: "binary_expression",
+      operator: ctx.BINARY_OPERATOR().getText(),
+      operand1: ctx.primaryExpression(0).value,
+      operand2: ctx.primaryExpression(1).value
+    }
+    console.log("value: ", ctx.value);
+    console.groupEnd();
+  }
+
+  // primary <-- primaryExpression
+	// : number
+	// | identifier
+	// | concatenation
+  // | parens_expression
+  
+  enterPrimaryExpression(ctx) {
+    console.group(`primaryExpression: ${ctx.getText()}`);
+  }
+  
+  exitPrimaryExpression(ctx) {
+    const childCtx = ctx.getChild(0);
+    if (!childCtx.value) throw new Error("Not implemented yet")
+    ctx.value = childCtx.value;
+    console.log("value: ", ctx.value);
+    console.groupEnd();
+  }
+
+  // identifier
+	// : IDENTIFIER																			#idPlain
+	// | IDENTIFIER '[' expression ']'									#idOffset
+	// | IDENTIFIER '[' expression ':' expression ']'		#idRange
+  
+  exitIdPlain(ctx) {
+    ctx.value = {
+      type: "identifier",
+      value: ctx.IDENTIFIER().getText(),
+    }
+  }
+  exitIdOffset(ctx) {
+    ctx.value = {
+      type: "identifier",
+      value: ctx.IDENTIFIER().getText(),
+      offset: parseInt(ctx.expression().getText(),10)
+    }
+  }
+  exitIdRange(ctx) {
+    ctx.value = {
+      type: "identifier",
+      value: ctx.IDENTIFIER().getText(),
+      range: [,parseInt(ctx.expression(0).getText(),10),parseInt(ctx.expression(1).getText(),10)]
+    }
+  }
+
+  // number
+	// : decimal_number
+	// | binary_number
+	// | octal_number
+	// | hex_number
+  
+  exitNumber(ctx) {
+    var childCtx = ctx.getChild(0);
+    // childCtx is a child of Number and will contain named tokens size and x
+    ctx.value = {
+      type: "number",
+    };
+    switch (childCtx.ruleIndex) {
+      case vlgParser.RULE_decimal_number:
+        ctx.value.format = "decimal";
+        ctx.value.size = childCtx.size ? childCtx.size : parseInt(childCtx.x.text,10).toString(2).length;
+        ctx.value.decimalValue = parseInt(childCtx.x.text,10);
+        break;
+      case vlgParser.RULE_binary_number:
+        ctx.value.format = "binary";
+        ctx.value.size = childCtx.size;
+        ctx.value.decimalValue = parseInt(childCtx.x.text,2);
+        break;
+      case vlgParser.RULE_octal_number:
+        ctx.value.format = "octal";
+        ctx.value.size = childCtx.size;
+        ctx.value.decimalValue = parseInt(childCtx.x.text,8);
+        break;
+      case vlgParser.RULE_binary_number:
+        ctx.value.format = "hex";
+        ctx.value.size = childCtx.size;
+        ctx.value.decimalValue = parseInt(childCtx.x.text,16);
+        break;
+      default:
+        throw new Error("invalid number format")
+    }
+  }
 
   // test bench =============================================
 
