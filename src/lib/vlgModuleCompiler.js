@@ -1,12 +1,22 @@
+import Variable from "./Variable";
+
 var modules, instances, gates;
 
 // const stripReactive = x => JSON.parse(JSON.stringify(x));
 
 const createInstance = (parentNamespace, instanceDeclaration) => {
+  console.group(
+    "createInstance: ",
+    parentNamespace,
+    instanceDeclaration.module
+  );
+  console.log("instanceDeclaration: ", instanceDeclaration);
   var namespace;
   if (parentNamespace == "") namespace = "main";
   else namespace = parentNamespace + "_" + instanceDeclaration.id;
   const instanceModule = modules[instanceDeclaration.module];
+  console.log("instanceModule: ", instanceModule);
+
   const varMap = {};
 
   var newInstance = {
@@ -34,6 +44,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     varMap[port.id] = `${namespace}_${port.id}`;
   });
 
+  console.log("varMap: ", varMap);
+
   // console.log("-- instance varMap: ", varMap);
 
   // create all the gates defined in the instance's module statements
@@ -46,11 +58,14 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       const newGate = {
         id: varMap[gateDeclaration.id],
         logic: gateDeclaration.gate,
-        inputs: gateDeclaration.inputs.map(input => varMap[input]),
+        inputs: gateDeclaration.inputs.map(
+          input => new Variable(namespace, input.name, input.offset)
+        ),
         instance: namespace,
         state: 0,
         type: "gate"
       };
+      console.log("gates: newGate: ", gateDeclaration.id, newGate);
       gates.push(newGate);
       newInstance.gates.push(newGate.id);
     });
@@ -64,6 +79,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       state: 0,
       type: "gate"
     };
+    console.log("gates: newReg: ", reg, newGate);
     gates.push(newGate);
     newInstance.gates.push(newGate.id);
   });
@@ -98,7 +114,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
           type: "gate"
         };
 
-        // console.log("main port ", port);
+        console.log("gates: main: newport: ", port.id, newGate);
         gates.push(newGate);
         newInstance.gates.push(newGate.id);
       }
@@ -128,7 +144,13 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       );
       if (connection) {
         // if the input port is connected
-        portGate.inputs.push(`${parentNamespace}_${connection.value.id}`);
+        // portGate.inputs.push(`${parentNamespace}_${connection.value.id}`);
+        let newInput = new Variable(
+          parentNamespace,
+          connection.value.id.name,
+          connection.value.id.offset
+        );
+        portGate.inputs.push(newInput);
         newInstance.inputs.push(varMap[port.id]);
       }
     }
@@ -162,11 +184,12 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         // console.log(
         //   `---- parentGate: ${parentGate.id} will get input from ${portGate.id}`
         // );
-        parentGate.inputs.push(portGate.id); // portGate.id already has -out appended
+        parentGate.inputs.push(new Variable(namespace, port.id + "-out")); // portGate.id already has -out appended
 
         //  push the gate with the same name as the output into the output port buffer gate's inputs
-        const sameNameGate = gates.find(gate => gate.id == varMap[port.id]);
-        if (sameNameGate) portGate.inputs.push(sameNameGate.id);
+        // const sameNameGate = gates.find(gate => gate.id == varMap[port.id]);
+        // if (sameNameGate)
+        portGate.inputs.push(new Variable(namespace, port.id));
 
         // console.log(
         //   `---- sameNameGate: ${sameNameGate.id}. ${portGate.id} will get this as input`
@@ -175,6 +198,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         newInstance.outputs.push(portGate.id);
       }
     }
+    console.log("portGate: ", port.id, port.type, portGate);
+
     gates.push(portGate);
   });
 
@@ -210,6 +235,9 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
   newInstance.varMap = varMap;
   instances.push(newInstance);
+
+  console.log(newInstance);
+  console.groupEnd();
 
   return newInstance;
 };

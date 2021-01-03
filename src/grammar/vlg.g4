@@ -75,6 +75,8 @@ time_assignment
 net_declaration: 'wire' identifier_list ';';
 reg_declaration: 'reg' identifier_list ';';
 
+// TODO Add dimension to net and reg
+
 // 3. Instantiations ==============================================  
 
 module_instantiation

@@ -244,8 +244,8 @@ export default {
         // add click handlers to all non-port gates
         // console.log("buildNetList bind data: ", this.elkData);
         this.getAllInstances.forEach(instance =>
-          instance.gates.forEach(gateId => {
-            const node = this.g.root.select("." + gateId + "_internal");
+          instance.gates.forEach(gateID => {
+            const node = this.g.root.select("." + gateID + "_internal");
             node.on("click", function(ev, d) {
               const id = d.id.substr(0, d.id.indexOf("_gate"));
               const index = that.selectedGates.indexOf(id);
@@ -352,15 +352,15 @@ export default {
             id: input + "-" + gate.id + "_input_" + i,
             type: "gate2gate",
             source: this.getAllGates.some(
-              x => x.type == "port" && x.id == gate.inputs[i]
+              x => x.type == "port" && x.id == input.id
             )
-              ? this.getNamespace(gate.inputs[i]) // if the gate input is a port then source is the instance,
-              : gate.inputs[i] + "_gate", // else source is a gate
-            sourcePort: gate.inputs[i],
+              ? input.namespace // if the gate input is a port then source is the instance,
+              : input.id + "_gate", // else source is a gate
+            sourcePort: input.id,
             target: gate.id + "_gate",
             targetPort: gate.id + "_input_" + i,
             // hwMeta: { name: null, cssClass: gate.id + "_link" }
-            hwMeta: { name: null, cssClass: input + "_link" }
+            hwMeta: { name: null, cssClass: input.id + "_link" }
           };
           currentNet.edges.push(gate2gate);
           // console.log("-- g2g: ", gate2gate.id, this.stripReactive(gate2gate));
@@ -410,15 +410,15 @@ export default {
           // );
 
           let gate2output = {
-            id: output + "_" + portGate.inputs[0],
+            id: output + "_" + portGate.inputs[0].id,
             type: "gate2output",
-            source: portGate.inputs[0] + "_gate",
-            sourcePort: portGate.inputs[0],
+            source: portGate.inputs[0].id + "_gate",
+            sourcePort: portGate.inputs[0].id,
             target: this.getNamespace(output),
             targetPort: output,
             hwMeta: {
               name: null,
-              cssClass: portGate.inputs[0] + "_link"
+              cssClass: portGate.inputs[0].id + "_link"
             }
           };
           childNet.edges.push(gate2output);
@@ -439,16 +439,16 @@ export default {
           // get the buffer gate for this port
           const portGate = this.getGate(input);
           const parent2input = {
-            id: portGate.inputs[0] + "-" + input,
+            id: portGate.inputs[0].id + "-" + input,
             type: "parent2input",
             hwMeta: {
               name: null,
-              cssClass: portGate.inputs[0] + "_link"
+              cssClass: portGate.inputs[0].id + "_link"
             },
-            source: currentInstance.inputs.some(x => x == portGate.inputs[0]) // is the input to the port gate itself a port of the parent instance rather than a local gate
+            source: currentInstance.inputs.some(x => x == portGate.inputs[0].id) // is the input to the port gate itself a port of the parent instance rather than a local gate
               ? currentInstance.id
-              : portGate.inputs[0] + "_gate", // TODO: source might be a gate or a port - ie a pass through, is this handled??
-            sourcePort: portGate.inputs[0],
+              : portGate.inputs[0].id + "_gate", // TODO: source might be a gate or a port - ie a pass through, is this handled??
+            sourcePort: portGate.inputs[0].id,
             target: this.getNamespace(input),
             targetPort: input
           };

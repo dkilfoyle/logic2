@@ -39,7 +39,13 @@
                   class="gateicon"
                 />
               </td>
-              <td>{{ getGate(g).inputs.join(", ") }}</td>
+              <td>
+                {{
+                  getGate(g)
+                    .inputs.map(x => x.id)
+                    .join(", ")
+                }}
+              </td>
               <td
                 class="text-right"
                 v-if="$store.getters.getGateStateAtSelectedTime(g) == 1"
