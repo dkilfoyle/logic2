@@ -31,7 +31,7 @@ class Variable {
     return this.namespace + "_" + this.name;
   }
   getValue(gatesLookup) {
-    const gate = gatesLookup[this.id()];
+    const gate = gatesLookup[this.id];
     if (!gate)
       throw new Error(`Variable.getValue cannot find gate with id ${this.id}`);
 

@@ -39,7 +39,7 @@ const logicFunctions = {
 const evaluateGates = gates => {
   const logicOperation = gate => {
     let logicFn = gate.logic;
-    let inputs = gate.inputs.map(input => gatesLookup[input].state);
+    let inputs = gate.inputs.map(input => input.getValue(gatesLookup));
 
     if (["not", "buffer", "response", "portbuffer"].includes(logicFn)) {
       if (inputs.length > 1) {
