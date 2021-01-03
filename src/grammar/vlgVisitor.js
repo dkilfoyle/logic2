@@ -48,6 +48,12 @@ vlgVisitor.prototype.visitPort_declaration = function(ctx) {
 };
 
 
+// Visit a parse tree produced by vlgParser#port_identifier_list.
+vlgVisitor.prototype.visitPort_identifier_list = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by vlgParser#port_direction.
 vlgVisitor.prototype.visitPort_direction = function(ctx) {
   return this.visitChildren(ctx);

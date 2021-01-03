@@ -29,7 +29,11 @@ module_ports
 	;
 
 port_declaration
-	: port_direction identifier_list
+	: port_direction port_identifier_list
+	;
+
+port_identifier_list
+	: IDENTIFIER (',' IDENTIFIER)*
 	;
 
 port_direction: 'input' | 'output';
@@ -74,7 +78,7 @@ reg_declaration: 'reg' identifier_list ';';
 // 3. Instantiations ==============================================  
 
 module_instantiation
-	:	moduleid = IDENTIFIER instanceid = IDENTIFIER module_connections_list ';'
+	:	moduleID = IDENTIFIER instanceID = IDENTIFIER module_connections_list ';'
 	;
 
 module_connections_list
@@ -82,11 +86,11 @@ module_connections_list
 	;
 
 named_port_connection
-	:	'.' port = identifier '(' value = identifier ')'
+	:	'.' portID = IDENTIFIER '(' value = identifier ')'
 	;
 
 gate_instantiation
-	:	gate_type (instanceid = IDENTIFIER)? '(' ids = identifier_list ')' ';'
+	:	gate_type '(' gateID = IDENTIFIER ',' ids = identifier_list ')' ';'
 	;
 
 gate_type
@@ -232,7 +236,7 @@ number
    ;
 
 Decimal_number
-   : Unsigned_number | (Size)? Decimal_base Unsigned_number | (Size)? Decimal_base X_digit ('_')* | (Size)? Decimal_base Z_digit ('_')*
+   : Unsigned_number | (Size)? Decimal_base Unsigned_number
    ;
 
 Binary_number
@@ -325,7 +329,7 @@ fragment Z_digit
 defined_connection_id: IDENTIFIER;
 defined_connection_id_list:	defined_connection_id (',' defined_connection_id)*;
 identifier_list: identifier (',' identifier)*;
-range: '[' start = Unsigned_number ':' end = Unsigned_number ']';
+range: '[' start = Decimal_number ':' end = Decimal_number ']';
 
 /* Tokens ===================================================== */
 

@@ -65,6 +65,15 @@ vlgListener.prototype.exitPort_declaration = function(ctx) {
 };
 
 
+// Enter a parse tree produced by vlgParser#port_identifier_list.
+vlgListener.prototype.enterPort_identifier_list = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#port_identifier_list.
+vlgListener.prototype.exitPort_identifier_list = function(ctx) {
+};
+
+
 // Enter a parse tree produced by vlgParser#port_direction.
 vlgListener.prototype.enterPort_direction = function(ctx) {
 };

@@ -64,7 +64,6 @@ One_line_comment=63
 Block_comment=64
 IDENTIFIER=65
 White_space=66
-Unsigned_number=67
 'module'=1
 ';'=2
 'endmodule'=3

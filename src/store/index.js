@@ -64,7 +64,10 @@ export default new Vuex.Store({
     },
 
     getGate: (state, getters) => gateid => {
-      return getters.getAllGates.find(x => x.id == gateid);
+      const result = getters.getAllGates.find(x => x.id == gateid);
+      if (result != undefined)
+        return getters.getAllGates.find(x => x.id == gateid);
+      else throw new Error(`store.getGate: ${gateid} does not exist`);
     },
     getInstance: (state, getters) => instanceID => {
       const id = instanceID || getters.currentFile.selectedInstanceID;

@@ -151,12 +151,12 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         // push the output gate (output-out) to the mapped parent gate's inputs
         // output-out ------> parentGate = {parentNamespace}_{param.value.id}
         let parentGate = gates.find(
-          gate => gate.id == `${parentNamespace}_${connection.value.id}`
+          gate => gate.id == `${parentNamespace}_${connection.value.id.name}`
         );
         if (!parentGate) {
           console.log(instanceDeclaration, port, connection);
           throw new Error(
-            `${connection.value.id} is not a gate in ${parentNamespace}`
+            `${connection.value.id.name} is not a gate in ${parentNamespace}`
           );
         }
         // console.log(

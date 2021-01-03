@@ -16,7 +16,7 @@ class Listener extends vlgListener {
   // utils
 
   addSemanticError(node, msg, severity = "warning") {
-    // console.log(node, msg);
+    console.log(node, msg);
     var token;
     if (node instanceof CommonToken) {
       token = node;
@@ -109,10 +109,13 @@ class Listener extends vlgListener {
       regs: [],
       instantiations: []
     };
+    console.group("enterModule: ", ctx.IDENTIFIER().getText())
   }
   exitModule() {
+    console.log("curModule: ", this.curModule);
     this.modules.push(this.curModule);
     this.curModule = null;
+    console.groupEnd();
   }
   enterModule_main(ctx) {
     this.curModule = {
@@ -133,23 +136,24 @@ class Listener extends vlgListener {
       instantiations: [],
       clock: [],
     };
-  }
-  exitModule_main() {
-    this.modules.push(this.curModule);
-    this.curModule = null;
-  }
-  exitModule_ports(ctx) {
-    const portDeclarations = ctx.ansi_port_declaration();
-    portDeclarations.forEach((portDecCtx) => {
-      const dir = portDecCtx.port_direction().getText();
-      const ids = portDecCtx.identifier_list().ids;
-      // this.curModule[dir + "s"].push(...ids);
-      this.curModule.ports.push(...ids.map((id) => ({ id: id, type: dir })));
-    });
+    console.group("enterModule: Main ")
   }
 
-  exitIdentifier_list(ctx) {
-    ctx.ids = ctx.IDENTIFIER().map((x) => x.getText());
+  exitModule_main() {
+    console.log("curModule: ", this.curModule);
+    this.modules.push(this.curModule);
+    this.curModule = null;
+    console.groupEnd();
+  }
+
+  exitModule_ports(ctx) {
+    const portDeclarations = ctx.port_declaration();
+    portDeclarations.forEach((portDecCtx) => {
+      const dir = portDecCtx.port_direction().getText();
+      const ids = portDecCtx.port_identifier_list().IDENTIFIER();
+      this.curModule.ports.push(...ids.map((id) => ({ id: id.getText(), type: dir })));
+    });
+    console.log("exitModule_ports: ", this.curModule.ports)
   }
 
   exitNet_declaration(ctx) {
@@ -322,22 +326,30 @@ class Listener extends vlgListener {
   exitIdPlain(ctx) {
     ctx.value = {
       type: "identifier",
-      value: ctx.IDENTIFIER().getText(),
+      name: ctx.IDENTIFIER().getText(),
+      offset: null
     }
   }
   exitIdOffset(ctx) {
     ctx.value = {
       type: "identifier",
-      value: ctx.IDENTIFIER().getText(),
+      name: ctx.IDENTIFIER().getText(),
       offset: parseInt(ctx.expression().getText(),10)
     }
   }
   exitIdRange(ctx) {
     ctx.value = {
       type: "identifier",
-      value: ctx.IDENTIFIER().getText(),
-      range: [,parseInt(ctx.expression(0).getText(),10),parseInt(ctx.expression(1).getText(),10)]
+      name: ctx.IDENTIFIER().getText(),
+      offset: [
+        parseInt(ctx.expression(0).getText(),10),
+        parseInt(ctx.expression(1).getText(),10)
+      ]
     }
+  }
+
+  exitIdentifier_list(ctx) {
+    ctx.ids = ctx.identifier().map((x) => x.value);
   }
 
   // number
@@ -353,25 +365,28 @@ class Listener extends vlgListener {
       type: "number",
     };
     switch (childCtx.ruleIndex) {
-      case vlgParser.RULE_decimal_number:
+      case vlgParser.RULE_Decimal_number:
         ctx.value.format = "decimal";
-        ctx.value.size = childCtx.size ? childCtx.size : parseInt(childCtx.x.text,10).toString(2).length;
-        ctx.value.decimalValue = parseInt(childCtx.x.text,10);
+        let x = parseInt(childCtx.getText(),10);
+        ctx.value.size = childCtx.Size 
+          ? parseInt(childCtx.Size().getText(), 10)
+          : parseInt(x).toString(2).length;
+        ctx.value.decimalValue = x; //parseInt(childCtx.Decimal_value().getText(), 10);
         break;
-      case vlgParser.RULE_binary_number:
+      case vlgParser.RULE_Binary_number:
         ctx.value.format = "binary";
-        ctx.value.size = childCtx.size;
-        ctx.value.decimalValue = parseInt(childCtx.x.text,2);
+        ctx.value.size = parseInt(childCtx.Size().getText(), 10);
+        ctx.value.decimalValue = parseInt(childCtx.Binary_value().getText(), 2);
         break;
-      case vlgParser.RULE_octal_number:
+      case vlgParser.RULE_Octal_number:
         ctx.value.format = "octal";
-        ctx.value.size = childCtx.size;
-        ctx.value.decimalValue = parseInt(childCtx.x.text,8);
+        ctx.value.size = parseInt(childCtx.Size().getText(), 10);
+        ctx.value.decimalValue = parseInt(childCtx.Octal_value().getText(), 8);
         break;
-      case vlgParser.RULE_binary_number:
+      case vlgParser.RULE_Hex_number:
         ctx.value.format = "hex";
-        ctx.value.size = childCtx.size;
-        ctx.value.decimalValue = parseInt(childCtx.x.text,16);
+        ctx.value.size = parseInt(childCtx.Size().getText(), 10);
+        ctx.value.decimalValue = parseInt(childCtx.Hex_value().getText(), 16);
         break;
       default:
         throw new Error("invalid number format")
@@ -399,22 +414,22 @@ class Listener extends vlgListener {
 
   // gates ==================================================
 
-  exitGate_declaration(ctx) {
+  exitGate_instantiation(ctx) {
     const gateType = ctx.gate_type().getText();
-    const gateOutput = ctx.identifier_list().ids[0];
-    const gateInputs = ctx.identifier_list().ids.slice(1);
+    const gateOutput = ctx.gateID.text; 
+    const gateInputs = ctx.identifier_list().ids;
 
     // semantic error if any of the inputs are not defined
     gateInputs.forEach((gateInput, index) => {
-      if (!this.isWireOrPort(gateInput)) {
-        const idctx = ctx.identifier_list().IDENTIFIER(index + 1); // because IDENTIFER(0) is the output
-        this.addSemanticError(idctx.symbol, `'${gateInput}' is not defined as a wire or module port`);
+      if (!this.isWireOrPort(gateInput.name)) {
+        const idctx = ctx.identifier_list().identifier(index); 
+        this.addSemanticError(idctx.symbol, `'${gateInput.name}' is not defined as a wire or module port`);
       }
     });
 
     // semantic error if the output is not a wire or module output
     if (!this.isWireOrOutput(gateOutput)) {
-      const idctx = ctx.identifier_list().IDENTIFIER(0); // because IDENTIFER(0) is the output
+      const idctx = ctx.gateID; 
       this.addSemanticError(idctx.symbol, `'${gateOutput}' is not defined as a wire or module output`);
     }
 
@@ -511,38 +526,49 @@ class Listener extends vlgListener {
 
   exitModule_connections_list(ctx) {
     ctx.connections = ctx.named_port_connection().map((x) => {
-      return { port: { id: x.port.text, token: x.port }, value: { id: x.value.text, token: x.value } };
+      return { port: { id: x.portID.text, token: x.portID }, value: { id: x.value.value, token: x.value } };
     });
+  }
+
+  enterModule_instantiation(ctx) {
+    console.group("enterModule_instantiation: ", ctx.moduleID.text)
   }
 
   exitModule_instantiation(ctx) {
     const connections = ctx.module_connections_list().connections;
-    const moduleid = ctx.moduleid.text;
-    const instanceid = ctx.instanceid.text;
+    const moduleID = ctx.moduleID.text;
+    const instanceID = ctx.instanceID.text;
 
     // check to see if moduleid is defined
-    if (!this.isModule(moduleid)) {
-      this.addSemanticError(ctx.moduleid, `Undefined module: '${moduleid}'`);
+    if (!this.isModule(moduleID)) {
+      this.addSemanticError(ctx.moduleID, `Undefined module: '${moduleID}'`);
     }
+
+    console.log(`Module ${moduleID} connections: `, connections)
 
     // check for valid connections
     connections.forEach((connection) => {
-      if (!this.isPortOf(connection.port.id, moduleid))
-        this.addSemanticError(connection.port.token, `Invalid port: '${connection.port.id}' is not defined in module '${moduleid}'`);
-      if (!this.isWireOrPort(connection.value.id))
+      if (!this.isPortOf(connection.port.id, moduleID))
+        this.addSemanticError(connection.port.token, `Invalid port: '${connection.port.id}' is not defined in module '${moduleID}'`);
+      if (!this.isWireOrPort(connection.value.id.name))
         this.addSemanticError(
           connection.value.token,
-          `Invalid value: '${connection.value.id}' is not a defined wire or port in module '${this.curModule.id}
+          `Invalid value: '${connection.value.id.name}' is not a defined wire or port in module '${moduleID}
         '`
         );
     });
 
-    this.curModule.instantiations.push({
+    const newInstance = {
       type: "instance",
-      id: instanceid,
-      module: moduleid,
+      id: instanceID,
+      module: moduleID,
       connections,
-    });
+    }
+
+    this.curModule.instantiations.push(newInstance);
+
+    console.log("newInstance: ", newInstance)
+    console.groupEnd();
   }
 }
 
