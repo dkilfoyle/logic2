@@ -57,9 +57,11 @@ const evaluateGates = gates => {
 
     if (logicFn == "reg") return;
 
-    gate.state = inputs.some(input => input.state === "x")
-      ? "x"
-      : logicFunctions[logicFn](inputs);
+    gate.state.setValue(
+      inputs.some(input => input === "x")
+        ? "x"
+        : logicFunctions[logicFn](inputs)
+    );
   };
 
   gates.forEach(gate => {
@@ -70,7 +72,7 @@ const evaluateGates = gates => {
 
 const evaluateSensitivities = sensitivities => {
   return sensitivities.some(sens => {
-    const current = gatesLookup[sens.id].state;
+    const current = sens.id.getValue(gatesLookup);
     const edge =
       sens.last == 0 && current == 1
         ? "posedge"
@@ -81,13 +83,18 @@ const evaluateSensitivities = sensitivities => {
   });
 };
 
-const evaluateStatements = s => {
-  if (s.statement_type == "seq_block")
-    s.statements.forEach(ss => evaluateStatements(ss));
-  else if (s.statement_type == "blocking_assignment") {
-    // TODO: lhs and nonnumeric rhs could be variables rather than gates
-    gatesLookup[s.lhs].state =
-      s.rhs == +s.rhs ? s.rhs : gatesLookup[s.rhs].state;
+const evaluateStatementTree = s => {
+  console.log("evaluateStatementTree: ", s);
+  if (s.type == "seq_block" || s.type == "root_block")
+    s.statements.forEach(ss => evaluateStatementTree(ss));
+  else if (s.type == "blocking_assignment") {
+    console.group("eval blocking_assignment");
+    console.log("lhs gate: ", gatesLookup[s.lhs.id]);
+    console.log("lhs: ", s.lhs, s.lhs.getValue(gatesLookup));
+    console.log("rhs: ", s.rhs, s.rhs.getValue(gatesLookup));
+    s.lhs.setValue(gatesLookup, s.rhs.getValue(gatesLookup));
+    console.log("res: ", s.lhs.getValue(gatesLookup));
+    console.groupEnd();
   }
 };
 
@@ -106,13 +113,13 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
   // reset all gates to state = 0
   // TODO: should set state to 'x'??
   gates.forEach(g => {
-    g.state = 0;
+    g.state.setValue(0);
     newSimulation.gates[g.id] = [];
   });
 
   // process each instances initial section to set initial gate or register states
   instances.forEach(instance => {
-    if (instance.initial) evaluateStatements(instance.initial.statement);
+    if (instance.initial) evaluateStatementTree(instance.initial.statementTree);
   });
 
   const maxClock = modulesLookup.Main.clock.reduce(
@@ -120,7 +127,7 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
     0
   );
 
-  if (gatesLookup["main_clock"]) gatesLookup["main_clock"].state = 1;
+  if (gatesLookup["main_clock"]) gatesLookup["main_clock"].state.setValue(1);
 
   // run the clock
   for (let clock = 0; clock <= maxClock; clock++) {
@@ -132,14 +139,16 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
         c.assignments.forEach(a => {
           // can only assign values to control types
           if (gatesLookup["main_" + a.id].logic == "control")
-            gatesLookup["main_" + a.id].state = a.value;
+            gatesLookup["main_" + a.id].state.setValue(a.value);
         });
       }
     });
 
     // store tick or tock
     if (gatesLookup["main_clock"])
-      gatesLookup["main_clock"].state = ~gatesLookup["main_clock"].state & 1;
+      gatesLookup["main_clock"].state.setValue(
+        ~gatesLookup["main_clock"].state.decimalValue & 1
+      );
 
     // run gate evaluation and instance always for this time step (not t=0)
     for (let i = 0; i < EVALS_PER_STEP; i++) {
@@ -150,21 +159,22 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
           instance.always &&
           evaluateSensitivities(instance.always.sensitivities)
         )
-          evaluateStatements(instance.always.statement);
+          evaluateStatementTree(instance.always.statementTree);
       });
     }
 
     // and store gate results in newSimulation
     gates.forEach(g => {
-      newSimulation.gates[g.id].push(gatesLookup[g.id].state);
+      newSimulation.gates[g.id].push(gatesLookup[g.id].state.decimalValue);
     });
     newSimulation.clock.push(clock % 2);
 
     // update always last
     instances.forEach(instance => {
       if (instance.always) {
-        instance.always.sensitivities[0].last =
-          gatesLookup[instance.always.sensitivities[0].id].state;
+        instance.always.sensitivities.forEach(sensitivity => {
+          sensitivity.last = sensitivity.id.getValue(gatesLookup);
+        });
       }
     });
 
@@ -182,7 +192,7 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
           shortJoin(
             instancesLookup.main.gates
               .filter(gateId => gatesLookup[gateId].logic == "response")
-              .map(o => getLocalId(o) + "=" + gatesLookup[o].state)
+              .map(o => getLocalId(o) + "=" + gatesLookup[o].state.decimalValue)
           )
       );
     });

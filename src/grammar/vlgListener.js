@@ -209,6 +209,15 @@ vlgListener.prototype.exitReg_declaration = function(ctx) {
 };
 
 
+// Enter a parse tree produced by vlgParser#simple_identifier_list.
+vlgListener.prototype.enterSimple_identifier_list = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#simple_identifier_list.
+vlgListener.prototype.exitSimple_identifier_list = function(ctx) {
+};
+
+
 // Enter a parse tree produced by vlgParser#module_instantiation.
 vlgListener.prototype.enterModule_instantiation = function(ctx) {
 };

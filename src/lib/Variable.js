@@ -30,6 +30,12 @@ class Variable {
   get id() {
     return this.namespace + "_" + this.name;
   }
+  setValue(gatesLookup, val) {
+    const gate = gatesLookup[this.id];
+    if (!gate)
+      throw new Error(`Variable.setValue cannot find gate with id ${this.id}`);
+    gate.state.setValue(val);
+  }
   getValue(gatesLookup) {
     const gate = gatesLookup[this.id];
     if (!gate)
@@ -37,13 +43,13 @@ class Variable {
 
     switch (this.offsetType) {
       case "none":
-        return gate.state;
+        return gate.state.decimalValue;
       case "index":
         if (this.offset > gate.bitSize - 1)
           throw new Error(
             `Variable.getValue: offset (${this.offset}) is larger than gate (${gate.id}) state size (${gate.bitSize})`
           );
-        return this.getBit(gate.state, this.offset);
+        return this.getBit(gate.state.decimalValue, this.offset);
       case "range":
         if (this.offset[0] > gate.bitSize - 1)
           throw new Error(
@@ -53,7 +59,7 @@ class Variable {
           throw new Error(
             `Variable.getValue: offset[1] (${this.offset[1]}) is larger than gate (${gate.id}) state size (${gate.bitSize})`
           );
-        return this.getBitRange(gate.state, this.offset);
+        return this.getBitRange(gate.state.decimalValue, this.offset);
       default:
         throw new Error(
           `Variable.getValue invalid offsetType (${this.offsetType})`

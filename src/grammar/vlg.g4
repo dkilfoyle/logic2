@@ -29,7 +29,7 @@ module_ports
 	;
 
 port_declaration
-	: port_direction port_identifier_list
+	: port_direction (portdim=range)? port_identifier_list
 	;
 
 port_identifier_list
@@ -72,8 +72,12 @@ time_assignment
 
 // 2. Declarations
 
-net_declaration: 'wire' identifier_list ';';
-reg_declaration: 'reg' identifier_list ';';
+net_declaration: 'wire' (netdim=range)? ids=simple_identifier_list ';';
+reg_declaration: 'reg' (regdim=range)? ids=simple_identifier_list ';';
+
+simple_identifier_list
+	: IDENTIFIER (',' IDENTIFIER)*
+	;
 
 // TODO Add dimension to net and reg
 

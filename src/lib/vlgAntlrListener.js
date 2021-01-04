@@ -3,6 +3,7 @@
 import { tree, CommonToken, TerminalNode } from "antlr4";
 import { vlgListener } from "../grammar/vlgListener.js";
 import { vlgParser } from "../grammar/vlgParser.js";
+import Variable from "./Variable.js";
 
 class Listener extends vlgListener {
   constructor() {
@@ -11,6 +12,8 @@ class Listener extends vlgListener {
     this.curModule = null;
     this.errors = [];
     this.assign = {};
+    this.statementRoot = null;
+    this.statementCurrent = null;
   }
 
   // utils
@@ -55,19 +58,19 @@ class Listener extends vlgListener {
   }
 
   isInput(id) {
-    return this.curModule.ports.some((port) => (port.type == "input") & (port.id == id));
+    return this.curModule.ports.some((port) => (port.direction == "input") & (port.id == id));
   }
 
   isOutput(id) {
-    return this.curModule.ports.some((port) => (port.type == "output") & (port.id == id));
+    return this.curModule.ports.some((port) => (port.direction == "output") & (port.id == id));
   }
 
   isWire(id) {
-    return this.curModule.wires.some((wire) => wire == id);
+    return this.curModule.wires.some((wire) => wire.id == id);
   }
 
   isReg(id) {
-    return this.curModule.regs.some(reg => reg == id );
+    return this.curModule.regs.some(reg => reg.id == id );
   }
 
   isWireOrInput(id) {
@@ -151,62 +154,97 @@ class Listener extends vlgListener {
     portDeclarations.forEach((portDecCtx) => {
       const dir = portDecCtx.port_direction().getText();
       const ids = portDecCtx.port_identifier_list().IDENTIFIER();
-      this.curModule.ports.push(...ids.map((id) => ({ id: id.getText(), type: dir })));
+      const dim = ctx.portdim ? ctx.portdim.value : null;
+      this.curModule.ports.push(...ids.map((id) => ({
+        id: id.getText(),
+        direction: dir,
+        bitSize: dim ? dim[1]-dim[0] + 1 : 1,
+        dim
+      })));
     });
     console.log("exitModule_ports: ", this.curModule.ports)
   }
 
   exitNet_declaration(ctx) {
-    this.curModule.wires.push(...ctx.identifier_list().ids);
+    const dim = ctx.netdim ? ctx.netdim.value : null;
+    ctx.ids.IDENTIFIER().forEach(id => {
+      this.curModule.wires.push({
+        id: id.getText(),
+        bitSize: dim ? dim[1]-dim[0] + 1 : 1,
+        dim
+      })
+    })
   }
 
   exitReg_declaration(ctx) {
-    this.curModule.regs.push(...ctx.identifier_list().ids)
+    const dim = ctx.regdim ? ctx.regdim.value : null;
+    ctx.ids.IDENTIFIER().forEach(id => {
+      this.curModule.regs.push({
+        id: id.getText(),
+        dim,
+        bitSize: dim ? dim[1]-dim[0] + 1 : 1,
+      })
+    })
   }
 
-  exitInitial_statement(ctx) {
+  enterInitial_construct(ctx) {
+    this.statementRoot = {
+      type: "root_block",
+      parent: null,
+      statements: []
+    };
+    this.statementCurrent = this.statementRoot;
+  }
+
+  exitInitial_construct(ctx) {
     this.curModule.initial = {
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
       sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
-      statement: ctx.statement().children[0].statementDescription
+      statementTree: this.statementRoot
     }
     console.log("initial = ", this.curModule.initial)
   }
 
-  // always =================================================
-
-  enterStatement(ctx) {
-    console.group(`statement: ${ctx.getText()}`);
-  }
-  exitStatement(ctx) {
-    const childCtx = ctx.getChild(0);
-    if (!childCtx.statementDescription) throw new Error("Not implemented yet")
-    ctx.statementDescription =childCtx.statementDescription;
-    console.log("description: ", ctx.statementDescription);
-    console.groupEnd();
+  enterAlways_construct(ctx) {
+    this.statementRoot = {
+      type: "root_block",
+      parent: null,
+      statements: []
+    };
+    this.statementCurrent = this.statementRoot;
   }
 
-  exitAlways_statement(ctx) {
+  exitAlways_construct(ctx) {
     this.curModule.always = {
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
       sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
+      statementTree: this.statementRoot
     }
 
     if (ctx.event_list().event_every() != null) {
       this.curModule.always.sensitivities = [{
         type: "everytime",
-        last: undefined
+        last: null
       }]
     } else {
       this.curModule.always.sensitivities = ctx.event_list().event_primary().map(e => ({
-        id: e.IDENTIFIER().getText(),
+        id: e.identifier().value,
         type: e.event_type() != null ? e.event_type().getText() : "changed",
         last: undefined
       }))
     }
 
-    this.curModule.always.statement = ctx.statement().children[0].statementDescription;
     console.log("always = ", this.curModule.always);
+  }
+
+  enterStatement(ctx) {
+    console.group(`statement: ${ctx.getText()}`);
+  }
+
+  exitStatement(ctx) {
+    console.log("exitStatement: description: ", this.statementCurrent);
+    console.groupEnd();
+    // this.statementCurrent = this.statementCurrent.parent;
   }
 
   enterBlocking_assignment(ctx) {
@@ -214,20 +252,31 @@ class Listener extends vlgListener {
   }
 
   exitBlocking_assignment(ctx) {
-    ctx.statementDescription = {
-      statement_type: "blocking_assignment",
-      lhs: JSON.stringify(ctx.lhs.value),
-      rhs: JSON.stringify(ctx.rhs.value)
-    };;
-    console.log("statementDescription: ", ctx.statementDescription.lhs, ctx.statementDescription.rhs);
+    const newStatement = {
+      type: "blocking_assignment",
+      lhs: {...ctx.lhs.value},
+      rhs: {...ctx.rhs.value}
+    }
+    this.statementCurrent.statements.push(newStatement);
+    console.log("exitBlocking: ", newStatement);
     console.groupEnd();
   }
 
-  exitSeq_block(ctx) {
-    ctx.statementDescription = {
-      statement_type: "seq_block",
-      statements: ctx.statement().map(s => JSON.stringify(s.children[0].statementDescription))
+  enterSeq_block(ctx) {
+    console.group(`Seq_block: ", ${ctx.getText()}`);
+    const newSeqBlock = {
+      type: "seq_block",
+      parent: this.statementCurrent,
+      statements: []
     }
+    this.statementCurrent.statements.push(newSeqBlock);
+    this.statementCurrent = newSeqBlock;
+  }
+
+  exitSeq_block(ctx) {
+    console.log("Statements: ", this.statementCurrent.statements)
+    console.groupEnd();
+    this.statementCurrent = this.statementCurrent.parent;
   }
 
   // Expressions ============================================
@@ -350,6 +399,10 @@ class Listener extends vlgListener {
 
   exitIdentifier_list(ctx) {
     ctx.ids = ctx.identifier().map((x) => x.value);
+  }
+
+  exitRange(ctx) {
+    ctx.value = [parseInt(ctx.start.text, 10), parseInt(ctx.end.text, 10)];
   }
 
   // number
@@ -509,7 +562,7 @@ class Listener extends vlgListener {
     const right = this.assign.stack.pop();
     const id = this.assign.id + "_" + this.assign.n;
     // console.log("exitNegateExpr: ", id, right);
-    this.curModule.wires.push(id); // intermediary gates need a wire for namespace mapping
+    this.curModule.wires.push({id, bitSize: 1}); // intermediary gates need a wire for namespace mapping
     this.assign.gates.push({
       type: "gate",
       id,

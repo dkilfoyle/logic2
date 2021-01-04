@@ -1,4 +1,5 @@
 import Variable from "./Variable";
+import Numeric from "./Numeric";
 
 var modules, instances, gates;
 
@@ -35,10 +36,10 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
   // Build varMap - do it now because gates may be referred to before declaration
   instanceModule.wires.forEach(wire => {
-    varMap[wire] = `${namespace}_${wire}`;
+    varMap[wire.id] = `${namespace}_${wire.id}`;
   });
   instanceModule.regs.forEach(reg => {
-    varMap[reg] = `${namespace}_${reg}`;
+    varMap[reg.id] = `${namespace}_${reg.id}`;
   });
   instanceModule.ports.forEach(port => {
     varMap[port.id] = `${namespace}_${port.id}`;
@@ -62,7 +63,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
           input => new Variable(namespace, input.name, input.offset)
         ),
         instance: namespace,
-        state: 0,
+        state: new Numeric(0),
         type: "gate"
       };
       console.log("gates: newGate: ", gateDeclaration.id, newGate);
@@ -72,14 +73,14 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
   instanceModule.regs.forEach(reg => {
     const newGate = {
-      id: varMap[reg],
+      id: varMap[reg.id],
       logic: "reg",
       inputs: [],
       instance: namespace,
-      state: 0,
+      state: new Numeric(0, reg.bitSize),
       type: "gate"
     };
-    console.log("gates: newReg: ", reg, newGate);
+    console.log("gates: newReg: ", reg.id, newGate);
     gates.push(newGate);
     newInstance.gates.push(newGate.id);
   });
@@ -97,7 +98,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
   instanceModule.ports.forEach(port => {
     if (namespace == "main") {
-      const portType = port.type == "input" ? "control" : "response";
+      const portType = port.direction == "input" ? "control" : "response";
 
       // output ports may already be defined as a buffer eg buffer(F, Fe);
       // if main_port.id already exists then just change it's logic to responsebuffer
@@ -110,7 +111,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
           logic: portType,
           inputs: [],
           instance: "main",
-          state: 0,
+          state: new Numeric(0, port.bitSize),
           type: "gate"
         };
 
@@ -122,11 +123,12 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     }
 
     const portGate = {
-      id: `${namespace}_${port.id}` + (port.type == "output" ? "-out" : ""),
+      id:
+        `${namespace}_${port.id}` + (port.direction == "output" ? "-out" : ""),
       logic: "portbuffer",
       instance: namespace,
       inputs: [],
-      state: 0,
+      state: new Numeric(0, port.bitSize),
       type: "port"
     };
 
@@ -138,7 +140,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       param.value.id ----->| input     | 
                            |           | 
     */
-    if (port.type == "input") {
+    if (port.direction == "input") {
       const connection = instanceDeclaration.connections.find(
         connection => connection.port.id == port.id
       );
@@ -162,7 +164,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         |             |   |
         | varMap[port.id] |
     */
-    if (port.type == "output") {
+    if (port.direction == "output") {
       const connection = instanceDeclaration.connections.find(
         connection => connection.port.id == port.id
       );
@@ -198,7 +200,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         newInstance.outputs.push(portGate.id);
       }
     }
-    console.log("portGate: ", port.id, port.type, portGate);
+    console.log("portGate: ", port.id, port.direction, portGate);
 
     gates.push(portGate);
   });
@@ -212,31 +214,47 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     });
 
   const varMapStatement = s => {
-    if (s.statement_type == "seq_block")
+    if (s.type == "seq_block" || s.type == "root_block")
       s.statements.forEach(ss => varMapStatement(ss));
-    else if (s.statement_type == "blocking_assignment") {
-      s.lhs = varMap[s.lhs];
-      if (s.rhs != +s.rhs) s.rhs = varMap[s.rhs]; // varMap rhs if it is not a number
+    else if (s.type == "blocking_assignment") {
+      if (s.lhs.type == "identifier")
+        s.lhs = new Variable(namespace, s.lhs.name, s.lhs.offset);
+      else if (s.lhs.type == "concatenation")
+        throw new Error("concatenations not imlemented yet");
+      else throw new Error(`statement lhs is invalid type (${s.lhs.type})`);
+
+      if (s.rhs.type == "identifier")
+        s.rhs = new Variable(namespace, s.rhs.name, s.rhs.offset);
+      else if (s.rhs.type == "number")
+        s.rhs = new Numeric(s.rhs.decimalValue, s.rhs.size, s.rhs.format);
+      else throw new Error(`statemeent rhs is invalid type (${s.rhs.type})`);
     }
   };
 
   if (instanceModule.initial) {
     newInstance.initial = { ...instanceModule.initial };
-    varMapStatement(newInstance.initial.statement);
+    varMapStatement(newInstance.initial.statementTree);
   }
 
   if (instanceModule.always) {
     newInstance.always = { ...instanceModule.always };
     newInstance.always.sensitivities.forEach(sensitivity => {
-      sensitivity.id = varMap[sensitivity.id];
+      if (sensitivity.type != "everytime") {
+        sensitivity.id = new Variable(
+          namespace,
+          sensitivity.id.name,
+          sensitivity.id.offset
+        );
+        sensitivity.last = "x";
+      }
     });
-    varMapStatement(newInstance.always.statement);
+    varMapStatement(newInstance.always.statementTree);
   }
 
   newInstance.varMap = varMap;
   instances.push(newInstance);
 
-  console.log(newInstance);
+  console.log("Instance: ", newInstance);
   console.groupEnd();
 
   return newInstance;

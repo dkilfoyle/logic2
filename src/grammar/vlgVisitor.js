@@ -144,6 +144,12 @@ vlgVisitor.prototype.visitReg_declaration = function(ctx) {
 };
 
 
+// Visit a parse tree produced by vlgParser#simple_identifier_list.
+vlgVisitor.prototype.visitSimple_identifier_list = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by vlgParser#module_instantiation.
 vlgVisitor.prototype.visitModule_instantiation = function(ctx) {
   return this.visitChildren(ctx);
