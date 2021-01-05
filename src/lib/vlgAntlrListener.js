@@ -254,6 +254,8 @@ class Listener extends vlgListener {
   exitBlocking_assignment(ctx) {
     const newStatement = {
       type: "blocking_assignment",
+      sourceStart: { column: ctx.start.column, line: ctx.start.line },
+      sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
       lhs: {...ctx.lhs.value},
       rhs: {...ctx.rhs.value}
     }
@@ -302,6 +304,7 @@ class Listener extends vlgListener {
   // | UNARY_OPERATOR primaryExpression         # unaryPrimaryExpression
   // | expression BINARY_OPERATOR expression		# binaryExpression
 
+  /*
   enterExpression(ctx) {
     console.group(`expression: ${ctx.getText()}`);
   }
@@ -366,6 +369,34 @@ class Listener extends vlgListener {
     console.log("value: ", ctx.value);
     console.groupEnd();
   }
+  */
+
+ /* ===========================
+
+expression 
+  : factor
+  | expression op=(MUL | DIV) expression				# binaryExpression
+  | expression op=(PLUS | MINUS) expression			# binaryExpression
+  ;
+
+factor
+ : op=(PLUS | MINUS) factor										# unaryExpression
+ | '(' expression ')'													# parenExpression
+ | atom																				# atomExpression
+ ;
+
+atom
+ : number               
+ | identifier
+ | concatenation
+ ;
+ */
+
+
+ exitNumberAtomExpression(ctx) {
+   this.expression.stack.push(ctx.value)
+ }
+
 
   // identifier
 	// : IDENTIFIER																			#idPlain
@@ -373,28 +404,13 @@ class Listener extends vlgListener {
 	// | IDENTIFIER '[' expression ':' expression ']'		#idRange
   
   exitIdPlain(ctx) {
-    ctx.value = {
-      type: "identifier",
-      name: ctx.IDENTIFIER().getText(),
-      offset: null
-    }
+    ctx.value = new Variable(ctx.IDENTIFIER().getText(), null)
   }
   exitIdOffset(ctx) {
-    ctx.value = {
-      type: "identifier",
-      name: ctx.IDENTIFIER().getText(),
-      offset: parseInt(ctx.expression().getText(),10)
-    }
+    ctx.value = new Variable(ctx.IDENTIFIER().getText(), parseInt(ctx.expression().getText(),10))
   }
   exitIdRange(ctx) {
-    ctx.value = {
-      type: "identifier",
-      name: ctx.IDENTIFIER().getText(),
-      offset: [
-        parseInt(ctx.expression(0).getText(),10),
-        parseInt(ctx.expression(1).getText(),10)
-      ]
-    }
+    ctx.value = new Variable(ctx.IDENTIFIER().getText(), [parseInt(ctx.expression(0).getText(),10), parseInt(ctx.expression(1).getText(),10)])
   }
 
   exitIdentifier_list(ctx) {
@@ -402,7 +418,7 @@ class Listener extends vlgListener {
   }
 
   exitRange(ctx) {
-    ctx.value = [parseInt(ctx.start.text, 10), parseInt(ctx.end.text, 10)];
+    ctx.value = [parseInt(ctx.rangestart.text, 10), parseInt(ctx.rangeend.text, 10)];
   }
 
   // number

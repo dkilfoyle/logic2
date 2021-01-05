@@ -294,32 +294,50 @@ vlgVisitor.prototype.visitConcatenation = function(ctx) {
 };
 
 
-// Visit a parse tree produced by vlgParser#expression.
-vlgVisitor.prototype.visitExpression = function(ctx) {
+// Visit a parse tree produced by vlgParser#binaryExpression.
+vlgVisitor.prototype.visitBinaryExpression = function(ctx) {
   return this.visitChildren(ctx);
 };
 
 
-// Visit a parse tree produced by vlgParser#unaryPrimaryExpression.
-vlgVisitor.prototype.visitUnaryPrimaryExpression = function(ctx) {
+// Visit a parse tree produced by vlgParser#factorExpression.
+vlgVisitor.prototype.visitFactorExpression = function(ctx) {
   return this.visitChildren(ctx);
 };
 
 
-// Visit a parse tree produced by vlgParser#primaryExpression.
-vlgVisitor.prototype.visitPrimaryExpression = function(ctx) {
+// Visit a parse tree produced by vlgParser#unaryExpression.
+vlgVisitor.prototype.visitUnaryExpression = function(ctx) {
   return this.visitChildren(ctx);
 };
 
 
-// Visit a parse tree produced by vlgParser#primary.
-vlgVisitor.prototype.visitPrimary = function(ctx) {
+// Visit a parse tree produced by vlgParser#parenExpression.
+vlgVisitor.prototype.visitParenExpression = function(ctx) {
   return this.visitChildren(ctx);
 };
 
 
-// Visit a parse tree produced by vlgParser#parens_expression.
-vlgVisitor.prototype.visitParens_expression = function(ctx) {
+// Visit a parse tree produced by vlgParser#atomExpression.
+vlgVisitor.prototype.visitAtomExpression = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#numberAtom.
+vlgVisitor.prototype.visitNumberAtom = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#identifierAtom.
+vlgVisitor.prototype.visitIdentifierAtom = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#concatenationAtom.
+vlgVisitor.prototype.visitConcatenationAtom = function(ctx) {
   return this.visitChildren(ctx);
 };
 

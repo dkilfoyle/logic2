@@ -4,8 +4,7 @@
 // offset can be null (return the entire value) or a single number (bit index) or a 2 value array (bit range)
 
 class Variable {
-  constructor(namespace, name, offset = null) {
-    this.namespace = namespace;
+  constructor(name, offset = null, namespace = null) {
     this.name = name;
     // valid offset checking
     if (offset != null) {
@@ -26,18 +25,50 @@ class Variable {
       this.offsetType = "none";
     }
     this.offset = offset;
+    this.namespace = namespace;
   }
-  get id() {
-    return this.namespace + "_" + this.name;
+  id(namespace = null) {
+    let _namespace = this.namespace || namespace; // default to this.namespace if it exists
+    if (_namespace === null)
+      throw new Error(`Variable.id ${this.name} missing namespace`);
+    if (typeof _namespace != "string")
+      throw new Error(
+        `Variable.id ${this.name} invalid namespace ${_namespace}`
+      );
+    return _namespace + "_" + this.name;
   }
-  setValue(gatesLookup, val) {
-    const gate = gatesLookup[this.id];
+  toString() {
+    return (
+      this.name +
+      (this.offsetType == "index"
+        ? "[" + this.offset + "]"
+        : this.offsetType == "range"
+        ? "[" + this.offset.join(":") + "]"
+        : "")
+    );
+  }
+  toHtmlString(namespace) {
+    return `<span style="font-size:6pt">${this.namespace ||
+      namespace}_</span><span>${this.toString()}</span>`;
+  }
+  setValue(namespace, gatesLookup, val) {
+    if (!(typeof namespace == "string"))
+      throw new Error(
+        `Variable.id ${this.name} invalid namespace ${namespace}`
+      );
+    const gate = gatesLookup[this.id(namespace)];
     if (!gate)
-      throw new Error(`Variable.setValue cannot find gate with id ${this.id}`);
+      throw new Error(
+        `Variable.setValue cannot find gate with id ${this.id(namespace)}`
+      );
     gate.state.setValue(val);
   }
-  getValue(gatesLookup) {
-    const gate = gatesLookup[this.id];
+  getValue(namespace, gatesLookup) {
+    if (!(typeof namespace == "string"))
+      throw new Error(
+        `Variable.id ${this.name} invalid namespace ${namespace}`
+      );
+    const gate = gatesLookup[this.id(namespace)];
     if (!gate)
       throw new Error(`Variable.getValue cannot find gate with id ${this.id}`);
 
@@ -45,19 +76,19 @@ class Variable {
       case "none":
         return gate.state.decimalValue;
       case "index":
-        if (this.offset > gate.bitSize - 1)
+        if (this.offset > gate.state.size - 1)
           throw new Error(
-            `Variable.getValue: offset (${this.offset}) is larger than gate (${gate.id}) state size (${gate.bitSize})`
+            `Variable.getValue: offset (${this.offset}) is larger than gate (${gate.id}) state size (${gate.state.size})`
           );
         return this.getBit(gate.state.decimalValue, this.offset);
       case "range":
-        if (this.offset[0] > gate.bitSize - 1)
+        if (this.offset[0] > gate.state.size - 1)
           throw new Error(
-            `Variable.getValue: offset[0] (${this.offset[0]}) is larger than gate (${gate.id}) state size (${gate.bitSize})`
+            `Variable.getValue: offset[0] (${this.offset[0]}) is larger than gate (${gate.id}) state size (${gate.state.size})`
           );
-        if (this.offset[1] > gate.bitSize - 1)
+        if (this.offset[1] > gate.state.size - 1)
           throw new Error(
-            `Variable.getValue: offset[1] (${this.offset[1]}) is larger than gate (${gate.id}) state size (${gate.bitSize})`
+            `Variable.getValue: offset[1] (${this.offset[1]}) is larger than gate (${gate.id}) state size (${gate.state.size})`
           );
         return this.getBitRange(gate.state.decimalValue, this.offset);
       default:

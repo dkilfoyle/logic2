@@ -59,9 +59,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       const newGate = {
         id: varMap[gateDeclaration.id],
         logic: gateDeclaration.gate,
-        inputs: gateDeclaration.inputs.map(
-          input => new Variable(namespace, input.name, input.offset)
-        ),
+        inputs: gateDeclaration.inputs,
         instance: namespace,
         state: new Numeric(0),
         type: "gate"
@@ -148,9 +146,9 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         // if the input port is connected
         // portGate.inputs.push(`${parentNamespace}_${connection.value.id}`);
         let newInput = new Variable(
-          parentNamespace,
           connection.value.id.name,
-          connection.value.id.offset
+          connection.value.id.offset,
+          parentNamespace
         );
         portGate.inputs.push(newInput);
         newInstance.inputs.push(varMap[port.id]);
@@ -186,12 +184,12 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         // console.log(
         //   `---- parentGate: ${parentGate.id} will get input from ${portGate.id}`
         // );
-        parentGate.inputs.push(new Variable(namespace, port.id + "-out")); // portGate.id already has -out appended
+        parentGate.inputs.push(new Variable(port.id + "-out", null, namespace)); // portGate.id already has -out appended
 
         //  push the gate with the same name as the output into the output port buffer gate's inputs
         // const sameNameGate = gates.find(gate => gate.id == varMap[port.id]);
         // if (sameNameGate)
-        portGate.inputs.push(new Variable(namespace, port.id));
+        portGate.inputs.push(new Variable(port.id, null, namespace));
 
         // console.log(
         //   `---- sameNameGate: ${sameNameGate.id}. ${portGate.id} will get this as input`
@@ -213,42 +211,43 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       newInstance.instances.push(childInstance.id);
     });
 
-  const varMapStatement = s => {
-    if (s.type == "seq_block" || s.type == "root_block")
-      s.statements.forEach(ss => varMapStatement(ss));
-    else if (s.type == "blocking_assignment") {
-      if (s.lhs.type == "identifier")
-        s.lhs = new Variable(namespace, s.lhs.name, s.lhs.offset);
-      else if (s.lhs.type == "concatenation")
-        throw new Error("concatenations not imlemented yet");
-      else throw new Error(`statement lhs is invalid type (${s.lhs.type})`);
+  // const varMapStatement = s => {
+  //   if (s.type == "seq_block" || s.type == "root_block")
+  //     s.statements.forEach(ss => varMapStatement(ss));
+  //   else if (s.type == "blocking_assignment") {
+  //     if (s.lhs.type == "identifier")
+  //       s.lhs = new Variable(namespace, s.lhs.name, s.lhs.offset);
+  //     else if (s.lhs.type == "concatenation")
+  //       throw new Error("concatenations not imlemented yet");
+  //     else throw new Error(`statement lhs is invalid type (${s.lhs.type})`);
 
-      if (s.rhs.type == "identifier")
-        s.rhs = new Variable(namespace, s.rhs.name, s.rhs.offset);
-      else if (s.rhs.type == "number")
-        s.rhs = new Numeric(s.rhs.decimalValue, s.rhs.size, s.rhs.format);
-      else throw new Error(`statemeent rhs is invalid type (${s.rhs.type})`);
-    }
-  };
+  //     if (s.rhs.type == "identifier")
+  //       s.rhs = new Variable(namespace, s.rhs.name, s.rhs.offset);
+  //     else if (s.rhs.type == "number")
+  //       s.rhs = new Numeric(s.rhs.decimalValue, s.rhs.size, s.rhs.format);
+  //     else throw new Error(`statemeent rhs is invalid type (${s.rhs.type})`);
+  //   }
+  // };
 
   if (instanceModule.initial) {
-    newInstance.initial = { ...instanceModule.initial };
-    varMapStatement(newInstance.initial.statementTree);
+    newInstance.initial = instanceModule.initial;
+    // newInstance.initial = { ...instanceModule.initial };
+    // varMapStatement(newInstance.initial.statementTree);
   }
 
   if (instanceModule.always) {
     newInstance.always = { ...instanceModule.always };
-    newInstance.always.sensitivities.forEach(sensitivity => {
-      if (sensitivity.type != "everytime") {
-        sensitivity.id = new Variable(
-          namespace,
-          sensitivity.id.name,
-          sensitivity.id.offset
-        );
-        sensitivity.last = "x";
-      }
-    });
-    varMapStatement(newInstance.always.statementTree);
+    // newInstance.always.sensitivities.forEach(sensitivity => {
+    //   if (sensitivity.type != "everytime") {
+    //     sensitivity.id = new Variable(
+    //       namespace,
+    //       sensitivity.id.name,
+    //       sensitivity.id.offset
+    //     );
+    //     sensitivity.last = "x";
+    //   }
+    // });
+    // varMapStatement(newInstance.always.statementTree);
   }
 
   newInstance.varMap = varMap;

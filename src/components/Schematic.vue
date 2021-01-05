@@ -202,7 +202,7 @@ export default {
 
       // await here
       this.buildInstance(this.elkData);
-      // console.log("elkData: ", this.stripReactive(this.elkData));
+      console.log("elkData: ", this.stripReactive(this.elkData));
 
       const filter = this.g.defs
         .append("filter")
@@ -349,18 +349,18 @@ export default {
           });
 
           let gate2gate = {
-            id: input + "-" + gate.id + "_input_" + i,
+            id: input.id(gate.id) + "-" + gate.id + "_input_" + i,
             type: "gate2gate",
             source: this.getAllGates.some(
-              x => x.type == "port" && x.id == input.id
+              x => x.type == "port" && x.id == input.id(gate.instance)
             )
-              ? input.namespace // if the gate input is a port then source is the instance,
-              : input.id + "_gate", // else source is a gate
-            sourcePort: input.id,
+              ? this.getGate(input.id(gate.instance)).instance // input.namespace // if the gate input is a port then source is the instance,
+              : input.id(gate.instance) + "_gate", // else source is a gate
+            sourcePort: input.id(gate.instance),
             target: gate.id + "_gate",
             targetPort: gate.id + "_input_" + i,
             // hwMeta: { name: null, cssClass: gate.id + "_link" }
-            hwMeta: { name: null, cssClass: input.id + "_link" }
+            hwMeta: { name: null, cssClass: input.id(gate.instance) + "_link" }
           };
           currentNet.edges.push(gate2gate);
           // console.log("-- g2g: ", gate2gate.id, this.stripReactive(gate2gate));
@@ -403,22 +403,19 @@ export default {
           };
           childNet.ports.push(port);
 
-          // get the buffer gate for the output port = output-out
+          // get the portbuffer gate for the output gate = output-out
           const portGate = this.getGate(output);
-          // const feederGate = this.getGate(
-          //   output.substr(0, output.indexOf("-out"))
-          // );
 
           let gate2output = {
-            id: output + "_" + portGate.inputs[0].id,
+            id: output + "_" + portGate.inputs[0].id(portGate.instance),
             type: "gate2output",
-            source: portGate.inputs[0].id + "_gate",
-            sourcePort: portGate.inputs[0].id,
+            source: portGate.inputs[0].id(portGate.instance) + "_gate",
+            sourcePort: portGate.inputs[0].id(portGate.instance),
             target: this.getNamespace(output),
             targetPort: output,
             hwMeta: {
               name: null,
-              cssClass: portGate.inputs[0].id + "_link"
+              cssClass: portGate.inputs[0].id(portGate.instance) + "_link"
             }
           };
           childNet.edges.push(gate2output);
@@ -439,16 +436,18 @@ export default {
           // get the buffer gate for this port
           const portGate = this.getGate(input);
           const parent2input = {
-            id: portGate.inputs[0].id + "-" + input,
+            id: portGate.inputs[0].id(portGate.instance) + "-" + input,
             type: "parent2input",
             hwMeta: {
               name: null,
-              cssClass: portGate.inputs[0].id + "_link"
+              cssClass: portGate.inputs[0].id(portGate.instance) + "_link"
             },
-            source: currentInstance.inputs.some(x => x == portGate.inputs[0].id) // is the input to the port gate itself a port of the parent instance rather than a local gate
+            source: currentInstance.inputs.some(
+              x => x == portGate.inputs[0].id(portGate.instance)
+            ) // is the input to the port gate itself a port of the parent instance rather than a local gate
               ? currentInstance.id
-              : portGate.inputs[0].id + "_gate", // TODO: source might be a gate or a port - ie a pass through, is this handled??
-            sourcePort: portGate.inputs[0].id,
+              : portGate.inputs[0].id(portGate.instance) + "_gate", // TODO: source might be a gate or a port - ie a pass through, is this handled??
+            sourcePort: portGate.inputs[0].id(portGate.instance),
             target: this.getNamespace(input),
             targetPort: input
           };

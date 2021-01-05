@@ -32,7 +32,6 @@
           <tbody>
             <tr v-for="g in filteredInstanceGates" :key="g">
               <td>{{ g }}</td>
-              <!-- <td>{{ g.instanceid }}</td> -->
               <td>
                 <img
                   :src="require('@/assets/' + getGate(g).logic + '.svg')"
@@ -42,7 +41,7 @@
               <td>
                 {{
                   getGate(g)
-                    .inputs.map(x => x.id)
+                    .inputs.map(x => x.id(getGate(g).instance))
                     .join(", ")
                 }}
               </td>

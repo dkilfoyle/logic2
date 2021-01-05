@@ -39,7 +39,9 @@ const logicFunctions = {
 const evaluateGates = gates => {
   const logicOperation = gate => {
     let logicFn = gate.logic;
-    let inputs = gate.inputs.map(input => input.getValue(gatesLookup));
+    let inputs = gate.inputs.map(input =>
+      input.getValue(gate.instance, gatesLookup)
+    );
 
     if (["not", "buffer", "response", "portbuffer"].includes(logicFn)) {
       if (inputs.length > 1) {
@@ -84,11 +86,12 @@ const evaluateSensitivities = sensitivities => {
 };
 
 const evaluateStatementTree = s => {
-  console.log("evaluateStatementTree: ", s);
   if (s.type == "seq_block" || s.type == "root_block")
     s.statements.forEach(ss => evaluateStatementTree(ss));
   else if (s.type == "blocking_assignment") {
-    console.group("eval blocking_assignment");
+    console.group(
+      `eval blocking_assignment: ${s.lhs.toString()} = ${s.rhs.toString()}`
+    );
     console.log("lhs gate: ", gatesLookup[s.lhs.id]);
     console.log("lhs: ", s.lhs, s.lhs.getValue(gatesLookup));
     console.log("rhs: ", s.rhs, s.rhs.getValue(gatesLookup));

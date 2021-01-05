@@ -434,48 +434,75 @@ vlgListener.prototype.exitConcatenation = function(ctx) {
 };
 
 
-// Enter a parse tree produced by vlgParser#expression.
-vlgListener.prototype.enterExpression = function(ctx) {
+// Enter a parse tree produced by vlgParser#binaryExpression.
+vlgListener.prototype.enterBinaryExpression = function(ctx) {
 };
 
-// Exit a parse tree produced by vlgParser#expression.
-vlgListener.prototype.exitExpression = function(ctx) {
-};
-
-
-// Enter a parse tree produced by vlgParser#unaryPrimaryExpression.
-vlgListener.prototype.enterUnaryPrimaryExpression = function(ctx) {
-};
-
-// Exit a parse tree produced by vlgParser#unaryPrimaryExpression.
-vlgListener.prototype.exitUnaryPrimaryExpression = function(ctx) {
+// Exit a parse tree produced by vlgParser#binaryExpression.
+vlgListener.prototype.exitBinaryExpression = function(ctx) {
 };
 
 
-// Enter a parse tree produced by vlgParser#primaryExpression.
-vlgListener.prototype.enterPrimaryExpression = function(ctx) {
+// Enter a parse tree produced by vlgParser#factorExpression.
+vlgListener.prototype.enterFactorExpression = function(ctx) {
 };
 
-// Exit a parse tree produced by vlgParser#primaryExpression.
-vlgListener.prototype.exitPrimaryExpression = function(ctx) {
-};
-
-
-// Enter a parse tree produced by vlgParser#primary.
-vlgListener.prototype.enterPrimary = function(ctx) {
-};
-
-// Exit a parse tree produced by vlgParser#primary.
-vlgListener.prototype.exitPrimary = function(ctx) {
+// Exit a parse tree produced by vlgParser#factorExpression.
+vlgListener.prototype.exitFactorExpression = function(ctx) {
 };
 
 
-// Enter a parse tree produced by vlgParser#parens_expression.
-vlgListener.prototype.enterParens_expression = function(ctx) {
+// Enter a parse tree produced by vlgParser#unaryExpression.
+vlgListener.prototype.enterUnaryExpression = function(ctx) {
 };
 
-// Exit a parse tree produced by vlgParser#parens_expression.
-vlgListener.prototype.exitParens_expression = function(ctx) {
+// Exit a parse tree produced by vlgParser#unaryExpression.
+vlgListener.prototype.exitUnaryExpression = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#parenExpression.
+vlgListener.prototype.enterParenExpression = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#parenExpression.
+vlgListener.prototype.exitParenExpression = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#atomExpression.
+vlgListener.prototype.enterAtomExpression = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#atomExpression.
+vlgListener.prototype.exitAtomExpression = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#numberAtom.
+vlgListener.prototype.enterNumberAtom = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#numberAtom.
+vlgListener.prototype.exitNumberAtom = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#identifierAtom.
+vlgListener.prototype.enterIdentifierAtom = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#identifierAtom.
+vlgListener.prototype.exitIdentifierAtom = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#concatenationAtom.
+vlgListener.prototype.enterConcatenationAtom = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#concatenationAtom.
+vlgListener.prototype.exitConcatenationAtom = function(ctx) {
 };
 
 

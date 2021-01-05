@@ -188,32 +188,32 @@ conditional_statement
 /* 8.1 Concatenations============================================ */
 
 concatenation
-	: '{' expression (',' expression)* '}'
+	: '{' identifier (',' identifier)* '}'
 	;
+
 
 /* 8.3 Expressions ============================================== */
 
-expression // for general expresions, provides ctx.value
-	: term (binary_operator term)*
+expression
+	: factor																			# factorExpression
+	| expression op=(MUL | DIV) expression				# binaryExpression
+	| expression op=(PLUS | MINUS) expression			# binaryExpression
 	;
 
-term
-	: unary_operator primary										# unaryPrimaryExpression
-	| primary																		# primaryExpression
+factor
+	: op=(PLUS | MINUS) factor										# unaryExpression
+	| '(' expression ')'													# parenExpression
+	| atom																				# atomExpression
 	;
 
 /* 8.4 Primaries =============================================== */
 
-primary
-	: number
-	| identifier
-	| concatenation
-	| parens_expression
+atom												
+	: number						#numberAtom
+	| identifier				#identifierAtom
+	| concatenation			#concatenationAtom
 	;
 
-parens_expression
-	: '(' expression ')'
-	;
 
 /* 8.5 l values ================================================= */
 
@@ -335,7 +335,7 @@ fragment Z_digit
 defined_connection_id: IDENTIFIER;
 defined_connection_id_list:	defined_connection_id (',' defined_connection_id)*;
 identifier_list: identifier (',' identifier)*;
-range: '[' start = Decimal_number ':' end = Decimal_number ']';
+range: '[' rangestart = Decimal_number ':' rangeend = Decimal_number ']';
 
 /* Tokens ===================================================== */
 
