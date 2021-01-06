@@ -192,7 +192,7 @@ class Listener extends vlgListener {
       this.curModule.regs.push({
         id: id.getText(),
         dim,
-        bitSize: dim ? dim[1] - dim[0] + 1 : 1
+        bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1
       });
     });
   }

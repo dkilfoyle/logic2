@@ -16,7 +16,7 @@ class Numeric {
   setValue(newDecimalValue) {
     if (bitSize(newDecimalValue) > this.size)
       throw new Error(
-        `Numeric.setValue: ${newDecimalValue} bit size (${bitSize(
+        `Numeric.setValue(${newDecimalValue}) bit size (${bitSize(
           newDecimalValue
         )}) exceeds numeric size (${this.size})`
       );

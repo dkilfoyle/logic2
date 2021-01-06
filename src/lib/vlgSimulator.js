@@ -4,6 +4,8 @@ const chalk = new Chalk.Instance(options);
 
 let gatesLookup, modulesLookup, instancesLookup;
 
+let logger;
+
 const shortJoin = strs => {
   const x = strs.join(", ");
   if (x.length < 21) return x;
@@ -89,23 +91,36 @@ const evaluateStatementTree = (namespace, s) => {
   if (s.type == "seq_block" || s.type == "root_block")
     s.statements.forEach(ss => evaluateStatementTree(namespace, ss));
   else if (s.type == "blocking_assignment") {
-    console.group(
-      `eval blocking_assignment: ${s.lhs.toString()} = ${s.rhs.toString()}`
-    );
-    console.log("lhs gate: ", gatesLookup[s.lhs.id(namespace)]);
-    console.log("lhs: ", s.lhs, s.lhs.getValue(namespace, gatesLookup));
-    console.log("rhs: ", s.rhs, s.rhs.getValue(namespace, gatesLookup));
-    s.lhs.setValue(
-      namespace,
-      gatesLookup,
-      s.rhs.getValue(namespace, gatesLookup)
-    );
-    console.log("res: ", s.lhs.getValue(namespace, gatesLookup));
-    console.groupEnd();
+    // console.group(
+    //   `eval blocking_assignment: ${s.lhs.toString()} = ${s.rhs.toString()}`
+    // );
+    // console.log("lhs gate: ", gatesLookup[s.lhs.id(namespace)]);
+    // console.log("lhs: ", s.lhs, s.lhs.getValue(namespace, gatesLookup));
+    // console.log("rhs: ", s.rhs, s.rhs.getValue(namespace, gatesLookup));
+    try {
+      s.lhs.setValue(
+        namespace,
+        gatesLookup,
+        s.rhs.getValue(namespace, gatesLookup)
+      );
+    } catch (e) {
+      logger(
+        chalk.cyan("├── ") +
+          chalk.bgRed("Warning:") +
+          " " +
+          `${s.lhs.toString()} = ${s.rhs.toString()} ` +
+          e
+      );
+      console.log(e);
+    }
+    // console.log("res: ", s.lhs.getValue(namespace, gatesLookup));
+    // console.groupEnd();
   }
 };
 
-const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
+const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
+  logger = mylogger;
+
   const newSimulation = {
     gates: {},
     clock: [],
@@ -127,7 +142,7 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
   // process each instances initial section to set initial gate or register states
   instances.forEach(instance => {
     if (instance.initial)
-      evaluateStatementTree(instance.initial.statementTree, instance.id);
+      evaluateStatementTree(instance.id, instance.initial.statementTree);
   });
 
   const maxClock = modulesLookup.Main.clock.reduce(
