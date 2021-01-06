@@ -443,33 +443,6 @@ vlgListener.prototype.exitBinaryExpression = function(ctx) {
 };
 
 
-// Enter a parse tree produced by vlgParser#factorExpression.
-vlgListener.prototype.enterFactorExpression = function(ctx) {
-};
-
-// Exit a parse tree produced by vlgParser#factorExpression.
-vlgListener.prototype.exitFactorExpression = function(ctx) {
-};
-
-
-// Enter a parse tree produced by vlgParser#unaryExpression.
-vlgListener.prototype.enterUnaryExpression = function(ctx) {
-};
-
-// Exit a parse tree produced by vlgParser#unaryExpression.
-vlgListener.prototype.exitUnaryExpression = function(ctx) {
-};
-
-
-// Enter a parse tree produced by vlgParser#parenExpression.
-vlgListener.prototype.enterParenExpression = function(ctx) {
-};
-
-// Exit a parse tree produced by vlgParser#parenExpression.
-vlgListener.prototype.exitParenExpression = function(ctx) {
-};
-
-
 // Enter a parse tree produced by vlgParser#atomExpression.
 vlgListener.prototype.enterAtomExpression = function(ctx) {
 };
@@ -479,30 +452,21 @@ vlgListener.prototype.exitAtomExpression = function(ctx) {
 };
 
 
-// Enter a parse tree produced by vlgParser#numberAtom.
-vlgListener.prototype.enterNumberAtom = function(ctx) {
+// Enter a parse tree produced by vlgParser#parensExpression.
+vlgListener.prototype.enterParensExpression = function(ctx) {
 };
 
-// Exit a parse tree produced by vlgParser#numberAtom.
-vlgListener.prototype.exitNumberAtom = function(ctx) {
-};
-
-
-// Enter a parse tree produced by vlgParser#identifierAtom.
-vlgListener.prototype.enterIdentifierAtom = function(ctx) {
-};
-
-// Exit a parse tree produced by vlgParser#identifierAtom.
-vlgListener.prototype.exitIdentifierAtom = function(ctx) {
+// Exit a parse tree produced by vlgParser#parensExpression.
+vlgListener.prototype.exitParensExpression = function(ctx) {
 };
 
 
-// Enter a parse tree produced by vlgParser#concatenationAtom.
-vlgListener.prototype.enterConcatenationAtom = function(ctx) {
+// Enter a parse tree produced by vlgParser#unaryExpression.
+vlgListener.prototype.enterUnaryExpression = function(ctx) {
 };
 
-// Exit a parse tree produced by vlgParser#concatenationAtom.
-vlgListener.prototype.exitConcatenationAtom = function(ctx) {
+// Exit a parse tree produced by vlgParser#unaryExpression.
+vlgListener.prototype.exitUnaryExpression = function(ctx) {
 };
 
 
@@ -533,12 +497,39 @@ vlgListener.prototype.exitBinary_operator = function(ctx) {
 };
 
 
-// Enter a parse tree produced by vlgParser#number.
-vlgListener.prototype.enterNumber = function(ctx) {
+// Enter a parse tree produced by vlgParser#decimal.
+vlgListener.prototype.enterDecimal = function(ctx) {
 };
 
-// Exit a parse tree produced by vlgParser#number.
-vlgListener.prototype.exitNumber = function(ctx) {
+// Exit a parse tree produced by vlgParser#decimal.
+vlgListener.prototype.exitDecimal = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#octal.
+vlgListener.prototype.enterOctal = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#octal.
+vlgListener.prototype.exitOctal = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#binary.
+vlgListener.prototype.enterBinary = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#binary.
+vlgListener.prototype.exitBinary = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#hex.
+vlgListener.prototype.enterHex = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#hex.
+vlgListener.prototype.exitHex = function(ctx) {
 };
 
 

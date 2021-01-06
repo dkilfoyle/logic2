@@ -300,44 +300,20 @@ vlgVisitor.prototype.visitBinaryExpression = function(ctx) {
 };
 
 
-// Visit a parse tree produced by vlgParser#factorExpression.
-vlgVisitor.prototype.visitFactorExpression = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#unaryExpression.
-vlgVisitor.prototype.visitUnaryExpression = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#parenExpression.
-vlgVisitor.prototype.visitParenExpression = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
 // Visit a parse tree produced by vlgParser#atomExpression.
 vlgVisitor.prototype.visitAtomExpression = function(ctx) {
   return this.visitChildren(ctx);
 };
 
 
-// Visit a parse tree produced by vlgParser#numberAtom.
-vlgVisitor.prototype.visitNumberAtom = function(ctx) {
+// Visit a parse tree produced by vlgParser#parensExpression.
+vlgVisitor.prototype.visitParensExpression = function(ctx) {
   return this.visitChildren(ctx);
 };
 
 
-// Visit a parse tree produced by vlgParser#identifierAtom.
-vlgVisitor.prototype.visitIdentifierAtom = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#concatenationAtom.
-vlgVisitor.prototype.visitConcatenationAtom = function(ctx) {
+// Visit a parse tree produced by vlgParser#unaryExpression.
+vlgVisitor.prototype.visitUnaryExpression = function(ctx) {
   return this.visitChildren(ctx);
 };
 
@@ -360,8 +336,26 @@ vlgVisitor.prototype.visitBinary_operator = function(ctx) {
 };
 
 
-// Visit a parse tree produced by vlgParser#number.
-vlgVisitor.prototype.visitNumber = function(ctx) {
+// Visit a parse tree produced by vlgParser#decimal.
+vlgVisitor.prototype.visitDecimal = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#octal.
+vlgVisitor.prototype.visitOctal = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#binary.
+vlgVisitor.prototype.visitBinary = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#hex.
+vlgVisitor.prototype.visitHex = function(ctx) {
   return this.visitChildren(ctx);
 };
 

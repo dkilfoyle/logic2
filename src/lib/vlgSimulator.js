@@ -72,9 +72,9 @@ const evaluateGates = gates => {
   });
 };
 
-const evaluateSensitivities = sensitivities => {
+const evaluateSensitivities = (namespace, sensitivities) => {
   return sensitivities.some(sens => {
-    const current = sens.id.getValue(gatesLookup);
+    const current = sens.id.getValue(namespace, gatesLookup);
     const edge =
       sens.last == 0 && current == 1
         ? "posedge"
@@ -85,18 +85,22 @@ const evaluateSensitivities = sensitivities => {
   });
 };
 
-const evaluateStatementTree = s => {
+const evaluateStatementTree = (namespace, s) => {
   if (s.type == "seq_block" || s.type == "root_block")
-    s.statements.forEach(ss => evaluateStatementTree(ss));
+    s.statements.forEach(ss => evaluateStatementTree(namespace, ss));
   else if (s.type == "blocking_assignment") {
     console.group(
       `eval blocking_assignment: ${s.lhs.toString()} = ${s.rhs.toString()}`
     );
-    console.log("lhs gate: ", gatesLookup[s.lhs.id]);
-    console.log("lhs: ", s.lhs, s.lhs.getValue(gatesLookup));
-    console.log("rhs: ", s.rhs, s.rhs.getValue(gatesLookup));
-    s.lhs.setValue(gatesLookup, s.rhs.getValue(gatesLookup));
-    console.log("res: ", s.lhs.getValue(gatesLookup));
+    console.log("lhs gate: ", gatesLookup[s.lhs.id(namespace)]);
+    console.log("lhs: ", s.lhs, s.lhs.getValue(namespace, gatesLookup));
+    console.log("rhs: ", s.rhs, s.rhs.getValue(namespace, gatesLookup));
+    s.lhs.setValue(
+      namespace,
+      gatesLookup,
+      s.rhs.getValue(namespace, gatesLookup)
+    );
+    console.log("res: ", s.lhs.getValue(namespace, gatesLookup));
     console.groupEnd();
   }
 };
@@ -122,7 +126,8 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
 
   // process each instances initial section to set initial gate or register states
   instances.forEach(instance => {
-    if (instance.initial) evaluateStatementTree(instance.initial.statementTree);
+    if (instance.initial)
+      evaluateStatementTree(instance.initial.statementTree, instance.id);
   });
 
   const maxClock = modulesLookup.Main.clock.reduce(
@@ -160,9 +165,9 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
       instances.forEach(instance => {
         if (
           instance.always &&
-          evaluateSensitivities(instance.always.sensitivities)
+          evaluateSensitivities(instance.id, instance.always.sensitivities)
         )
-          evaluateStatementTree(instance.always.statementTree);
+          evaluateStatementTree(instance.id, instance.always.statementTree);
       });
     }
 
@@ -176,7 +181,7 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, logger) => {
     instances.forEach(instance => {
       if (instance.always) {
         instance.always.sensitivities.forEach(sensitivity => {
-          sensitivity.last = sensitivity.id.getValue(gatesLookup);
+          sensitivity.last = sensitivity.id.getValue(instance.id, gatesLookup);
         });
       }
     });

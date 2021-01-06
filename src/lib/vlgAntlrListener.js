@@ -1,8 +1,12 @@
-/* eslint-disable */
+/* eslint-disable no-unused-vars */
+
+// TODO: Reimplement as visitor so don't need to use stacks
 
 import { tree, CommonToken, TerminalNode } from "antlr4";
 import { vlgListener } from "../grammar/vlgListener.js";
 import { vlgParser } from "../grammar/vlgParser.js";
+import Numeric from "./Numeric.js";
+import Operation from "./Operation.js";
 import Variable from "./Variable.js";
 
 class Listener extends vlgListener {
@@ -14,6 +18,8 @@ class Listener extends vlgListener {
     this.assign = {};
     this.statementRoot = null;
     this.statementCurrent = null;
+    this.expressionStack = null;
+    this.valueStack = [];
   }
 
   // utils
@@ -23,11 +29,9 @@ class Listener extends vlgListener {
     var token;
     if (node instanceof CommonToken) {
       token = node;
-    }
-    else if (node.symbol instanceof CommonToken) {
+    } else if (node.symbol instanceof CommonToken) {
       token = node.symbol;
-    }
-    else {
+    } else {
       throw new Error("node is not commontoken", node);
       // ? check if terminal node and if so use ctx.symbol.line
     }
@@ -37,40 +41,44 @@ class Listener extends vlgListener {
       endLine: token.line,
       endColumn: token.column + token.text.length + 1,
       msg,
-      severity,
+      severity
     });
   }
 
   getModule(id) {
-    return this.modules.find((x) => x.id == id);
+    return this.modules.find(x => x.id == id);
   }
 
   isModule(id) {
-    return this.modules.some((x) => x.id == id);
+    return this.modules.some(x => x.id == id);
   }
 
   isPort(id) {
-    return this.curModule.ports.some((port) => port.id == id);
+    return this.curModule.ports.some(port => port.id == id);
   }
 
   isPortOf(portid, moduleid) {
-    return this.getModule(moduleid).ports.some((port) => port.id == portid);
+    return this.getModule(moduleid).ports.some(port => port.id == portid);
   }
 
   isInput(id) {
-    return this.curModule.ports.some((port) => (port.direction == "input") & (port.id == id));
+    return this.curModule.ports.some(
+      port => (port.direction == "input") & (port.id == id)
+    );
   }
 
   isOutput(id) {
-    return this.curModule.ports.some((port) => (port.direction == "output") & (port.id == id));
+    return this.curModule.ports.some(
+      port => (port.direction == "output") & (port.id == id)
+    );
   }
 
   isWire(id) {
-    return this.curModule.wires.some((wire) => wire.id == id);
+    return this.curModule.wires.some(wire => wire.id == id);
   }
 
   isReg(id) {
-    return this.curModule.regs.some(reg => reg.id == id );
+    return this.curModule.regs.some(reg => reg.id == id);
   }
 
   isWireOrInput(id) {
@@ -86,7 +94,7 @@ class Listener extends vlgListener {
   }
 
   isWireOrPortOrReg(id) {
-    return this.isWireOrPort(id) | this.isReg(id)
+    return this.isWireOrPort(id) | this.isReg(id);
   }
 
   // node listeners
@@ -100,19 +108,19 @@ class Listener extends vlgListener {
       sourceLocation: {
         start: {
           line: ctx.start.line,
-          column: ctx.start.column,
+          column: ctx.start.column
         },
         stop: {
           line: ctx.stop.line,
-          column: ctx.stop.column,
-        },
+          column: ctx.stop.column
+        }
       },
       ports: [],
       wires: [],
       regs: [],
       instantiations: []
     };
-    console.group("enterModule: ", ctx.IDENTIFIER().getText())
+    console.group("enterModule: ", ctx.IDENTIFIER().getText());
   }
   exitModule() {
     console.log("curModule: ", this.curModule);
@@ -126,20 +134,20 @@ class Listener extends vlgListener {
       sourceLocation: {
         start: {
           line: ctx.start.line,
-          column: ctx.start.column,
+          column: ctx.start.column
         },
         stop: {
           line: ctx.stop.line,
-          column: ctx.stop.column,
-        },
+          column: ctx.stop.column
+        }
       },
       ports: [],
       wires: [],
       regs: [],
       instantiations: [],
-      clock: [],
+      clock: []
     };
-    console.group("enterModule: Main ")
+    console.group("enterModule: Main ");
   }
 
   exitModule_main() {
@@ -151,40 +159,42 @@ class Listener extends vlgListener {
 
   exitModule_ports(ctx) {
     const portDeclarations = ctx.port_declaration();
-    portDeclarations.forEach((portDecCtx) => {
+    portDeclarations.forEach(portDecCtx => {
       const dir = portDecCtx.port_direction().getText();
       const ids = portDecCtx.port_identifier_list().IDENTIFIER();
-      const dim = ctx.portdim ? ctx.portdim.value : null;
-      this.curModule.ports.push(...ids.map((id) => ({
-        id: id.getText(),
-        direction: dir,
-        bitSize: dim ? dim[1]-dim[0] + 1 : 1,
-        dim
-      })));
+      const dim = ctx.portdim ? this.valueStack.pop() : null;
+      this.curModule.ports.push(
+        ...ids.map(id => ({
+          id: id.getText(),
+          direction: dir,
+          bitSize: dim ? dim[1] - dim[0] + 1 : 1,
+          dim
+        }))
+      );
     });
-    console.log("exitModule_ports: ", this.curModule.ports)
+    console.log("exitModule_ports: ", this.curModule.ports);
   }
 
   exitNet_declaration(ctx) {
-    const dim = ctx.netdim ? ctx.netdim.value : null;
+    const dim = ctx.netdim ? this.valueStack.pop() : null;
     ctx.ids.IDENTIFIER().forEach(id => {
       this.curModule.wires.push({
         id: id.getText(),
-        bitSize: dim ? dim[1]-dim[0] + 1 : 1,
+        bitSize: dim ? dim[1] - dim[0] + 1 : 1,
         dim
-      })
-    })
+      });
+    });
   }
 
   exitReg_declaration(ctx) {
-    const dim = ctx.regdim ? ctx.regdim.value : null;
+    const dim = ctx.regdim ? this.valueStack.pop() : null;
     ctx.ids.IDENTIFIER().forEach(id => {
       this.curModule.regs.push({
         id: id.getText(),
         dim,
-        bitSize: dim ? dim[1]-dim[0] + 1 : 1,
-      })
-    })
+        bitSize: dim ? dim[1] - dim[0] + 1 : 1
+      });
+    });
   }
 
   enterInitial_construct(ctx) {
@@ -201,8 +211,8 @@ class Listener extends vlgListener {
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
       sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
       statementTree: this.statementRoot
-    }
-    console.log("initial = ", this.curModule.initial)
+    };
+    console.log("initial = ", this.curModule.initial);
   }
 
   enterAlways_construct(ctx) {
@@ -219,19 +229,24 @@ class Listener extends vlgListener {
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
       sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
       statementTree: this.statementRoot
-    }
+    };
 
     if (ctx.event_list().event_every() != null) {
-      this.curModule.always.sensitivities = [{
-        type: "everytime",
-        last: null
-      }]
+      this.curModule.always.sensitivities = [
+        {
+          type: "everytime",
+          last: null
+        }
+      ];
     } else {
-      this.curModule.always.sensitivities = ctx.event_list().event_primary().map(e => ({
-        id: e.identifier().value,
-        type: e.event_type() != null ? e.event_type().getText() : "changed",
-        last: undefined
-      }))
+      this.curModule.always.sensitivities = ctx
+        .event_list()
+        .event_primary()
+        .map(e => ({
+          id: this.valueStack.pop(),
+          type: e.event_type() != null ? e.event_type().getText() : "changed",
+          last: undefined
+        }));
     }
 
     console.log("always = ", this.curModule.always);
@@ -249,6 +264,11 @@ class Listener extends vlgListener {
 
   enterBlocking_assignment(ctx) {
     console.group(`Blocking_assignment: ${ctx.getText()}`);
+    if (!this.expressionStack == null)
+      throw new Error(
+        `enterBlocking_assignment: expressionStack should be null, not ${this.expressionStack}`
+      );
+    this.expressionStack = [];
   }
 
   exitBlocking_assignment(ctx) {
@@ -256,11 +276,11 @@ class Listener extends vlgListener {
       type: "blocking_assignment",
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
       sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
-      lhs: {...ctx.lhs.value},
-      rhs: {...ctx.rhs.value}
-    }
+      rhs: this.expressionStack.pop(),
+      lhs: this.valueStack.pop() // pop the ids in expressions first
+    };
     this.statementCurrent.statements.push(newStatement);
-    console.log("exitBlocking: ", newStatement);
+    console.log("Adding statement: ", newStatement);
     console.groupEnd();
   }
 
@@ -270,196 +290,177 @@ class Listener extends vlgListener {
       type: "seq_block",
       parent: this.statementCurrent,
       statements: []
-    }
+    };
     this.statementCurrent.statements.push(newSeqBlock);
     this.statementCurrent = newSeqBlock;
   }
 
   exitSeq_block(ctx) {
-    console.log("Statements: ", this.statementCurrent.statements)
+    console.log("Statements: ", this.statementCurrent.statements);
     console.groupEnd();
     this.statementCurrent = this.statementCurrent.parent;
   }
 
   // Expressions ============================================
 
-  // lvalue
-	// : identifier
-  // | concatenation
+  // expression
+  // 	: numberStack																	# atomExpression
+  // 	| identifierStack															# atomExpression
+  // 	| concatenation																# atomExpression
+  //   | '(' expression ')'													# parensExpression
+  //   | op=(PLUS | MINUS) expression                # unaryExpression
+  // 	| expression op=(MUL | DIV) expression				# binaryExpression
+  // 	| expression op=(PLUS | MINUS) expression			# binaryExpression
+  // 	;
 
-  enterLvalue(ctx) {
-    console.group(`lValue: ${ctx.getText()}`);
-  }
-  
-  exitLvalue(ctx) {
-    const childCtx = ctx.getChild(0);
-    if (!childCtx.value) throw new Error("Not implemented yet")
-    ctx.value = childCtx.value;
-    console.log("value: ", ctx.value);
-    console.groupEnd();
-  }
-
-  // expression // for general expresions, provides ctx.value
-  // : primary																	# primaryExpression
-  // | UNARY_OPERATOR primaryExpression         # unaryPrimaryExpression
-  // | expression BINARY_OPERATOR expression		# binaryExpression
-
-  /*
-  enterExpression(ctx) {
-    console.group(`expression: ${ctx.getText()}`);
+  exitAtomExpression(ctx) {
+    //  console.log("atomExpression value stack: ", this.valueStack)
+    this.expressionStack.push(this.valueStack.pop());
   }
 
-  exitExpression(ctx) {
-    const childCtx = ctx.getChild(0);
-    if (!childCtx.value) throw new Error("Not implemented yet")
-    ctx.value = childCtx.value;
-    console.log("value: ", ctx.value);
-    console.groupEnd()
-  }
-
-  enterPrimary(ctx) {
-    console.group(`primary: ${ctx.getText()}`);
-  }
-
-  exitPrimary(ctx) {
-    const childCtx = ctx.getChild(0);
-    if (!childCtx.value) throw new Error("Not implemented yet")
-    ctx.value = childCtx.value;
-    console.log("value: ", ctx.value);
-    console.groupEnd();
-  }
-
-  exitUnaryPrimaryExpression(ctx) {
-    ctx.value = {
-      type: "unary_expression",
-      operator: ctx.UNARY_OPERATOR().getText(),
-      operand: ctx.primaryExpression().value
-    }
-  }
-
-  enterBinaryExpression(ctx) {
-    console.group(`binaryExpression: ${ctx.getText()}`);
+  exitUnaryExpression(ctx) {
+    const lhs = this.expression.stack.pop();
+    const op = this.op.ruleIndex == vlgParser.RULE_PLUS ? "add" : "sub";
+    this.expressionStack.push(new Operation(lhs, op, null));
   }
 
   exitBinaryExpression(ctx) {
-    ctx.value = {
-      type: "binary_expression",
-      operator: ctx.BINARY_OPERATOR().getText(),
-      operand1: ctx.primaryExpression(0).value,
-      operand2: ctx.primaryExpression(1).value
+    //  console.log("binaryExpression stack: ", this.expressionStack)
+    const rhs = this.expressionStack.pop();
+    const lhs = this.expressionStack.pop();
+    let op;
+    switch (ctx.op.text) {
+      case "+":
+        op = "add";
+        break;
+      case "-":
+        op = "sub";
+        break;
+      case "*":
+        op = "mul";
+        break;
+      case "/":
+        op = "div";
+        break;
     }
-    console.log("value: ", ctx.value);
-    console.groupEnd();
+    this.expressionStack.push(new Operation(lhs, op, rhs));
   }
-
-  // primary <-- primaryExpression
-	// : number
-	// | identifier
-	// | concatenation
-  // | parens_expression
-  
-  enterPrimaryExpression(ctx) {
-    console.group(`primaryExpression: ${ctx.getText()}`);
-  }
-  
-  exitPrimaryExpression(ctx) {
-    const childCtx = ctx.getChild(0);
-    if (!childCtx.value) throw new Error("Not implemented yet")
-    ctx.value = childCtx.value;
-    console.log("value: ", ctx.value);
-    console.groupEnd();
-  }
-  */
-
- /* ===========================
-
-expression 
-  : factor
-  | expression op=(MUL | DIV) expression				# binaryExpression
-  | expression op=(PLUS | MINUS) expression			# binaryExpression
-  ;
-
-factor
- : op=(PLUS | MINUS) factor										# unaryExpression
- | '(' expression ')'													# parenExpression
- | atom																				# atomExpression
- ;
-
-atom
- : number               
- | identifier
- | concatenation
- ;
- */
-
-
- exitNumberAtomExpression(ctx) {
-   this.expression.stack.push(ctx.value)
- }
-
 
   // identifier
-	// : IDENTIFIER																			#idPlain
-	// | IDENTIFIER '[' expression ']'									#idOffset
-	// | IDENTIFIER '[' expression ':' expression ']'		#idRange
-  
+  // : IDENTIFIER																			#idPlain
+  // | IDENTIFIER '[' expression ']'									#idOffset
+  // | IDENTIFIER '[' expression ':' expression ']'		#idRange
+
   exitIdPlain(ctx) {
-    ctx.value = new Variable(ctx.IDENTIFIER().getText(), null)
+    console.log("pushing ID", ctx.IDENTIFIER().getText());
+    this.valueStack.push(new Variable(ctx.IDENTIFIER().getText(), null));
   }
+
   exitIdOffset(ctx) {
-    ctx.value = new Variable(ctx.IDENTIFIER().getText(), parseInt(ctx.expression().getText(),10))
+    this.valueStack.push(
+      new Variable(
+        ctx.IDENTIFIER().getText(),
+        parseInt(ctx.expression().getText(), 10)
+      )
+    );
   }
+
   exitIdRange(ctx) {
-    ctx.value = new Variable(ctx.IDENTIFIER().getText(), [parseInt(ctx.expression(0).getText(),10), parseInt(ctx.expression(1).getText(),10)])
+    this.valueStack.push(
+      new Variable(ctx.IDENTIFIER().getText(), [
+        parseInt(ctx.expression(0).getText(), 10),
+        parseInt(ctx.expression(1).getText(), 10)
+      ])
+    );
   }
 
   exitIdentifier_list(ctx) {
-    ctx.ids = ctx.identifier().map((x) => x.value);
+    this.valueStack.push(
+      ctx
+        .identifier()
+        .map(() => this.valueStack.pop())
+        .reverse()
+    );
   }
 
   exitRange(ctx) {
-    ctx.value = [parseInt(ctx.rangestart.text, 10), parseInt(ctx.rangeend.text, 10)];
+    this.valueStack.push([
+      parseInt(ctx.rangestart.text, 10),
+      parseInt(ctx.rangeend.text, 10)
+    ]);
   }
 
   // number
-	// : decimal_number
-	// | binary_number
-	// | octal_number
-	// | hex_number
-  
-  exitNumber(ctx) {
-    var childCtx = ctx.getChild(0);
-    // childCtx is a child of Number and will contain named tokens size and x
-    ctx.value = {
-      type: "number",
-    };
-    switch (childCtx.ruleIndex) {
-      case vlgParser.RULE_Decimal_number:
-        ctx.value.format = "decimal";
-        let x = parseInt(childCtx.getText(),10);
-        ctx.value.size = childCtx.Size 
-          ? parseInt(childCtx.Size().getText(), 10)
-          : parseInt(x).toString(2).length;
-        ctx.value.decimalValue = x; //parseInt(childCtx.Decimal_value().getText(), 10);
-        break;
-      case vlgParser.RULE_Binary_number:
-        ctx.value.format = "binary";
-        ctx.value.size = parseInt(childCtx.Size().getText(), 10);
-        ctx.value.decimalValue = parseInt(childCtx.Binary_value().getText(), 2);
-        break;
-      case vlgParser.RULE_Octal_number:
-        ctx.value.format = "octal";
-        ctx.value.size = parseInt(childCtx.Size().getText(), 10);
-        ctx.value.decimalValue = parseInt(childCtx.Octal_value().getText(), 8);
-        break;
-      case vlgParser.RULE_Hex_number:
-        ctx.value.format = "hex";
-        ctx.value.size = parseInt(childCtx.Size().getText(), 10);
-        ctx.value.decimalValue = parseInt(childCtx.Hex_value().getText(), 16);
-        break;
-      default:
-        throw new Error("invalid number format")
+  // : Decimal_number		#decimal
+  // | Octal_number			#octal
+  // | Binary_number		#binary
+  // | Hex_number				#hex
+  // ;
+
+  // Decimal_number
+  //  : Unsigned_number
+  //  | Size? Decimal_base)? Unsigned_number
+  //  ;
+
+  exitDecimal(ctx) {
+    const x = ctx.getText();
+    if (x == +x) {
+      // Decimal_number: Unsigned_number
+      this.valueStack.push(new Numeric(parseInt(x, 10), null, "decimal"));
+      return;
     }
+
+    let sizeStr = x.substring(0, x.indexOf("'"));
+    let size = sizeStr != "" ? parseInt(sizeStr) : null;
+
+    const valueStart = Math.max(x.indexOf("D", x.indexOf("d")));
+    if (valueStart == -1) throw new Error("exitDecimal: shouldn't be here");
+
+    this.valueStack.push(
+      new Numeric(parseInt(x.substring(valueStart), 10), size, "decimal")
+    );
+  }
+
+  exitBinary(ctx) {
+    const x = ctx.getText();
+
+    let sizeStr = x.substring(0, x.indexOf("'"));
+    let size = sizeStr != "" ? parseInt(sizeStr) : null;
+
+    const valueStart = Math.max(x.indexOf("B", x.indexOf("b")));
+    if (valueStart == -1) throw new Error("exitBinary: shouldn't be here");
+
+    this.valueStack.push(
+      new Numeric(parseInt(x.substring(valueStart), 2), size, "binary")
+    );
+  }
+
+  exitOctal(ctx) {
+    const x = ctx.getText();
+
+    let sizeStr = x.substring(0, x.indexOf("'"));
+    let size = sizeStr != "" ? parseInt(sizeStr) : null;
+
+    const valueStart = Math.max(x.indexOf("O", x.indexOf("o")));
+    if (valueStart == -1) throw new Error("exitOctal: shouldn't be here");
+
+    this.valueStack.push(
+      new Numeric(parseInt(x.substring(valueStart), 8), size, "octal")
+    );
+  }
+
+  exitHex(ctx) {
+    const x = ctx.getText();
+
+    let sizeStr = x.substring(0, x.indexOf("'"));
+    let size = sizeStr != "" ? parseInt(sizeStr) : null;
+
+    const valueStart = Math.max(x.indexOf("H", x.indexOf("h")));
+    if (valueStart == -1) throw new Error("exitHex: shouldn't be here");
+
+    this.valueStack.push(
+      new Numeric(parseInt(x.substring(valueStart), 16), size, "hex")
+    );
   }
 
   // test bench =============================================
@@ -469,15 +470,21 @@ atom
     const newClock = { time: time_stamp, assignments: [] };
     this.curModule.clock.push(newClock);
     if (ctx.time_assignment_list()) {
-    ctx
-      .time_assignment_list()
-      .time_assignment()
-      .forEach((x) => {
-        if (this.isInput(x.id.text))
-          newClock.assignments.push({ id: x.id.text, value: parseInt(x.val.text) });
-        else
-          this.addSemanticError(x.id, `'${x.id.text}' is not a valid main module input`);
-      });
+      ctx
+        .time_assignment_list()
+        .time_assignment()
+        .forEach(x => {
+          if (this.isInput(x.id.text))
+            newClock.assignments.push({
+              id: x.id.text,
+              value: parseInt(x.val.text)
+            });
+          else
+            this.addSemanticError(
+              x.id,
+              `'${x.id.text}' is not a valid main module input`
+            );
+        });
     }
   }
 
@@ -485,21 +492,27 @@ atom
 
   exitGate_instantiation(ctx) {
     const gateType = ctx.gate_type().getText();
-    const gateOutput = ctx.gateID.text; 
+    const gateOutput = ctx.gateID.text;
     const gateInputs = ctx.identifier_list().ids;
 
     // semantic error if any of the inputs are not defined
     gateInputs.forEach((gateInput, index) => {
       if (!this.isWireOrPort(gateInput.name)) {
-        const idctx = ctx.identifier_list().identifier(index); 
-        this.addSemanticError(idctx.symbol, `'${gateInput.name}' is not defined as a wire or module port`);
+        const idctx = ctx.identifier_list().identifier(index);
+        this.addSemanticError(
+          idctx.symbol,
+          `'${gateInput.name}' is not defined as a wire or module port`
+        );
       }
     });
 
     // semantic error if the output is not a wire or module output
     if (!this.isWireOrOutput(gateOutput)) {
-      const idctx = ctx.gateID; 
-      this.addSemanticError(idctx.symbol, `'${gateOutput}' is not defined as a wire or module output`);
+      const idctx = ctx.gateID;
+      this.addSemanticError(
+        idctx.symbol,
+        `'${gateOutput}' is not defined as a wire or module output`
+      );
     }
 
     this.curModule.instantiations.push({
@@ -508,7 +521,7 @@ atom
       gate: gateType,
       inputs: gateInputs,
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
-      sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
+      sourceStop: { column: ctx.stop.column, line: ctx.stop.line }
     });
   }
 
@@ -520,7 +533,7 @@ atom
       id: ctx.IDENTIFIER().getText(),
       n: 0,
       gates: [],
-      stack: [],
+      stack: []
     };
   }
 
@@ -560,7 +573,7 @@ atom
       gate: op,
       inputs: [left, right],
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
-      sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
+      sourceStop: { column: ctx.stop.column, line: ctx.stop.line }
     });
     this.assign.n = this.assign.n + 1;
     this.assign.stack.push(id);
@@ -578,14 +591,14 @@ atom
     const right = this.assign.stack.pop();
     const id = this.assign.id + "_" + this.assign.n;
     // console.log("exitNegateExpr: ", id, right);
-    this.curModule.wires.push({id, bitSize: 1}); // intermediary gates need a wire for namespace mapping
+    this.curModule.wires.push({ id, bitSize: 1 }); // intermediary gates need a wire for namespace mapping
     this.assign.gates.push({
       type: "gate",
       id,
       gate: "not",
       inputs: [right],
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
-      sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
+      sourceStop: { column: ctx.stop.column, line: ctx.stop.line }
     });
     this.assign.n = this.assign.n + 1;
     this.assign.stack.push(id);
@@ -593,14 +606,25 @@ atom
 
   // instances =========================================
 
+  enterModule_connections_list(ctx) {
+    console.log("enterModuleConnectionsList");
+  }
+
   exitModule_connections_list(ctx) {
-    ctx.connections = ctx.named_port_connection().map((x) => {
-      return { port: { id: x.portID.text, token: x.portID }, value: { id: x.value.value, token: x.value } };
-    });
+    console.log("exitModuleConnectionsList");
+    ctx.connections = ctx
+      .named_port_connection()
+      .reverse() // reverse in order to pop the identifiers in the correct order
+      .map(x => {
+        return {
+          port: { id: x.portID.text, token: x.portID },
+          value: { id: this.valueStack.pop(), token: x.value }
+        };
+      });
   }
 
   enterModule_instantiation(ctx) {
-    console.group("enterModule_instantiation: ", ctx.moduleID.text)
+    console.group("enterModule_instantiation: ", ctx.moduleID.text);
   }
 
   exitModule_instantiation(ctx) {
@@ -613,12 +637,15 @@ atom
       this.addSemanticError(ctx.moduleID, `Undefined module: '${moduleID}'`);
     }
 
-    console.log(`Module ${moduleID} connections: `, connections)
+    console.log(`Module ${moduleID} connections: `, connections);
 
     // check for valid connections
-    connections.forEach((connection) => {
+    connections.forEach(connection => {
       if (!this.isPortOf(connection.port.id, moduleID))
-        this.addSemanticError(connection.port.token, `Invalid port: '${connection.port.id}' is not defined in module '${moduleID}'`);
+        this.addSemanticError(
+          connection.port.token,
+          `Invalid port: '${connection.port.id}' is not defined in module '${moduleID}'`
+        );
       if (!this.isWireOrPort(connection.value.id.name))
         this.addSemanticError(
           connection.value.token,
@@ -631,12 +658,12 @@ atom
       type: "instance",
       id: instanceID,
       module: moduleID,
-      connections,
-    }
+      connections
+    };
 
     this.curModule.instantiations.push(newInstance);
 
-    console.log("newInstance: ", newInstance)
+    console.log("newInstance: ", newInstance);
     console.groupEnd();
   }
 }

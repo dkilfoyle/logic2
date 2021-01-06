@@ -8,9 +8,9 @@ const formatLookup = {
 };
 
 class Numeric {
-  constructor(decimalValue, size = 1, format = "decimal") {
+  constructor(decimalValue, size = null, format = "decimal") {
     this.decimalValue = decimalValue;
-    this.size = size;
+    this.size = size || bitSize(decimalValue);
     this.format = format;
   }
   setValue(newDecimalValue) {

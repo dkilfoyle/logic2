@@ -92,7 +92,7 @@ module_connections_list
 	;
 
 named_port_connection
-	:	'.' portID = IDENTIFIER '(' value = identifier ')'
+	:	'.' portID = IDENTIFIER '(' identifier ')'
 	;
 
 gate_instantiation
@@ -195,25 +195,14 @@ concatenation
 /* 8.3 Expressions ============================================== */
 
 expression
-	: factor																			# factorExpression
+	: number			  		  												# atomExpression
+	| identifier																	# atomExpression
+	| concatenation																# atomExpression
+	| '(' expression ')'													# parensExpression
+	| op=(PLUS | MINUS) expression                # unaryExpression
 	| expression op=(MUL | DIV) expression				# binaryExpression
 	| expression op=(PLUS | MINUS) expression			# binaryExpression
 	;
-
-factor
-	: op=(PLUS | MINUS) factor										# unaryExpression
-	| '(' expression ')'													# parenExpression
-	| atom																				# atomExpression
-	;
-
-/* 8.4 Primaries =============================================== */
-
-atom												
-	: number						#numberAtom
-	| identifier				#identifierAtom
-	| concatenation			#concatenationAtom
-	;
-
 
 /* 8.5 l values ================================================= */
 
@@ -235,14 +224,15 @@ binary_operator
 /* 8.7 Numbers  */
 
 number
-   : Decimal_number
-   | Octal_number
-   | Binary_number
-   | Hex_number
+   : Decimal_number		#decimal
+   | Octal_number			#octal
+   | Binary_number		#binary
+   | Hex_number				#hex
    ;
 
 Decimal_number
-   : Unsigned_number | (Size)? Decimal_base Unsigned_number
+   : Unsigned_number
+	 |(Size Decimal_base)? Unsigned_number
    ;
 
 Binary_number
