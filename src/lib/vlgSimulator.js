@@ -45,32 +45,40 @@ const evaluateGates = gates => {
       input.getValue(gate.instance, gatesLookup)
     );
 
-    if (["not", "buffer", "response", "portbuffer"].includes(logicFn)) {
-      if (inputs.length > 1) {
-        console.log(
-          "Gate evaluation error - 1 input only valid for not and buffer gates"
-        );
-        return;
-      }
+    if (
+      ["not", "buffer", "response", "portbuffer"].includes(logicFn) &&
+      inputs.length > 1
+    ) {
+      console.log(
+        "Gate evaluation error - 1 input only valid for not and buffer gates"
+      );
+      return false;
     }
 
     if (logicFn == "sevenseg" && inputs.length != 7) {
       console.log("Gate evaluation error - sevenseg must have 7 inputs");
-      return;
+      return false;
     }
 
-    if (logicFn == "reg") return;
+    if (logicFn == "reg") return true;
 
-    gate.state.setValue(
-      inputs.some(input => input === "x")
-        ? "x"
-        : logicFunctions[logicFn](inputs)
-    );
+    try {
+      gate.state.setValue(
+        inputs.some(input => input === "x")
+          ? "x"
+          : logicFunctions[logicFn](inputs)
+      );
+    } catch (e) {
+      logger(chalk.cyan("└── ") + chalk.white(`${gate.id} ` + e));
+      console.log(e);
+      return false;
+    }
+
+    return true;
   };
 
-  gates.forEach(gate => {
-    if (gate.logic === "control") return;
-    logicOperation(gate);
+  return gates.every(gate => {
+    return gate.logic === "control" ? true : logicOperation(gate);
   });
 };
 
@@ -88,9 +96,9 @@ const evaluateSensitivities = (namespace, sensitivities) => {
 };
 
 const evaluateStatementTree = (namespace, s) => {
-  if (s.type == "seq_block" || s.type == "root_block")
-    s.statements.forEach(ss => evaluateStatementTree(namespace, ss));
-  else if (s.type == "blocking_assignment") {
+  if (s.type == "seq_block" || s.type == "root_block") {
+    return s.statements.every(ss => evaluateStatementTree(namespace, ss));
+  } else if (s.type == "blocking_assignment") {
     // console.group(
     //   `eval blocking_assignment: ${s.lhs.toString()} = ${s.rhs.toString()}`
     // );
@@ -105,16 +113,18 @@ const evaluateStatementTree = (namespace, s) => {
       );
     } catch (e) {
       logger(
-        chalk.cyan("├── ") +
-          chalk.bgRed("Warning:") +
-          " " +
-          `${s.lhs.toString()} = ${s.rhs.toString()} ` +
+        chalk.cyan("└── ") +
+          chalk.white(`${s.lhs.toString()}=${s.rhs.toString()}: `) +
           e
       );
       console.log(e);
+      return false;
     }
+    return true;
     // console.log("res: ", s.lhs.getValue(namespace, gatesLookup));
     // console.groupEnd();
+  } else {
+    throw new Error(`unknown statement type: ${s.type}`);
   }
 };
 
@@ -140,10 +150,13 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
   });
 
   // process each instances initial section to set initial gate or register states
-  instances.forEach(instance => {
-    if (instance.initial)
-      evaluateStatementTree(instance.id, instance.initial.statementTree);
+  console.log("initial: ");
+  let initialRes = instances.every(instance => {
+    return instance.initial
+      ? evaluateStatementTree(instance.id, instance.initial.statementTree)
+      : true;
   });
+  if (!initialRes) return false;
 
   const maxClock = modulesLookup.Main.clock.reduce(
     (acc, val) => Math.max(val.time, acc),
@@ -157,15 +170,32 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
     newSimulation.time.push(clock);
 
     // assign control values if matching time point
-    modulesLookup.Main.clock.forEach(c => {
-      if (c.time == clock) {
-        c.assignments.forEach(a => {
-          // can only assign values to control types
-          if (gatesLookup["main_" + a.id].logic == "control")
-            gatesLookup["main_" + a.id].state.setValue(a.value);
-        });
-      }
+    let setupRes = modulesLookup.Main.clock.every(c => {
+      return c.time == clock
+        ? c.assignments.every(a => {
+            // can only assign values to control types
+            if (!gatesLookup["main_" + a.id].logic == "control") {
+              logger(
+                "Can only assign simulation values to inputs of Main: " + a.id
+              );
+              console.log("Error: ", a.id);
+              return false;
+            }
+            try {
+              gatesLookup["main_" + a.id].state.setValue(a.value);
+            } catch (e) {
+              logger(`${c.time}=${a.id}: ${e}`);
+              console.log(e);
+              return false;
+            }
+            return true;
+          })
+        : true;
     });
+    if (!setupRes) {
+      console.log("setupres false");
+      return false;
+    }
 
     // store tick or tock
     if (gatesLookup["main_clock"])
@@ -175,15 +205,17 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
 
     // run gate evaluation and instance always for this time step (not t=0)
     for (let i = 0; i < EVALS_PER_STEP; i++) {
-      evaluateGates(gates);
+      let gatesRes = evaluateGates(gates);
+      console.log(gatesRes);
+      if (!gatesRes) return false;
       // run always section for each instance
-      instances.forEach(instance => {
-        if (
-          instance.always &&
+      let alwaysRes = instances.every(instance => {
+        return instance.always &&
           evaluateSensitivities(instance.id, instance.always.sensitivities)
-        )
-          evaluateStatementTree(instance.id, instance.always.statementTree);
+          ? evaluateStatementTree(instance.id, instance.always.statementTree)
+          : true;
       });
+      if (!alwaysRes) return false;
     }
 
     // and store gate results in newSimulation

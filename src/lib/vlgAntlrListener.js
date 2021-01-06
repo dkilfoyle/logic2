@@ -493,7 +493,7 @@ class Listener extends vlgListener {
   exitGate_instantiation(ctx) {
     const gateType = ctx.gate_type().getText();
     const gateOutput = ctx.gateID.text;
-    const gateInputs = ctx.identifier_list().ids;
+    const gateInputs = this.valueStack.pop();
 
     // semantic error if any of the inputs are not defined
     gateInputs.forEach((gateInput, index) => {

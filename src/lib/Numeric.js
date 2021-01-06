@@ -7,6 +7,16 @@ const formatLookup = {
   octal: 8
 };
 
+class BitSizeError {
+  constructor(msg) {
+    this.msg = msg;
+    this.type = "BitSizeError";
+  }
+  toString() {
+    return this.msg;
+  }
+}
+
 class Numeric {
   constructor(decimalValue, size = null, format = "decimal") {
     this.decimalValue = decimalValue;
@@ -15,10 +25,10 @@ class Numeric {
   }
   setValue(newDecimalValue) {
     if (bitSize(newDecimalValue) > this.size)
-      throw new Error(
-        `Numeric.setValue(${newDecimalValue}) bit size (${bitSize(
+      throw new BitSizeError(
+        `BitSizeMismatch: ${newDecimalValue}(${bitSize(
           newDecimalValue
-        )}) exceeds numeric size (${this.size})`
+        )} bits) => (${this.size} bits)`
       );
     else this.decimalValue = newDecimalValue;
   }

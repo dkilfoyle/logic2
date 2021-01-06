@@ -383,13 +383,15 @@ export default {
         this.termWriteln
       );
 
-      this.termWriteln(
-        chalk.cyan.inverse(" DONE ") + "  Simulated successfully"
-      );
+      if (simulateResult) {
+        this.termWriteln(
+          chalk.cyan.inverse(" DONE ") + "  Simulated successfully"
+        );
 
-      this.$store.commit("setSimulateResult", simulateResult);
-      this.$store.commit("setStatus", "Simulation OK");
-      console.log("Simulation: ", simulateResult);
+        this.$store.commit("setSimulateResult", simulateResult);
+        this.$store.commit("setStatus", "Simulation OK");
+        console.log("Simulation: ", simulateResult);
+      } else this.termWriteln(chalk.bgRed(" ERROR ") + "  Simulation aborted");
     },
     about() {
       this.termWriteln(chalk.bold.cyan("Logic2: A logic circuit simulator"));

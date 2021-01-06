@@ -49,7 +49,7 @@ class Operation {
     }
   }
   toString() {
-    return `${this.lhs.toString()} ${opLookup[this.op]} ${this.rhs.toString()}`;
+    return `${this.lhs.toString()}${opLookup[this.op]}${this.rhs.toString()}`;
   }
 }
 
