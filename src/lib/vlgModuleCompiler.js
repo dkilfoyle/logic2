@@ -45,9 +45,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     varMap[port.id] = `${namespace}_${port.id}`;
   });
 
-  console.log("varMap: ", varMap);
-
-  // console.log("-- instance varMap: ", varMap);
+  // console.log("varMap: ", varMap);
 
   // create all the gates defined in the instance's module statements
   // gate declaration has the form { id: "X", gate: "and", inputs: ["a", "b"], type: "gate"}
@@ -64,7 +62,6 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         state: new Numeric(0),
         type: "gate"
       };
-      console.log("gates: newGate: ", gateDeclaration.id, newGate);
       gates.push(newGate);
       newInstance.gates.push(newGate.id);
     });
@@ -78,7 +75,6 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       state: new Numeric(0, reg.bitSize),
       type: "gate"
     };
-    console.log("gates: newReg: ", reg.id, newGate);
     gates.push(newGate);
     newInstance.gates.push(newGate.id);
   });
@@ -113,7 +109,6 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
           type: "gate"
         };
 
-        console.log("gates: main: newport: ", port.id, newGate);
         gates.push(newGate);
         newInstance.gates.push(newGate.id);
       }
@@ -198,7 +193,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         newInstance.outputs.push(portGate.id);
       }
     }
-    console.log("portGate: ", port.id, port.direction, portGate);
+    // console.log("portGate: ", port.id, port.direction, portGate);
 
     gates.push(portGate);
   });

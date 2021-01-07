@@ -6,6 +6,7 @@
       @activated="onLuminoActivated"
       @deleted="onLuminoDeleted"
       @newFile="addFileTab('Scratch')"
+      @openLibrary="$refs.lumino.shellWidget.activateById('fileTree')"
       @compile="compile"
       @simulate="simulate"
       @about="about"
@@ -416,7 +417,18 @@ body {
   overflow: hidden;
 }
 
-.console {
+.skinny-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+
+  /* border-left: #4a4a4a 1px solid; */
+}
+
+.skinny-scroll::-webkit-scrollbar-thumb {
+  background-color: #808080;
+  /* border-left: #4a4a4a 1px solid; */
+  border-radius: 6px;
+  fill-opacity: 0.5;
 }
 
 .fileBrowserIcon::before {
@@ -544,6 +556,15 @@ body {
 }
 .dk-pad-t20 {
   padding-top: 20px;
+}
+.dk-pad-b5 {
+  padding-bottom: 5px;
+}
+.dk-pad-b10 {
+  padding-bottom: 10px;
+}
+.dk-pad-b20 {
+  padding-bottom: 20px;
 }
 .dk-pad-x5 {
   padding-left: 5px;

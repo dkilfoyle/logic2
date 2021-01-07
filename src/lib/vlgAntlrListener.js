@@ -263,7 +263,7 @@ class Listener extends vlgListener {
   }
 
   enterBlocking_assignment(ctx) {
-    console.group(`Blocking_assignment: ${ctx.getText()}`);
+    console.groupCollapsed(`Blocking_assignment: ${ctx.getText()}`);
     if (!this.expressionStack == null)
       throw new Error(
         `enterBlocking_assignment: expressionStack should be null, not ${this.expressionStack}`
@@ -280,7 +280,7 @@ class Listener extends vlgListener {
       lhs: this.valueStack.pop() // pop the ids in expressions first
     };
     this.statementCurrent.statements.push(newStatement);
-    console.log("Adding statement: ", newStatement);
+    console.log("Statement: ", newStatement);
     console.groupEnd();
   }
 
@@ -352,7 +352,6 @@ class Listener extends vlgListener {
   // | IDENTIFIER '[' expression ':' expression ']'		#idRange
 
   exitIdPlain(ctx) {
-    console.log("pushing ID", ctx.IDENTIFIER().getText());
     this.valueStack.push(new Variable(ctx.IDENTIFIER().getText(), null));
   }
 
@@ -606,12 +605,7 @@ class Listener extends vlgListener {
 
   // instances =========================================
 
-  enterModule_connections_list(ctx) {
-    console.log("enterModuleConnectionsList");
-  }
-
   exitModule_connections_list(ctx) {
-    console.log("exitModuleConnectionsList");
     ctx.connections = ctx
       .named_port_connection()
       .reverse() // reverse in order to pop the identifiers in the correct order
@@ -624,7 +618,7 @@ class Listener extends vlgListener {
   }
 
   enterModule_instantiation(ctx) {
-    console.group("enterModule_instantiation: ", ctx.moduleID.text);
+    console.groupCollapsed("enterModule_instantiation: ", ctx.moduleID.text);
   }
 
   exitModule_instantiation(ctx) {

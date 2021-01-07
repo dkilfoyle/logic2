@@ -202,7 +202,7 @@ export default {
 
       // await here
       this.buildInstance(this.elkData);
-      console.log("elkData: ", this.stripReactive(this.elkData));
+      // console.log("elkData: ", this.stripReactive(this.elkData));
 
       const filter = this.g.defs
         .append("filter")
