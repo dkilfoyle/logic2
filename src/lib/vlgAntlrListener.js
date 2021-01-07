@@ -7,6 +7,7 @@ import { vlgListener } from "../grammar/vlgListener.js";
 import { vlgParser } from "../grammar/vlgParser.js";
 import Numeric from "./Numeric.js";
 import Operation from "./Operation.js";
+import GateOperation from "./GateOperation.js";
 import Variable from "./Variable.js";
 
 class Listener extends vlgListener {
@@ -15,7 +16,7 @@ class Listener extends vlgListener {
     this.modules = null;
     this.curModule = null;
     this.errors = [];
-    this.assign = {};
+    // this.assign = {};
     this.statementRoot = null;
     this.statementCurrent = null;
     this.expressionStack = null;
@@ -118,7 +119,8 @@ class Listener extends vlgListener {
       ports: [],
       wires: [],
       regs: [],
-      instantiations: []
+      instantiations: [],
+      netAssignments: []
     };
     console.group("enterModule: ", ctx.IDENTIFIER().getText());
   }
@@ -145,6 +147,7 @@ class Listener extends vlgListener {
       wires: [],
       regs: [],
       instantiations: [],
+      netAssignments: [],
       clock: []
     };
     console.group("enterModule: Main ");
@@ -304,46 +307,57 @@ class Listener extends vlgListener {
   // Expressions ============================================
 
   // expression
-  // 	: numberStack																	# atomExpression
-  // 	| identifierStack															# atomExpression
+  // 	: number    																	# atomExpression
+  // 	| identifier    															# atomExpression
   // 	| concatenation																# atomExpression
-  //   | '(' expression ')'													# parensExpression
-  //   | op=(PLUS | MINUS) expression                # unaryExpression
+  //  | '(' ex=expression ')'												# parensExpression
+  //  | op=(PLUS | MINUS) expression                # unaryExpression
   // 	| expression op=(MUL | DIV) expression				# binaryExpression
   // 	| expression op=(PLUS | MINUS) expression			# binaryExpression
   // 	;
+
+  exitAtomExpr(ctx) {
+    //  console.log("atomExpression value stack: ", this.valueStack)
+    this.expressionStack.push(this.valueStack.pop());
+  }
+
+  exitParensExpr(ctx) {
+    const lhs = this.expressionStack.pop();
+    this.expressionStack.push(new Operation(lhs, "parens", null));
+  }
+
+  exitUnaryExpr(ctx) {
+    const lhs = this.expression.stack.pop();
+    this.expressionStack.push(new Operation(lhs, ctx.op.text, null));
+  }
+
+  exitBinaryExpr(ctx) {
+    //  console.log("binaryExpression stack: ", this.expressionStack)
+    const rhs = this.expressionStack.pop();
+    const lhs = this.expressionStack.pop();
+    this.expressionStack.push(new Operation(lhs, ctx.op.getText(), rhs));
+  }
 
   exitAtomExpression(ctx) {
     //  console.log("atomExpression value stack: ", this.valueStack)
     this.expressionStack.push(this.valueStack.pop());
   }
 
+  exitParensExpression(ctx) {
+    const lhs = this.expressionStack.pop();
+    this.expressionStack.push(new Operation(lhs, "parens", null));
+  }
+
   exitUnaryExpression(ctx) {
     const lhs = this.expression.stack.pop();
-    const op = this.op.ruleIndex == vlgParser.RULE_PLUS ? "add" : "sub";
-    this.expressionStack.push(new Operation(lhs, op, null));
+    this.expressionStack.push(new Operation(lhs, ctx.op.text, null));
   }
 
   exitBinaryExpression(ctx) {
     //  console.log("binaryExpression stack: ", this.expressionStack)
     const rhs = this.expressionStack.pop();
     const lhs = this.expressionStack.pop();
-    let op;
-    switch (ctx.op.text) {
-      case "+":
-        op = "add";
-        break;
-      case "-":
-        op = "sub";
-        break;
-      case "*":
-        op = "mul";
-        break;
-      case "/":
-        op = "div";
-        break;
-    }
-    this.expressionStack.push(new Operation(lhs, op, rhs));
+    this.expressionStack.push(new Operation(lhs, ctx.op.text, rhs));
   }
 
   // identifier
@@ -495,15 +509,16 @@ class Listener extends vlgListener {
     const gateInputs = this.valueStack.pop();
 
     // semantic error if any of the inputs are not defined
-    gateInputs.forEach((gateInput, index) => {
-      if (!this.isWireOrPort(gateInput.name)) {
-        const idctx = ctx.identifier_list().identifier(index);
-        this.addSemanticError(
-          idctx.symbol,
-          `'${gateInput.name}' is not defined as a wire or module port`
-        );
-      }
-    });
+    if (gateInputs)
+      gateInputs.forEach((gateInput, index) => {
+        if (!this.isWireOrPort(gateInput.name)) {
+          const idctx = ctx.identifier_list().identifier(index);
+          this.addSemanticError(
+            idctx.symbol,
+            `'${gateInput.name}' is not defined as a wire or module port`
+          );
+        }
+      });
 
     // semantic error if the output is not a wire or module output
     if (!this.isWireOrOutput(gateOutput)) {
@@ -526,8 +541,31 @@ class Listener extends vlgListener {
 
   // assigns ===========================================
 
-  enterAssignment(ctx) {
-    // console.log("enterAssignment: ", ctx.IDENTIFIER().getText());
+  enterNet_assignment(ctx) {
+    console.groupCollapsed(`netAssignment: ${ctx.getText()}`);
+    if (!this.expressionStack == null)
+      throw new Error(
+        `enterNet_assignment: expressionStack should be null, not ${this.expressionStack}`
+      );
+    this.expressionStack = [];
+  }
+
+  exitNet_assignment(ctx) {
+    const lvalue = this.valueStack.pop();
+    const expr = this.expressionStack.pop();
+    this.curModule.netAssignments.push({
+      id: lvalue,
+      operationTree: expr
+    });
+    console.log(
+      this.curModule.netAssignments[this.curModule.netAssignments.length - 1]
+    );
+    console.groupEnd();
+  }
+
+  /*
+  enterNet_assignment(ctx) {
+    console.log("enterAssignment: ", ctx.IDENTIFIER().getText());
     this.assign = {
       id: ctx.IDENTIFIER().getText(),
       n: 0,
@@ -536,33 +574,18 @@ class Listener extends vlgListener {
     };
   }
 
-  exitAssignment(ctx) {
+  exitNet_assignment(ctx) {
     this.assign.gates[this.assign.gates.length - 1].id = this.assign.id;
+    console.log("exitAssignment: ", this.assign);
     this.curModule.instantiations.push(...this.assign.gates);
   }
 
   exitBinaryExpr(ctx) {
-    const right = this.assign.stack.pop();
-    const left = this.assign.stack.pop();
-    let op = ctx.binary_operator().getText();
-    switch (op) {
-      case "&":
-        op = "and";
-        break;
-      case "~&":
-        op = "nand";
-        break;
-      case "|":
-        op = "or";
-        break;
-      case "~|":
-        op = "nor";
-        break;
-      case "^":
-        op = "xor";
-        break;
-      default:
-        throw new Error("invalid assign binary operator");
+    const right = this.expressionStack.pop();
+    const left = this.expressionStack.pop();
+    let op = ctx.binary_gate_op().getText();
+    this.expressionStack.push(new GateOperation(lhs, op, rhs));
+
     }
     const id = this.assign.id + this.assign.n;
     this.curModule.wires.push(id); // intermediary gates need a wire for namespace mapping
@@ -602,6 +625,7 @@ class Listener extends vlgListener {
     this.assign.n = this.assign.n + 1;
     this.assign.stack.push(id);
   }
+  */
 
   // instances =========================================
 

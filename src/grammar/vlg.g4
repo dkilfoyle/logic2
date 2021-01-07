@@ -41,7 +41,7 @@ port_direction: 'input' | 'output';
 module_item
 	:	net_declaration				# net
 	| reg_declaration 			# reg
-	| continuous_assign			# assign
+	| net_assignment				# assign
 	| gate_instantiation		# gate
 	| module_instantiation	# instance
 	| initial_construct 		# initial
@@ -96,7 +96,7 @@ named_port_connection
 	;
 
 gate_instantiation
-	:	gate_type '(' gateID = IDENTIFIER ',' ids = identifier_list ')' ';'
+	:	gate_type '(' gateID = IDENTIFIER (',' ids = identifier_list)? ')' ';'
 	;
 
 gate_type
@@ -115,25 +115,17 @@ gate_type
 	| 'ledbar'
 	;
 
-continuous_assign
-	: 'assign' list_of_net_assignments ';'
-	;
-
-list_of_net_assignments
-	: net_assignment (',' net_assignment)*
-	;
-
 net_assignment
-	: lvalue '=' expr
+	: 'assign' lvalue '=' expr ';'
 	;
 
-expr // For gate assign only
-	: NEG expr										# negateExpr
-	| expr binary_gate_op expr		# binaryExpr
-	| '(' expr ')'								# parenExpr
-	| IDENTIFIER									# idExpr;
+// expr // For gate assign only
+// 	: NEG expr										# negateExpr
+// 	| expr binary_gate_op expr		# binaryExpr
+// 	| '(' expr ')'								# parenExpr
+// 	| IDENTIFIER									# idExpr;
 
-binary_gate_op: AND | NAND | OR | NOR | XOR;	
+// binary_gate_op: AND | NAND | OR | NOR | XOR;	
 
 /* 6.2 Procedural Blocks ============================================= */
 
@@ -194,7 +186,7 @@ concatenation
 
 /* 8.3 Expressions ============================================== */
 
-expression
+expression // behavioural
 	: number			  		  												# atomExpression
 	| identifier																	# atomExpression
 	| concatenation																# atomExpression
@@ -203,6 +195,16 @@ expression
 	| expression op=(MUL | DIV) expression				# binaryExpression
 	| expression op=(PLUS | MINUS) expression			# binaryExpression
 	;
+
+expr // gate
+	: identifier																	# atomExpr
+	| '(' expr ')'																# parensExpr
+	| op=unary_gate_op expr												# unaryExpr
+	| expr op=binary_gate_op expr									# binaryExpr
+	;
+	
+binary_gate_op: AND | NAND | OR | NOR | XOR;	
+unary_gate_op: NOT;	
 
 /* 8.5 l values ================================================= */
 

@@ -5,22 +5,56 @@ const opLookup = {
   add: "+",
   sub: "-",
   mul: "*",
-  div: "/"
+  div: "/",
+  and: "&",
+  nand: "~&",
+  or: "|",
+  nor: "~|",
+  xor: "^"
 };
 
 class Operation {
   constructor(lhs, op, rhs = null) {
     if (!(lhs instanceof Numeric || lhs instanceof Variable))
       throw new Error(`Operation constructor: invalid lhs ${lhs}`);
-    if (rhs != null) {
+    if (rhs != null)
       if (!(rhs instanceof Numeric || rhs instanceof Variable))
         throw new Error(`Operation constructor: invalid rhs ${rhs}`);
-    }
-    if (!["add", "sub", "mul", "div"].includes(op))
-      throw new Error(`Operation constructor: invalid op ${op}`);
+
     this.lhs = lhs;
     this.rhs = rhs;
-    this.op = op;
+
+    switch (op) {
+      case "+":
+        this.op = "add";
+        break;
+      case "-":
+        this.op = "sub";
+        break;
+      case "*":
+        this.op = "mul";
+        break;
+      case "/":
+        this.op = "div";
+        break;
+      case "&":
+        this.op = "and";
+        break;
+      case "~&":
+        this.op = "nand";
+        break;
+      case "|":
+        this.op = "or";
+        break;
+      case "~|":
+        this.op = "nor";
+        break;
+      case "^":
+        this.op = "xor";
+        break;
+      default:
+        throw new Error(`Operation constructor: invalid op ${op}`);
+    }
   }
   getValue(namespace, gatesLookup) {
     switch (this.op) {
