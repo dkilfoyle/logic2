@@ -70,33 +70,33 @@ class Operation {
         this.op = "not";
         break;
       case "~":
-        this.op = "inv";
+        this.op = "not";
         break;
       default:
         throw new Error(`Operation constructor: invalid op ${op}`);
     }
   }
-  getValue(namespace, gatesLookup) {
+  getValue(gatesLookup, namespace) {
     switch (this.op) {
       case "add":
         return this.rhs == null // unary +
-          ? this.lhs.getValue(namespace, gatesLookup)
-          : this.lhs.getValue(namespace, gatesLookup) +
-              this.rhs.getValue(namespace, gatesLookup);
+          ? this.lhs.getValue(gatesLookup, namespace)
+          : this.lhs.getValue(gatesLookup, namespace) +
+              this.rhs.getValue(gatesLookup, namespace);
       case "sub":
         return this.rhs == null // unary -(
-          ? this.lhs.getValue(namespace, gatesLookup) * -1
-          : this.lhs.getValue(namespace, gatesLookup) -
-              this.rhs.getValue(namespace, gatesLookup);
+          ? this.lhs.getValue(gatesLookup, namespace) * -1
+          : this.lhs.getValue(gatesLookup, namespace) -
+              this.rhs.getValue(gatesLookup, namespace);
       case "mul":
         return (
-          this.lhs.getValue(namespace, gatesLookup) *
-          this.rhs.getValue(namespace, gatesLookup)
+          this.lhs.getValue(gatesLookup, namespace) *
+          this.rhs.getValue(gatesLookup, namespace)
         );
       case "div":
         return (
-          this.lhs.getValue(namespace, gatesLookup) /
-          this.rhs.getValue(namespace, gatesLookup)
+          this.lhs.getValue(gatesLookup, namespace) /
+          this.rhs.getValue(gatesLookup, namespace)
         );
       default:
         throw new Error(`Operation getValue: invalid op ${this.op}`);

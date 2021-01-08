@@ -49,16 +49,18 @@ class Variable {
     return `<span style="font-size:6pt">${this.namespace ||
       namespace}_</span><span>${this.toString()}</span>`;
   }
-  setValue(gatesLookup, val) {
-    const gate = gatesLookup[this.id];
+  setValue(gatesLookup, val, namespace = null) {
+    let id = namespace ? namespace + "_" + this.name : this.id;
+    const gate = gatesLookup[id];
     if (!gate)
-      throw new Error(`Variable.setValue cannot find gate with id ${this.id}`);
+      throw new Error(`Variable.setValue cannot find gate with id ${id}`);
     gate.state.setValue(val);
   }
-  getValue(gatesLookup) {
-    const gate = gatesLookup[this.id];
+  getValue(gatesLookup, namespace = null) {
+    let id = namespace ? namespace + "_" + this.name : this.id;
+    const gate = gatesLookup[id];
     if (!gate)
-      throw new Error(`Variable.getValue cannot find gate with id ${this.id}`);
+      throw new Error(`Variable.getValue cannot find gate with id ${id}`);
 
     switch (this.offsetType) {
       case "none":

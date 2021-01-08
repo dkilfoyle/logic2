@@ -68,9 +68,8 @@ const evaluateGates = gates => {
           : logicFunctions[logicFn](inputs)
       );
     } catch (e) {
-      console.log(gate);
       logger(chalk.cyan("└── ") + chalk.white(`${gate.id} ` + e));
-      console.log(e);
+      console.log(e, gate);
       return false;
     }
 
@@ -82,9 +81,9 @@ const evaluateGates = gates => {
   });
 };
 
-const evaluateSensitivities = sensitivities => {
+const evaluateSensitivities = (sensitivities, namespace) => {
   return sensitivities.some(sens => {
-    const current = sens.id.getValue(gatesLookup);
+    const current = sens.id.getValue(gatesLookup, namespace);
     const edge =
       sens.last == 0 && current == 1
         ? "posedge"
@@ -95,18 +94,16 @@ const evaluateSensitivities = sensitivities => {
   });
 };
 
-const evaluateStatementTree = s => {
-  if (s.type == "seq_block" || s.type == "root_block") {
-    return s.statements.every(ss => evaluateStatementTree(ss));
+const evaluateStatementTree = (s, namespace) => {
+  if (s.type == "block") {
+    return s.statements.every(ss => evaluateStatementTree(ss, namespace));
   } else if (s.type == "blocking_assignment") {
-    // console.group(
-    //   `eval blocking_assignment: ${s.lhs.toString()} = ${s.rhs.toString()}`
-    // );
-    // console.log("lhs gate: ", gatesLookup[s.lhs.id(namespace)]);
-    // console.log("lhs: ", s.lhs, s.lhs.getValue(namespace, gatesLookup));
-    // console.log("rhs: ", s.rhs, s.rhs.getValue(namespace, gatesLookup));
     try {
-      s.lhs.setValue(gatesLookup, s.rhs.getValue(gatesLookup));
+      s.lhs.setValue(
+        gatesLookup,
+        s.rhs.getValue(gatesLookup, namespace),
+        namespace
+      );
     } catch (e) {
       logger(
         chalk.cyan("└── ") +
@@ -117,8 +114,6 @@ const evaluateStatementTree = s => {
       return false;
     }
     return true;
-    // console.log("res: ", s.lhs.getValue(namespace, gatesLookup));
-    // console.groupEnd();
   } else {
     throw new Error(`unknown statement type: ${s.type}`);
   }
@@ -149,7 +144,7 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
   console.log("initial: ");
   let initialRes = instances.every(instance => {
     return instance.initial
-      ? evaluateStatementTree(instance.initial.statementTree)
+      ? evaluateStatementTree(instance.initial.statementTree, instance.id)
       : true;
   });
   if (!initialRes) return false;
@@ -202,13 +197,12 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
     // run gate evaluation and instance always for this time step (not t=0)
     for (let i = 0; i < EVALS_PER_STEP; i++) {
       let gatesRes = evaluateGates(gates);
-      console.log(gatesRes);
       if (!gatesRes) return false;
       // run always section for each instance
       let alwaysRes = instances.every(instance => {
         return instance.always &&
-          evaluateSensitivities(instance.always.sensitivities)
-          ? evaluateStatementTree(instance.always.statementTree)
+          evaluateSensitivities(instance.always.sensitivities, instance.id)
+          ? evaluateStatementTree(instance.always.statementTree, instance.id)
           : true;
       });
       if (!alwaysRes) return false;
@@ -224,7 +218,7 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
     instances.forEach(instance => {
       if (instance.always) {
         instance.always.sensitivities.forEach(sensitivity => {
-          sensitivity.last = sensitivity.id.getValue(gatesLookup);
+          sensitivity.last = sensitivity.id.getValue(gatesLookup, instance.id);
         });
       }
     });

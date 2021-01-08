@@ -1,7 +1,7 @@
 export const SourceFiles = {
   BitAdder: require("./1bitadder.v").default,
   DFF: require("./dff.v").default,
-  Scratch: require("./scratch2.v").default,
+  Scratch: require("./scratch.v").default,
   // Scratch: require("./dflipflopb.v").default,
   OneHotDecoder: require("./onehotdecoder.v").default,
   SevenSeg: require("./7seg.v").default,

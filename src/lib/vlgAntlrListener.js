@@ -7,8 +7,9 @@ import { vlgListener } from "../grammar/vlgListener.js";
 import { vlgParser } from "../grammar/vlgParser.js";
 import Numeric from "./Numeric.js";
 import Operation from "./Operation.js";
-import GateOperation from "./GateOperation.js";
 import Variable from "./Variable.js";
+
+const strip = x => JSON.parse(JSON.stringify(x));
 
 class Listener extends vlgListener {
   constructor() {
@@ -16,11 +17,9 @@ class Listener extends vlgListener {
     this.modules = null;
     this.curModule = null;
     this.errors = [];
-    // this.assign = {};
-    this.statementRoot = null;
-    this.statementCurrent = null;
-    this.expressionStack = null;
+    this.expressionStack = [];
     this.valueStack = [];
+    this.statementBlockStack = [];
   }
 
   // utils
@@ -201,12 +200,6 @@ class Listener extends vlgListener {
   }
 
   enterInitial_construct(ctx) {
-    // this.statementRoot = {
-    //   type: "root_block",
-    //   parent: null,
-    //   statements: []
-    // };
-    // this.statementCurrent = this.statementRoot;
     if (this.statementBlockStack.length > 0)
       throw new Error("enterInitial: statementBlockStack should be empty");
   }
@@ -215,19 +208,12 @@ class Listener extends vlgListener {
     this.curModule.initial = {
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
       sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
-      // statementTree: this.statementRoot
       statementTree: this.statementBlockStack.pop()
     };
     console.log("initial = ", this.curModule.initial);
   }
 
   enterAlways_construct(ctx) {
-    // this.statementRoot = {
-    //   type: "root_block",
-    //   parent: null,
-    //   statements: []
-    // };
-    // this.statementCurrent = this.statementRoot;
     if (this.statementBlockStack.length > 0)
       throw new Error("enterAlways: statementBlockStack should be empty");
   }
@@ -236,7 +222,6 @@ class Listener extends vlgListener {
     this.curModule.always = {
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
       sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
-      // statementTree: this.statementRoot
       statementTree: this.statementBlockStack.pop()
     };
 
@@ -261,23 +246,13 @@ class Listener extends vlgListener {
     console.log("always = ", this.curModule.always);
   }
 
-  enterStatement(ctx) {
-    console.group(`statement: ${ctx.getText()}`);
-  }
-
-  exitStatement(ctx) {
-    console.log("exitStatement: description: ", this.statementCurrent);
-    console.groupEnd();
-    // this.statementCurrent = this.statementCurrent.parent;
-  }
-
   enterStatement_block(ctx) {
     this.statementBlockStack.push({ type: "block", statements: [] });
   }
 
   enterBlocking_assignment(ctx) {
     console.groupCollapsed(`Blocking_assignment: ${ctx.getText()}`);
-    if (!this.expressionStack.length > 0)
+    if (this.expressionStack.length > 0)
       throw new Error(
         `enterBlocking_assignment: expressionStack should be empty, not ${this.expressionStack}`
       );
@@ -291,30 +266,12 @@ class Listener extends vlgListener {
       rhs: this.expressionStack.pop(),
       lhs: this.valueStack.pop() // pop the ids in expressions first
     };
-    // this.statementCurrent.statements.push(newStatement);
-    this.stackmentBlockStack[
+    this.statementBlockStack[
       this.statementBlockStack.length - 1
     ].statements.push(newStatement);
-    console.log("Statement: ", newStatement);
+    console.log("Statement: ", strip(newStatement));
     console.groupEnd();
   }
-
-  // enterSeq_block(ctx) {
-  //   console.group(`Seq_block: ", ${ctx.getText()}`);
-  //   const newSeqBlock = {
-  //     type: "seq_block",
-  //     parent: this.statementCurrent,
-  //     statements: []
-  //   };
-  //   this.statementCurrent.statements.push(newSeqBlock);
-  //   this.statementCurrent = newSeqBlock;
-  // }
-
-  // exitSeq_block(ctx) {
-  //   console.log("Statements: ", this.statementCurrent.statements);
-  //   console.groupEnd();
-  //   this.statementCurrent = this.statementCurrent.parent;
-  // }
 
   // Expressions ============================================
 
@@ -555,11 +512,10 @@ class Listener extends vlgListener {
 
   enterNet_assignment(ctx) {
     console.groupCollapsed(`netAssignment: ${ctx.getText()}`);
-    if (!this.expressionStack == null)
+    if (this.expressionStack.length > 0)
       throw new Error(
-        `enterNet_assignment: expressionStack should be null, not ${this.expressionStack}`
+        `enterNet_assignment: expressionStack should be empty, not ${this.expressionStack}`
       );
-    this.expressionStack = [];
   }
 
   exitNet_assignment(ctx) {
@@ -570,74 +526,12 @@ class Listener extends vlgListener {
       operationTree: expr
     });
     console.log(
-      this.curModule.netAssignments[this.curModule.netAssignments.length - 1]
+      strip(
+        this.curModule.netAssignments[this.curModule.netAssignments.length - 1]
+      )
     );
     console.groupEnd();
   }
-
-  /*
-  enterNet_assignment(ctx) {
-    console.log("enterAssignment: ", ctx.IDENTIFIER().getText());
-    this.assign = {
-      id: ctx.IDENTIFIER().getText(),
-      n: 0,
-      gates: [],
-      stack: []
-    };
-  }
-
-  exitNet_assignment(ctx) {
-    this.assign.gates[this.assign.gates.length - 1].id = this.assign.id;
-    console.log("exitAssignment: ", this.assign);
-    this.curModule.instantiations.push(...this.assign.gates);
-  }
-
-  exitBinaryExpr(ctx) {
-    const right = this.expressionStack.pop();
-    const left = this.expressionStack.pop();
-    let op = ctx.binary_gate_op().getText();
-    this.expressionStack.push(new GateOperation(lhs, op, rhs));
-
-    }
-    const id = this.assign.id + this.assign.n;
-    this.curModule.wires.push(id); // intermediary gates need a wire for namespace mapping
-    this.assign.gates.push({
-      type: "gate",
-      id,
-      gate: op,
-      inputs: [left, right],
-      sourceStart: { column: ctx.start.column, line: ctx.start.line },
-      sourceStop: { column: ctx.stop.column, line: ctx.stop.line }
-    });
-    this.assign.n = this.assign.n + 1;
-    this.assign.stack.push(id);
-  }
-
-  exitIdExpr(ctx) {
-    const id = ctx.IDENTIFIER().getText();
-    if (!this.isWireOrPort(id)) {
-      this.addSemanticError(ctx.IDENTIFIER(), `Undefined variable: '${id}'`);
-    }
-    this.assign.stack.push(id);
-  }
-
-  exitNegateExpr(ctx) {
-    const right = this.assign.stack.pop();
-    const id = this.assign.id + "_" + this.assign.n;
-    // console.log("exitNegateExpr: ", id, right);
-    this.curModule.wires.push({ id, bitSize: 1 }); // intermediary gates need a wire for namespace mapping
-    this.assign.gates.push({
-      type: "gate",
-      id,
-      gate: "not",
-      inputs: [right],
-      sourceStart: { column: ctx.start.column, line: ctx.start.line },
-      sourceStop: { column: ctx.stop.column, line: ctx.stop.line }
-    });
-    this.assign.n = this.assign.n + 1;
-    this.assign.stack.push(id);
-  }
-  */
 
   // instances =========================================
 
