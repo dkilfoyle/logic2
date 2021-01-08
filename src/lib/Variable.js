@@ -27,15 +27,13 @@ class Variable {
     this.offset = offset;
     this.namespace = namespace;
   }
-  id(namespace = null) {
-    let _namespace = this.namespace || namespace; // default to this.namespace if it exists
-    if (_namespace === null)
+  instance(namespace) {
+    return new Variable(this.name, this.offset, namespace);
+  }
+  get id() {
+    if (this.namespace === null)
       throw new Error(`Variable.id ${this.name} missing namespace`);
-    if (typeof _namespace != "string")
-      throw new Error(
-        `Variable.id ${this.name} invalid namespace ${_namespace}`
-      );
-    return _namespace + "_" + this.name;
+    return this.namespace + "_" + this.name;
   }
   toString() {
     return (
@@ -51,24 +49,14 @@ class Variable {
     return `<span style="font-size:6pt">${this.namespace ||
       namespace}_</span><span>${this.toString()}</span>`;
   }
-  setValue(namespace, gatesLookup, val) {
-    if (!(typeof namespace == "string"))
-      throw new Error(
-        `Variable.id ${this.name} invalid namespace ${namespace}`
-      );
-    const gate = gatesLookup[this.id(namespace)];
+  setValue(gatesLookup, val) {
+    const gate = gatesLookup[this.id];
     if (!gate)
-      throw new Error(
-        `Variable.setValue cannot find gate with id ${this.id(namespace)}`
-      );
+      throw new Error(`Variable.setValue cannot find gate with id ${this.id}`);
     gate.state.setValue(val);
   }
-  getValue(namespace, gatesLookup) {
-    if (!(typeof namespace == "string"))
-      throw new Error(
-        `Variable.id ${this.name} invalid namespace ${namespace}`
-      );
-    const gate = gatesLookup[this.id(namespace)];
+  getValue(gatesLookup) {
+    const gate = gatesLookup[this.id];
     if (!gate)
       throw new Error(`Variable.getValue cannot find gate with id ${this.id}`);
 

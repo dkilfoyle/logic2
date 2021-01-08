@@ -130,11 +130,11 @@ net_assignment
 /* 6.2 Procedural Blocks ============================================= */
 
 initial_construct
-	: 'initial' statement
+	: 'initial' statement_block
 	;
 
 always_construct
-	: 'always' '@' '(' event_list ')' statement
+	: 'always' '@' '(' event_list ')' statement_block
 	;
 
 event_list
@@ -166,7 +166,6 @@ seq_block
 statement
 	: blocking_assignment ';'
 	| conditional_statement
-	| seq_block
 	;
 
 blocking_assignment
@@ -174,7 +173,12 @@ blocking_assignment
 	;
 
 conditional_statement
-	: 'if' '(' expression ')' statement ('else' statement)?
+	: 'if' '(' expression ')' statement_block ('else' statement_block)?
+	;
+
+statement_block
+	: seq_block
+	| statement
 	;
 
 /* 8.1 Concatenations============================================ */
@@ -204,7 +208,7 @@ expr // gate
 	;
 	
 binary_gate_op: AND | NAND | OR | NOR | XOR;	
-unary_gate_op: NOT;	
+unary_gate_op: NOT | NEG;	
 
 /* 8.5 l values ================================================= */
 

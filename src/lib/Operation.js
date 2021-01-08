@@ -10,15 +10,29 @@ const opLookup = {
   nand: "~&",
   or: "|",
   nor: "~|",
-  xor: "^"
+  xor: "^",
+  not: "!",
+  inv: "~"
 };
 
 class Operation {
   constructor(lhs, op, rhs = null) {
-    if (!(lhs instanceof Numeric || lhs instanceof Variable))
+    if (
+      !(
+        lhs instanceof Numeric ||
+        lhs instanceof Variable ||
+        lhs instanceof Operation
+      )
+    )
       throw new Error(`Operation constructor: invalid lhs ${lhs}`);
     if (rhs != null)
-      if (!(rhs instanceof Numeric || rhs instanceof Variable))
+      if (
+        !(
+          rhs instanceof Numeric ||
+          rhs instanceof Variable ||
+          rhs instanceof Operation
+        )
+      )
         throw new Error(`Operation constructor: invalid rhs ${rhs}`);
 
     this.lhs = lhs;
@@ -52,6 +66,12 @@ class Operation {
       case "^":
         this.op = "xor";
         break;
+      case "!":
+        this.op = "not";
+        break;
+      case "~":
+        this.op = "inv";
+        break;
       default:
         throw new Error(`Operation constructor: invalid op ${op}`);
     }
@@ -83,7 +103,9 @@ class Operation {
     }
   }
   toString() {
-    return `${this.lhs.toString()}${opLookup[this.op]}${this.rhs.toString()}`;
+    return this.rhs
+      ? `${this.lhs.toString()}${opLookup[this.op]}${this.rhs.toString()}`
+      : `${opLookup[this.op]}${this.lhs.toString()}`;
   }
 }
 

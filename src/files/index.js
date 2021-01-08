@@ -1,7 +1,7 @@
 export const SourceFiles = {
   BitAdder: require("./1bitadder.v").default,
   DFF: require("./dff.v").default,
-  // Scratch: require("./scratch.v").default,
+  Scratch: require("./scratch2.v").default,
   // Scratch: require("./dflipflopb.v").default,
   OneHotDecoder: require("./onehotdecoder.v").default,
   SevenSeg: require("./7seg.v").default,
@@ -24,8 +24,8 @@ export const SourceFiles = {
   BinaryUpDown: require("./binaryupdown.v").default,
   OneHotUpCounter: require("./onehotupcounter.v").default,
   HalfAdder: require("./halfadder.v").default,
-  // FullAdder: require("./fulladder.v").default,
-  Scratch: require("./fulladder.v").default,
+  FullAdder: require("./fulladder.v").default,
+  // Scratch: require("./fulladder.v").default,
   RippleAdder: require("./rippleadder.v").default,
   RippleSubtractor: require("./ripplesubtractor.v").default,
   DFlipFlopB: require("./dflipflopb.v").default

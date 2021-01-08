@@ -41,7 +41,7 @@
               <td>
                 {{
                   getGate(g)
-                    .inputs.map(x => x.id(getGate(g).instance))
+                    .inputs.map(x => x.id)
                     .join(", ")
                 }}
               </td>

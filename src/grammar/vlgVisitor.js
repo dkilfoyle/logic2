@@ -246,6 +246,12 @@ vlgVisitor.prototype.visitConditional_statement = function(ctx) {
 };
 
 
+// Visit a parse tree produced by vlgParser#statement_block.
+vlgVisitor.prototype.visitStatement_block = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by vlgParser#concatenation.
 vlgVisitor.prototype.visitConcatenation = function(ctx) {
   return this.visitChildren(ctx);

@@ -24,6 +24,7 @@ const not = x => ~x & 1;
 
 const logicFunctions = {
   not: ([a]) => ~a & 1,
+  inv: ([a]) => ~a & 1,
   buffer: ([a]) => a,
   portbuffer: ([a]) => a,
   response: ([a]) => a,
@@ -41,9 +42,7 @@ const logicFunctions = {
 const evaluateGates = gates => {
   const logicOperation = gate => {
     let logicFn = gate.logic;
-    let inputs = gate.inputs.map(input =>
-      input.getValue(gate.instance, gatesLookup)
-    );
+    let inputs = gate.inputs.map(input => input.getValue(gatesLookup));
 
     if (
       ["not", "buffer", "response", "portbuffer"].includes(logicFn) &&
@@ -69,6 +68,7 @@ const evaluateGates = gates => {
           : logicFunctions[logicFn](inputs)
       );
     } catch (e) {
+      console.log(gate);
       logger(chalk.cyan("└── ") + chalk.white(`${gate.id} ` + e));
       console.log(e);
       return false;
@@ -82,9 +82,9 @@ const evaluateGates = gates => {
   });
 };
 
-const evaluateSensitivities = (namespace, sensitivities) => {
+const evaluateSensitivities = sensitivities => {
   return sensitivities.some(sens => {
-    const current = sens.id.getValue(namespace, gatesLookup);
+    const current = sens.id.getValue(gatesLookup);
     const edge =
       sens.last == 0 && current == 1
         ? "posedge"
@@ -95,9 +95,9 @@ const evaluateSensitivities = (namespace, sensitivities) => {
   });
 };
 
-const evaluateStatementTree = (namespace, s) => {
+const evaluateStatementTree = s => {
   if (s.type == "seq_block" || s.type == "root_block") {
-    return s.statements.every(ss => evaluateStatementTree(namespace, ss));
+    return s.statements.every(ss => evaluateStatementTree(ss));
   } else if (s.type == "blocking_assignment") {
     // console.group(
     //   `eval blocking_assignment: ${s.lhs.toString()} = ${s.rhs.toString()}`
@@ -106,11 +106,7 @@ const evaluateStatementTree = (namespace, s) => {
     // console.log("lhs: ", s.lhs, s.lhs.getValue(namespace, gatesLookup));
     // console.log("rhs: ", s.rhs, s.rhs.getValue(namespace, gatesLookup));
     try {
-      s.lhs.setValue(
-        namespace,
-        gatesLookup,
-        s.rhs.getValue(namespace, gatesLookup)
-      );
+      s.lhs.setValue(gatesLookup, s.rhs.getValue(gatesLookup));
     } catch (e) {
       logger(
         chalk.cyan("└── ") +
@@ -153,7 +149,7 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
   console.log("initial: ");
   let initialRes = instances.every(instance => {
     return instance.initial
-      ? evaluateStatementTree(instance.id, instance.initial.statementTree)
+      ? evaluateStatementTree(instance.initial.statementTree)
       : true;
   });
   if (!initialRes) return false;
@@ -211,8 +207,8 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
       // run always section for each instance
       let alwaysRes = instances.every(instance => {
         return instance.always &&
-          evaluateSensitivities(instance.id, instance.always.sensitivities)
-          ? evaluateStatementTree(instance.id, instance.always.statementTree)
+          evaluateSensitivities(instance.always.sensitivities)
+          ? evaluateStatementTree(instance.always.statementTree)
           : true;
       });
       if (!alwaysRes) return false;
@@ -228,7 +224,7 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
     instances.forEach(instance => {
       if (instance.always) {
         instance.always.sensitivities.forEach(sensitivity => {
-          sensitivity.last = sensitivity.id.getValue(instance.id, gatesLookup);
+          sensitivity.last = sensitivity.id.getValue(gatesLookup);
         });
       }
     });

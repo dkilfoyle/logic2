@@ -362,6 +362,15 @@ vlgListener.prototype.exitConditional_statement = function(ctx) {
 };
 
 
+// Enter a parse tree produced by vlgParser#statement_block.
+vlgListener.prototype.enterStatement_block = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#statement_block.
+vlgListener.prototype.exitStatement_block = function(ctx) {
+};
+
+
 // Enter a parse tree produced by vlgParser#concatenation.
 vlgListener.prototype.enterConcatenation = function(ctx) {
 };

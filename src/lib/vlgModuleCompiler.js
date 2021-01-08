@@ -3,7 +3,7 @@ import Numeric from "./Numeric";
 
 var modules, instances, gates;
 
-// const stripReactive = x => JSON.parse(JSON.stringify(x));
+const stripReactive = x => JSON.parse(JSON.stringify(x));
 
 const createInstance = (parentNamespace, instanceDeclaration) => {
   console.group(
@@ -57,7 +57,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       const newGate = {
         id: varMap[gateDeclaration.id],
         logic: gateDeclaration.gate,
-        inputs: gateDeclaration.inputs,
+        inputs: gateDeclaration.inputs.map(x => x.instance(namespace)),
         instance: namespace,
         state: new Numeric(0),
         type: "gate"
@@ -65,6 +65,47 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       gates.push(newGate);
       newInstance.gates.push(newGate.id);
     });
+
+  // ~a & b | c
+  // op(op(op(a, not) & b) | c)
+
+  const walkOperationTree = (namespace, id, counter, op) => {
+    let newGate;
+    let gateID = id + (counter == 0 ? "" : counter);
+    if (op.lhs instanceof Variable) {
+      newGate = {
+        id: namespace + "_" + gateID,
+        logic: op.op,
+        inputs: op.rhs
+          ? [op.lhs.instance(namespace), op.rhs.instance(namespace)]
+          : [op.lhs.instance(namespace)],
+        state: new Numeric(0),
+        type: "gate"
+      };
+      gates.push(newGate);
+      newInstance.gates.push(newGate.id);
+      return new Variable(gateID, null, namespace);
+    } else {
+      let lhs = walkOperationTree(namespace, id, counter + 1, op.lhs);
+      newGate = {
+        id: namespace + "_" + gateID,
+        logic: op.op,
+        inputs: op.rhs
+          ? [lhs.instance(namespace), op.rhs.instance(namespace)]
+          : [lhs.instance(namespace)],
+        state: new Numeric(0),
+        type: "gate"
+      };
+      console.log(newGate);
+      gates.push(newGate);
+      newInstance.gates.push(newGate.id);
+      return new Variable(gateID, null, namespace);
+    }
+  };
+
+  instanceModule.netAssignments.forEach(net => {
+    walkOperationTree(namespace, net.id, 0, net.operationTree);
+  });
 
   instanceModule.regs.forEach(reg => {
     const newGate = {
@@ -206,49 +247,51 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       newInstance.instances.push(childInstance.id);
     });
 
-  // const varMapStatement = s => {
-  //   if (s.type == "seq_block" || s.type == "root_block")
-  //     s.statements.forEach(ss => varMapStatement(ss));
-  //   else if (s.type == "blocking_assignment") {
-  //     if (s.lhs.type == "identifier")
-  //       s.lhs = new Variable(namespace, s.lhs.name, s.lhs.offset);
-  //     else if (s.lhs.type == "concatenation")
-  //       throw new Error("concatenations not imlemented yet");
-  //     else throw new Error(`statement lhs is invalid type (${s.lhs.type})`);
+  const instantiateStatements = (sin, sout) => {
+    sout.type = sin.type;
+    // if (sin.type == "seq_block" || sin.type == "root_block")
+    if (sin.type == "block")
+      sout.statements = sin.statements.map(ss =>
+        instantiateStatements(ss, sout)
+      );
+    else if (sin.type == "blocking_assignment") {
+      if (sin.lhs.type == "identifier") sout.lhs = sin.lhs.instance(namespace);
+      else if (sin.lhs.type == "concatenation")
+        throw new Error("concatenations not imlemented yet");
+      else throw new Error(`statement lhs is invalid type (${sin.lhs.type})`);
 
-  //     if (s.rhs.type == "identifier")
-  //       s.rhs = new Variable(namespace, s.rhs.name, s.rhs.offset);
-  //     else if (s.rhs.type == "number")
-  //       s.rhs = new Numeric(s.rhs.decimalValue, s.rhs.size, s.rhs.format);
-  //     else throw new Error(`statemeent rhs is invalid type (${s.rhs.type})`);
-  //   }
-  // };
+      if (sin.rhs.type == "identifier") sout.rhs = sin.rhs.instance(namespace);
+      else if (sin.rhs.type == "number") sout.rhs = sin.rhs;
+      else throw new Error(`statemeent rhs is invalid type (${sin.rhs.type})`);
+    }
+  };
 
   if (instanceModule.initial) {
-    newInstance.initial = instanceModule.initial;
-    // newInstance.initial = { ...instanceModule.initial };
-    // varMapStatement(newInstance.initial.statementTree);
+    newInstance.initial = {
+      statementTree: instantiateStatements(
+        instanceModule.initital.statementTree,
+        {}
+      )
+    };
   }
 
   if (instanceModule.always) {
-    newInstance.always = { ...instanceModule.always };
-    // newInstance.always.sensitivities.forEach(sensitivity => {
-    //   if (sensitivity.type != "everytime") {
-    //     sensitivity.id = new Variable(
-    //       namespace,
-    //       sensitivity.id.name,
-    //       sensitivity.id.offset
-    //     );
-    //     sensitivity.last = "x";
-    //   }
-    // });
-    // varMapStatement(newInstance.always.statementTree);
+    newInstance.always = {
+      statementTree: instantiateStatements(
+        instanceModule.always.statementTree,
+        {}
+      ),
+      sensitivities: instanceModule.always.sensitivities.map(s => ({
+        type: s.type,
+        id: s.type != "everytime" ? s.id.instance(namespace) : null
+      }))
+    };
   }
 
   newInstance.varMap = varMap;
   instances.push(newInstance);
 
-  console.log("Instance: ", newInstance);
+  console.log("Instance: ", stripReactive(newInstance));
   console.groupEnd();
 
   return newInstance;

@@ -343,7 +343,7 @@ export default {
       const compileResult = vlgCompile(walkResult.modules);
       this.$store.commit("setCompileResult", { ...compileResult });
       this.$store.commit("setStatus", "Compile OK");
-      console.log("Compiled: ", compileResult);
+      console.log("Compiled: ", this.stripReactive(compileResult));
 
       this.termWriteln(
         chalk.green(

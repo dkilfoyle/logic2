@@ -1,5 +1,5 @@
 // Variable is a key into the gatesLookup object (which acts as 'memory')
-const bitSize = x => 32 - Math.clz32(x);
+const bitSize = x => (x == 0 ? 1 : 32 - Math.clz32(x));
 const formatLookup = {
   decimal: 10,
   binary: 2,
