@@ -286,28 +286,6 @@ class Listener extends vlgListener {
   // 	| expression op=(PLUS | MINUS) expression			# binaryExpression
   // 	;
 
-  exitAtomExpr(ctx) {
-    //  console.log("atomExpression value stack: ", this.valueStack)
-    this.expressionStack.push(this.valueStack.pop());
-  }
-
-  exitParensExpr(ctx) {
-    const lhs = this.expressionStack.pop();
-    this.expressionStack.push(new Operation(lhs, "parens", null));
-  }
-
-  exitUnaryExpr(ctx) {
-    const lhs = this.expressionStack.pop();
-    this.expressionStack.push(new Operation(lhs, ctx.op.getText(), null));
-  }
-
-  exitBinaryExpr(ctx) {
-    //  console.log("binaryExpression stack: ", this.expressionStack)
-    const rhs = this.expressionStack.pop();
-    const lhs = this.expressionStack.pop();
-    this.expressionStack.push(new Operation(lhs, ctx.op.getText(), rhs));
-  }
-
   exitAtomExpression(ctx) {
     //  console.log("atomExpression value stack: ", this.valueStack)
     this.expressionStack.push(this.valueStack.pop());
@@ -328,6 +306,35 @@ class Listener extends vlgListener {
     const rhs = this.expressionStack.pop();
     const lhs = this.expressionStack.pop();
     this.expressionStack.push(new Operation(lhs, ctx.op.text, rhs));
+  }
+
+  // expr // gate
+  // : identifier																	  # atomExpr
+  // | '(' expr ')'																  # parensExpr
+  // | op=unary_gate_op expr												# unaryExpr
+  // | expr op=binary_gate_op expr									# binaryExpr
+  // ;
+
+  exitAtomExpr(ctx) {
+    //  console.log("atomExpression value stack: ", this.valueStack)
+    this.expressionStack.push(this.valueStack.pop());
+  }
+
+  exitParensExpr(ctx) {
+    // const lhs = this.expressionStack.pop();
+    // this.expressionStack.push(new Operation(lhs, "parens", null));
+  }
+
+  exitUnaryExpr(ctx) {
+    const lhs = this.expressionStack.pop();
+    this.expressionStack.push(new Operation(lhs, ctx.op.getText(), null));
+  }
+
+  exitBinaryExpr(ctx) {
+    //  console.log("binaryExpression stack: ", this.expressionStack)
+    const rhs = this.expressionStack.pop();
+    const lhs = this.expressionStack.pop();
+    this.expressionStack.push(new Operation(lhs, ctx.op.getText(), rhs));
   }
 
   // identifier

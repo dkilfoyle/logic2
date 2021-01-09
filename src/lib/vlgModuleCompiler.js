@@ -52,41 +52,21 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   // create all the gates defined in the instance's module statements
   // gate declaration has the form { id: "X", gate: "and", inputs: ["a", "b"], type: "gate"}
   // if the gate has the same id as an output port then map that id to id.gate and set the output ports input to id.gate
+
+  const gateBitSizes = {
+    number: 10,
+    sevenseg: 4
+  };
+
   instanceModule.instantiations
     .filter(statement => statement.type == "gate")
     .forEach(gateDeclaration => {
-      // debugger;
-
-      /*
-
-
-gateids and portids should be of type identifer not IDENTIFIER to allow
-assign myEntity[1] = a & b 
-and(myEntity[1], a, b)
-
-if gateDeclaration.id.name already exists then curGate = existinggate else curGate = gates.push({id})
-curGate.operations.push({
-  logic: gateDeclaration.logicFn,
-  inputs: gateDeclaration.inputs
-  targetBits: gateDeclaration.id.offset
-})
-
-OR
-assign lhs '=' rhs => assignOp = operation(lhs, "=", rhs)
-and(lhs, ids) => assignOp = operation(lhs, "=", operationTree(and, ids))
-module.netAssignments.push(assignOp)
-
-
-do same for output gates
-myadder(.cout(COUT[1])) means parent_COUT[1] = myadder_cout
-*/
-
       const newGate = {
         id: varMap[gateDeclaration.id],
         logic: gateDeclaration.gate,
         inputs: gateDeclaration.inputs.map(x => x.instance(namespace)),
         instance: namespace,
-        state: new Numeric(0),
+        state: new Numeric(0, gateBitSizes[gateDeclaration.gate] || 1),
         type: "gate"
       };
       gates.push(newGate);
@@ -96,41 +76,38 @@ myadder(.cout(COUT[1])) means parent_COUT[1] = myadder_cout
   // ~a & b | c
   // op(op(op(a, not) & b) | c)
 
-  const walkOperationTree = (namespace, id, counter, op) => {
-    let newGate;
+  let counter;
+
+  const walkOperationTree = (namespace, id, op) => {
     let gateID = id + (counter == 0 ? "" : counter);
-    if (op.lhs instanceof Variable) {
-      newGate = {
-        id: namespace + "_" + gateID,
-        logic: op.op,
-        inputs: op.rhs
-          ? [op.lhs.instance(namespace), op.rhs.instance(namespace)]
-          : [op.lhs.instance(namespace)],
-        state: new Numeric(0),
-        type: "gate"
-      };
-      gates.push(newGate);
-      newInstance.gates.push(newGate.id);
-      return new Variable(gateID, null, namespace);
-    } else {
-      let lhs = walkOperationTree(namespace, id, counter + 1, op.lhs);
-      newGate = {
-        id: namespace + "_" + gateID,
-        logic: op.op,
-        inputs: op.rhs
-          ? [lhs.instance(namespace), op.rhs.instance(namespace)]
-          : [lhs.instance(namespace)],
-        state: new Numeric(0),
-        type: "gate"
-      };
-      console.log(newGate);
-      gates.push(newGate);
-      newInstance.gates.push(newGate.id);
-      return new Variable(gateID, null, namespace);
+    counter = counter + 1;
+
+    if (op instanceof Variable) {
+      return op;
     }
+
+    const newGate = {
+      id: namespace + "_" + gateID,
+      instance: namespace,
+      type: "gate",
+      state: new Numeric(0),
+      logic: op.op,
+      inputs: op.rhs
+        ? [
+            walkOperationTree(namespace, id, op.lhs).instance(namespace),
+            walkOperationTree(namespace, id, op.rhs).instance(namespace)
+          ]
+        : [walkOperationTree(namespace, id, op.lhs).instance(namespace)]
+    };
+
+    gates.push(newGate);
+    newInstance.gates.push(newGate.id);
+    return new Variable(gateID, null, namespace);
   };
 
   instanceModule.netAssignments.forEach(net => {
+    console.group("netAsssigment: ", net.id.name);
+    counter = 0;
     if (net.operationTree instanceof Variable)
       walkOperationTree(
         namespace,
@@ -138,7 +115,8 @@ myadder(.cout(COUT[1])) means parent_COUT[1] = myadder_cout
         0,
         new Operation(net.OperationTree, "buffer", null)
       );
-    else walkOperationTree(namespace, net.id, 0, net.operationTree);
+    else walkOperationTree(namespace, net.id, net.operationTree);
+    console.groupEnd();
   });
 
   instanceModule.regs.forEach(reg => {

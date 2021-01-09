@@ -30,7 +30,7 @@ class Numeric extends Operand {
     const destSize = bitRange
       ? Math.abs(bitRange[0] - bitRange[bitRange.length - 1]) + 1
       : this.size;
-    if (bitSize(newDecimalValue) != destSize) {
+    if (bitSize(newDecimalValue) > destSize) {
       throw new BitSizeError(
         `BitSizeMismatch: ${newDecimalValue}(${bitSize(
           newDecimalValue

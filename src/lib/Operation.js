@@ -27,8 +27,8 @@ class Operation extends Operand {
     this.rhs = rhs;
 
     switch (op) {
-      case "atom":
-        this.op = "atom";
+      case "parens":
+        this.op = "parens";
         break;
       case "+":
         this.op = "add";
@@ -69,8 +69,8 @@ class Operation extends Operand {
   }
   getValue(gatesLookup, namespace) {
     switch (this.op) {
-      case "atom":
-        return this.lhs;
+      case "parens":
+        return this.lhs.getValue(gatesLookup, namespace);
       case "add":
         return this.rhs == null // unary +
           ? this.lhs.getValue(gatesLookup, namespace)
