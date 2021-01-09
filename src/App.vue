@@ -539,44 +539,56 @@ body {
   height: 100%;
 }
 
-.dk-pad-5 {
+.dk-pa-5 {
   padding: 5px;
 }
-.dk-pad-10 {
+.dk-pa-10 {
   padding: 10px;
 }
-.dk-pad-20 {
+.dk-pa-20 {
   padding: 20px;
 }
-.dk-pad-t5 {
+.dk-pt-5 {
   padding-top: 5px;
 }
-.dk-pad-t10 {
+.dk-pt-10 {
   padding-top: 10px;
 }
-.dk-pad-t20 {
+.dk-pt-20 {
   padding-top: 20px;
 }
-.dk-pad-b5 {
+.dk-pb-5 {
   padding-bottom: 5px;
 }
-.dk-pad-b10 {
+.dk-pb-10 {
   padding-bottom: 10px;
 }
-.dk-pad-b20 {
+.dk-pb-20 {
   padding-bottom: 20px;
 }
-.dk-pad-x5 {
+.dk-px-5 {
   padding-left: 5px;
   padding-right: 5px;
 }
-.dk-pad-x10 {
+.dk-px-10 {
   padding-left: 10px;
   padding-right: 10px;
 }
-.dk-pad-x20 {
+.dk-px-20 {
   padding-left: 20px;
   padding-right: 20px;
+}
+.dk-py-5 {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.dk-py-10 {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.dk-py-20 {
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 .dk-gap-5 {
   gap: 5px;

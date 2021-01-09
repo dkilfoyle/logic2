@@ -1,5 +1,5 @@
 <template>
-  <div class="dk-flex-col dk-pad-10 dk-gap-10">
+  <div class="dk-flex-col dk-pa-10 dk-gap-10">
     <h4>GLOBAL</h4>
     <b-field label="Evals per Step">
       <b-input v-model="evalsPerStep" size="is-small"></b-input>
