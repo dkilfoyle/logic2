@@ -1,5 +1,5 @@
 <template>
-  <div class="dk-flex-col dk-gap-10 dk-h-100">
+  <div class="dk-flex-col dk-gap-5 dk-h-100">
     <h4 class="dk-pad-t10 dk-pad-x10">CIRCUIT LIBRARY</h4>
     <liquor-tree
       class="dk-h-100 skinny-scroll"

@@ -41,21 +41,26 @@ const logicFunctions = {
 
 const evaluateGates = gates => {
   const logicOperation = gate => {
+    // unconected ports will have 0 length inputs
+    if (gate.logic == "portbuffer" && gate.inputs.length == 0) return true;
+
     let logicFn = gate.logic;
-    let inputs = gate.inputs.map(input => input.getValue(gatesLookup));
+    let inputValues = gate.inputs.map(input => input.getValue(gatesLookup));
 
     if (
-      ["not", "buffer", "response", "portbuffer"].includes(logicFn) &&
-      inputs.length > 1
+      ["not", "response", "portbuffer"].includes(logicFn) &&
+      gate.inputs.length > 1
     ) {
+      // TODO: allow portbuffers to have separate bit inputs?
       console.log(
-        "Gate evaluation error - 1 input only valid for not and buffer gates"
+        "Gate evaluation error - 1 input only valid for not and response and port buffer gates",
+        gate
       );
       return false;
     }
 
-    if (logicFn == "sevenseg" && inputs.length != 7) {
-      console.log("Gate evaluation error - sevenseg must have 7 inputs");
+    if (logicFn == "sevenseg" && gate.inputs.length != 7) {
+      console.log("Gate evaluation error - sevenseg must have 7 inputs", gate);
       return false;
     }
 
@@ -63,9 +68,9 @@ const evaluateGates = gates => {
 
     try {
       gate.state.setValue(
-        inputs.some(input => input === "x")
+        inputValues.some(input => input === "x")
           ? "x"
-          : logicFunctions[logicFn](inputs)
+          : logicFunctions[logicFn](inputValues, gate.inputs)
       );
     } catch (e) {
       logger(chalk.cyan("└── ") + chalk.white(`${gate.id} ` + e));

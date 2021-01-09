@@ -1,5 +1,4 @@
-import Numeric from "./Numeric";
-import Variable from "./Variable";
+import Operand from "./Operand";
 
 const opLookup = {
   add: "+",
@@ -15,30 +14,22 @@ const opLookup = {
   inv: "~"
 };
 
-class Operation {
+class Operation extends Operand {
   constructor(lhs, op, rhs = null) {
-    if (
-      !(
-        lhs instanceof Numeric ||
-        lhs instanceof Variable ||
-        lhs instanceof Operation
-      )
-    )
+    super("operation");
+    if (!(lhs instanceof Operand))
       throw new Error(`Operation constructor: invalid lhs ${lhs}`);
     if (rhs != null)
-      if (
-        !(
-          rhs instanceof Numeric ||
-          rhs instanceof Variable ||
-          rhs instanceof Operation
-        )
-      )
+      if (!(rhs instanceof Operand))
         throw new Error(`Operation constructor: invalid rhs ${rhs}`);
 
     this.lhs = lhs;
     this.rhs = rhs;
 
     switch (op) {
+      case "atom":
+        this.op = "atom";
+        break;
       case "+":
         this.op = "add";
         break;
@@ -78,6 +69,8 @@ class Operation {
   }
   getValue(gatesLookup, namespace) {
     switch (this.op) {
+      case "atom":
+        return this.lhs;
       case "add":
         return this.rhs == null // unary +
           ? this.lhs.getValue(gatesLookup, namespace)

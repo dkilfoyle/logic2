@@ -28,6 +28,8 @@ export const SourceFiles = {
   // Scratch: require("./fulladder.v").default,
   RippleAdder: require("./rippleadder.v").default,
   RippleSubtractor: require("./ripplesubtractor.v").default,
+  // Behavioural models
+  Add4: require("./add4.v").default,
   DFlipFlopB: require("./dflipflopb.v").default
 };
 
@@ -110,6 +112,6 @@ export const SourceTree = [
   },
   {
     text: "Behavioural Models",
-    children: [{ text: "DFlipFlopB" }]
+    children: [{ text: "DFlipFlopB" }, { text: "Add4" }]
   }
 ];

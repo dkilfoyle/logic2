@@ -1,8 +1,9 @@
 <template>
-  <div class="dk-flex-col dk-pad-10 dk-gap-10">
-    <h4>INSTANCES</h4>
-    <div class="dk-h-100 skinny-scroll">
+  <div class="dk-flex-col dk-pad-x5 dk-gap-5 dk-h-100">
+    <h4 class="dk-pad-t10 dk-pad-x5">INSTANCES</h4>
+    <div class="dk-grow-1 skinny-scroll">
       <liquor-tree
+        style="overflow:hidden"
         ref="tree"
         :data="$store.getters.instanceTree"
         :options="{ nodeIndent: 14 }"

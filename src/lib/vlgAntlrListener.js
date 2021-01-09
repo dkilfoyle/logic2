@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 /* eslint-disable no-unused-vars */
 
 // TODO: Reimplement as visitor so don't need to use stacks
@@ -164,12 +165,12 @@ class Listener extends vlgListener {
     portDeclarations.forEach(portDecCtx => {
       const dir = portDecCtx.port_direction().getText();
       const ids = portDecCtx.port_identifier_list().IDENTIFIER();
-      const dim = ctx.portdim ? this.valueStack.pop() : null;
+      const dim = portDecCtx.portdim ? this.valueStack.pop() : null;
       this.curModule.ports.push(
         ...ids.map(id => ({
           id: id.getText(),
           direction: dir,
-          bitSize: dim ? dim[1] - dim[0] + 1 : 1,
+          bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1,
           dim
         }))
       );
@@ -342,17 +343,20 @@ class Listener extends vlgListener {
     this.valueStack.push(
       new Variable(
         ctx.IDENTIFIER().getText(),
-        parseInt(ctx.expression().getText(), 10)
+        this.expressionStack.pop()
+        // parseInt(ctx.expression().getText(), 10)
       )
     );
   }
 
   exitIdRange(ctx) {
+    let rend = this.expressionStack.pop();
+    let rstart = this.expressionStack.pop();
     this.valueStack.push(
-      new Variable(ctx.IDENTIFIER().getText(), [
-        parseInt(ctx.expression(0).getText(), 10),
-        parseInt(ctx.expression(1).getText(), 10)
-      ])
+      new Variable(ctx.IDENTIFIER().getText(), [rstart, rend])
+      // parseInt(ctx.expression(0).getText(), 10),
+      // parseInt(ctx.expression(1).getText(), 10)
+      // ])
     );
   }
 
@@ -475,7 +479,7 @@ class Listener extends vlgListener {
   exitGate_instantiation(ctx) {
     const gateType = ctx.gate_type().getText();
     const gateOutput = ctx.gateID.text;
-    const gateInputs = this.valueStack.pop();
+    const gateInputs = ctx.ids ? this.valueStack.pop() : [];
 
     // semantic error if any of the inputs are not defined
     if (gateInputs)
@@ -552,14 +556,16 @@ class Listener extends vlgListener {
   }
 
   exitModule_instantiation(ctx) {
-    const connections = ctx.module_connections_list().connections;
     const moduleID = ctx.moduleID.text;
-    const instanceID = ctx.instanceID.text;
-
     // check to see if moduleid is defined
     if (!this.isModule(moduleID)) {
       this.addSemanticError(ctx.moduleID, `Undefined module: '${moduleID}'`);
+      console.groupEnd();
+      return;
     }
+
+    const instanceID = ctx.instanceID.text;
+    const connections = ctx.module_connections_list().connections;
 
     console.log(`Module ${moduleID} connections: `, connections);
 

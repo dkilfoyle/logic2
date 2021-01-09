@@ -1,5 +1,7 @@
+/* eslint-disable no-debugger */
 import Variable from "./Variable";
 import Numeric from "./Numeric";
+import Operation from "./Operation";
 
 var modules, instances, gates;
 
@@ -53,7 +55,32 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   instanceModule.instantiations
     .filter(statement => statement.type == "gate")
     .forEach(gateDeclaration => {
-      // if this gate shares an output id, ie is connected to an output port then add ! to indicate last gate before output
+      // debugger;
+
+      /*
+
+
+gateids and portids should be of type identifer not IDENTIFIER to allow
+assign myEntity[1] = a & b 
+and(myEntity[1], a, b)
+
+if gateDeclaration.id.name already exists then curGate = existinggate else curGate = gates.push({id})
+curGate.operations.push({
+  logic: gateDeclaration.logicFn,
+  inputs: gateDeclaration.inputs
+  targetBits: gateDeclaration.id.offset
+})
+
+OR
+assign lhs '=' rhs => assignOp = operation(lhs, "=", rhs)
+and(lhs, ids) => assignOp = operation(lhs, "=", operationTree(and, ids))
+module.netAssignments.push(assignOp)
+
+
+do same for output gates
+myadder(.cout(COUT[1])) means parent_COUT[1] = myadder_cout
+*/
+
       const newGate = {
         id: varMap[gateDeclaration.id],
         logic: gateDeclaration.gate,
@@ -104,7 +131,14 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   };
 
   instanceModule.netAssignments.forEach(net => {
-    walkOperationTree(namespace, net.id, 0, net.operationTree);
+    if (net.operationTree instanceof Variable)
+      walkOperationTree(
+        namespace,
+        net.id,
+        0,
+        new Operation(net.OperationTree, "buffer", null)
+      );
+    else walkOperationTree(namespace, net.id, 0, net.operationTree);
   });
 
   instanceModule.regs.forEach(reg => {
@@ -248,6 +282,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     });
 
   if (instanceModule.initial) {
+    // no need to instantiate statements because statements are always evaluated in local (module instance) namespace
+    // using optional namespace overide to setvalue and getvalue for Variable and Operation
     newInstance.initial = instanceModule.initial;
   }
 

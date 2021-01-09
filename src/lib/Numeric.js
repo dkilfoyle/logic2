@@ -1,3 +1,5 @@
+import Operand from "./Operand";
+
 // Variable is a key into the gatesLookup object (which acts as 'memory')
 const bitSize = x => (x == 0 ? 1 : 32 - Math.clz32(x));
 const formatLookup = {
@@ -17,20 +19,29 @@ class BitSizeError {
   }
 }
 
-class Numeric {
+class Numeric extends Operand {
   constructor(decimalValue, size = null, format = "decimal") {
+    super("numeric");
     this.decimalValue = decimalValue;
     this.size = size || bitSize(decimalValue);
     this.format = format;
   }
-  setValue(newDecimalValue) {
-    if (bitSize(newDecimalValue) > this.size)
+  setValue(newDecimalValue, bitRange = null) {
+    const destSize = bitRange
+      ? Math.abs(bitRange[0] - bitRange[bitRange.length - 1]) + 1
+      : this.size;
+    if (bitSize(newDecimalValue) != destSize) {
       throw new BitSizeError(
         `BitSizeMismatch: ${newDecimalValue}(${bitSize(
           newDecimalValue
-        )} bits) => (${this.size} bits)`
+        )} bits) => (${destSize}) bits)`
       );
-    else this.decimalValue = newDecimalValue;
+    }
+    if (bitRange == null) this.decimalValue = newDecimalValue;
+    else {
+      // set only specific bits
+      this.decimalValue |= newDecimalValue << Math.min(...bitRange);
+    }
   }
   getValue() {
     return this.decimalValue;
