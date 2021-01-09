@@ -7,3 +7,5 @@
         4. MaskableComponent { inputMasks: [] = which bits the input contributes to, setValue(x, mask), update calls setValue for each input }
             1. Register
             2. Wire
+3. Replace Buefy with Tailwind
+4. Custom instance breadcrumb component
