@@ -6,7 +6,7 @@ module DFlipFlop (
 
   reg Q;
 
-  initial Q=1+2;
+  initial Q=1;
 
   always @(posedge clk)
     begin

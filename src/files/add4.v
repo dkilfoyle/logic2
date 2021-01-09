@@ -1,4 +1,6 @@
 // 4 bit adder behavioural model
+// not implemented yet, needs multibit wire support
+// so that .cout(cob[1]) can perfom myadder_cob[1] = fa1_cout-out
 
 module FullAdder (
   input a, b, ci,
