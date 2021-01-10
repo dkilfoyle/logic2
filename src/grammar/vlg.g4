@@ -2,51 +2,89 @@ grammar vlg;
 
 @header { /* eslint-disable */ }
 
-// Adapted from https://github.com/Nic30/hdlConvertor/blob/master/grammars/sv2017Parser.g4 and
+// Adapted from:
+// https://github.com/Nic30/hdlConvertor/blob/master/grammars/sv2017Parser.g4 and
 // https://www.verilog.com/VerilogBNF.html
+// https://github.com/antlr/grammars-v4/blob/master/verilog/verilog/Verilog2001.g4
 
-/* The start rule */
+/* start  ========================================================== */
+
 source_text: modules EOF;
-
 modules: module* module_main EOF;
 
 /* Module declaration ============================================== */
 
-module_main:
-	'module' MAIN (module_ports)? ';' module_item* test_bench? 'endmodule';
+module_main
+	:	'module' MAIN (module_ports)? ';' module_item* test_bench? 'endmodule'
+	;
 
-module:
-	'module' IDENTIFIER (module_ports)? ';' module_item* 'endmodule';
+MAIN: 'Main';
 
-module_ports:
-	'(' ansi_port_declaration (',' ansi_port_declaration)* ')';
+module
+	:	'module' IDENTIFIER (module_ports)? ';' module_item* 'endmodule'
+	;
 
-ansi_port_declaration: port_direction identifier_list;
+module_ports
+	:	'(' port_declaration (',' port_declaration)* ')'
+	;
+
+port_declaration
+	: port_direction (portdim=range)? port_identifier_list
+	;
+
+port_identifier_list
+	: IDENTIFIER (',' IDENTIFIER)*
+	;
+
 port_direction: 'input' | 'output';
 
 module_item
-	:	net_declaration			# net
-	| gate_declaration		# gate
-	| reg_declaration # reg
-	| continuous_assign		# assign
+	:	net_declaration				# net
+	| reg_declaration 			# reg
+	| net_assignment				# assign
+	| gate_instantiation		# gate
 	| module_instantiation	# instance
-	| initial_statement # initial
-	| always_statement # always
+	| initial_construct 		# initial
+	| always_construct 			# always
 	;
 
 /* Test bench ====================================================== */
 
-test_bench: 'test' 'begin' test_time* 'end';
-test_time: time_stamp time_assignment_list? ';';
-time_stamp: '#' num = UNSIGNED_NUMBER;
-time_assignment_list:
-	'{' time_assignment (',' time_assignment)* '}';
-time_assignment: id = IDENTIFIER '=' val = UNSIGNED_NUMBER;
+test_bench
+	: 'test' 'begin' test_time* 'end'
+	;
 
-// module statements ==============================================  
+test_time
+	: time_stamp time_assignment_list? ';'
+	;
+
+time_stamp
+	: '#' num=Decimal_number
+	;
+
+time_assignment_list
+	:	'{' time_assignment (',' time_assignment)* '}'
+	;
+
+time_assignment
+	: id = IDENTIFIER '=' val=Decimal_number
+	;
+
+// 2. Declarations
+
+net_declaration: 'wire' (netdim=range)? ids=simple_identifier_list ';';
+reg_declaration: 'reg' (regdim=range)? ids=simple_identifier_list ';';
+
+simple_identifier_list
+	: IDENTIFIER (',' IDENTIFIER)*
+	;
+
+// TODO Add dimension to net and reg
+
+// 3. Instantiations ==============================================  
 
 module_instantiation
-	:	moduleid = IDENTIFIER instanceid = IDENTIFIER module_connections_list ';'
+	:	moduleID = IDENTIFIER instanceID = IDENTIFIER module_connections_list ';'
 	;
 
 module_connections_list
@@ -54,14 +92,11 @@ module_connections_list
 	;
 
 named_port_connection
-	:	'.' port = IDENTIFIER '(' value = IDENTIFIER ')'
+	:	'.' portID = IDENTIFIER '(' identifier ')'
 	;
 
-net_declaration: 'wire' identifier_list ';';
-reg_declaration: 'reg' range? identifier_list ';';
-
-gate_declaration
-	:	gate_type (instanceid = IDENTIFIER)? '(' ids = identifier_list ')' ';'
+gate_instantiation
+	:	gate_type '(' gateID = IDENTIFIER (',' ids = identifier_list)? ')' ';'
 	;
 
 gate_type
@@ -80,39 +115,26 @@ gate_type
 	| 'ledbar'
 	;
 
-continuous_assign: 'assign' list_of_assignments ';';
-list_of_assignments: assignment (',' assignment)*;
-assignment: IDENTIFIER '=' expr;
-
-/* Expressions ======================================================= */
-
-expr: // For gate assign only
-	NEG expr											# negateExpr
-	| expr binary_operator expr		# binaryExpr
-	| '(' expr ')'								# parenExpr
-	| IDENTIFIER									# idExpr;
-
-binary_operator: AND | NAND | OR | NOR | XOR;
-
-expression // for general expresions
-	: primary																		# primaryExpression
-	| UNARY_OPERATOR primary										# unaryPrimaryExpression
-	| expression BINARY_OPERATOR expression			# binaryExpression
+net_assignment
+	: 'assign' lvalue '=' expr ';'
 	;
 
-primary
-	: UNSIGNED_NUMBER
-	| IDENTIFIER
+// expr // For gate assign only
+// 	: NEG expr										# negateExpr
+// 	| expr binary_gate_op expr		# binaryExpr
+// 	| '(' expr ')'								# parenExpr
+// 	| IDENTIFIER									# idExpr;
+
+// binary_gate_op: AND | NAND | OR | NOR | XOR;	
+
+/* 6.2 Procedural Blocks ============================================= */
+
+initial_construct
+	: 'initial' statement_block
 	;
 
-/* Initial and Always statements ============================================ */
-
-initial_statement
-	: 'initial' statement
-	;
-
-always_statement
-	: 'always' '@' '(' event_list ')' statement
+always_construct
+	: 'always' '@' '(' event_list ')' statement_block
 	;
 
 event_list
@@ -125,7 +147,7 @@ event_every
 	;
 
 event_primary
-	: event_type? IDENTIFIER
+	: event_type? identifier
 	;
 
 event_type
@@ -133,41 +155,185 @@ event_type
 	| 'negedge' 
   ;
 
-
-/* statements ======================================================== */
-
-statement
-	: blocking_assignment ';'
-	| seq_block
-	;
-
-blocking_assignment
-	: lhs = IDENTIFIER '=' rhs = expression
-	;
+/* 6.3 Sequential blocks ============================================= */
 
 seq_block
 	: 'begin' statement* 'end'
 	;
 
-/* Token groups ====================================================== */
+/* 6.4 Statements ==================================================== */
 
-UNARY_OPERATOR
+statement
+	: blocking_assignment ';'
+	| conditional_statement
+	;
+
+blocking_assignment
+	: lhs = lvalue '=' rhs = expression
+	;
+
+conditional_statement
+	: 'if' '(' expression ')' statement_block ('else' statement_block)?
+	;
+
+statement_block
+	: seq_block
+	| statement
+	;
+
+/* 8.1 Concatenations============================================ */
+
+concatenation
+	: '{' identifier (',' identifier)* '}'
+	;
+
+
+/* 8.3 Expressions ============================================== */
+
+expression // behavioural
+	: number			  		  												# atomExpression
+	| identifier																	# atomExpression
+	| concatenation																# atomExpression
+	| '(' expression ')'													# parensExpression
+	| op=(PLUS | MINUS) expression                # unaryExpression
+	| expression op=(MUL | DIV) expression				# binaryExpression
+	| expression op=(PLUS | MINUS) expression			# binaryExpression
+	;
+
+expr // gate
+	: identifier																	# atomExpr
+	| '(' expr ')'																# parensExpr
+	| op=unary_gate_op expr												# unaryExpr
+	| expr op=binary_gate_op expr									# binaryExpr
+	;
+	
+binary_gate_op: AND | NAND | OR | NOR | XOR;	
+unary_gate_op: NOT | NEG;	
+
+/* 8.5 l values ================================================= */
+
+lvalue
+	: identifier
+	| concatenation
+	;
+
+/* 8.6 Operators ================================================= */
+
+unary_operator
 	: PLUS | MINUS | NOT
 	;
 
-BINARY_OPERATOR
+binary_operator
 	: PLUS | MINUS | MUL | DIV | EQUAL | NOTEQUAL
 	;
 
+/* 8.7 Numbers  */
+
+number
+   : Decimal_number		#decimal
+   | Octal_number			#octal
+   | Binary_number		#binary
+   | Hex_number				#hex
+   ;
+
+Decimal_number
+   : Unsigned_number
+	 |(Size Decimal_base)? Unsigned_number
+   ;
+
+Binary_number
+   : (Size)? Binary_base Binary_value
+   ;
+
+Octal_number
+   : (Size)? Octal_base Octal_value
+   ;
+
+Hex_number
+   : (Size)? Hex_base Hex_value
+   ;
+
+fragment Sign
+   : [+-]
+   ;
+
+fragment Size
+   : Non_zero_unsigned_number
+   ;
+
+fragment Non_zero_unsigned_number
+   : Non_zero_decimal_digit ('_' | Decimal_digit)*
+   ;
+
+fragment Unsigned_number
+   : Decimal_digit ('_' | Decimal_digit)*
+   ;
+
+fragment Binary_value
+   : Binary_digit ('_' | Binary_digit)*
+   ;
+
+fragment Octal_value
+   : Octal_digit ('_' | Octal_digit)*
+   ;
+
+fragment Hex_value
+   : Hex_digit ('_' | Hex_digit)*
+   ;
+
+fragment Decimal_base
+   : '\'' [sS]? [dD]
+   ;
+
+fragment Binary_base
+   : '\'' [sS]? [bB]
+   ;
+
+fragment Octal_base
+   : '\'' [sS]? [oO]
+   ;
+
+fragment Hex_base
+   : '\'' [sS]? [hH]
+   ;
+
+fragment Non_zero_decimal_digit
+   : [1-9]
+   ;
+
+fragment Decimal_digit
+   : [0-9]
+   ;
+
+fragment Binary_digit
+   : X_digit | Z_digit | [01]
+   ;
+
+fragment Octal_digit
+   : X_digit | Z_digit | [0-7]
+   ;
+
+fragment Hex_digit
+   : X_digit | Z_digit | [0-9a-fA-F]
+   ;
+
+fragment X_digit
+   : [xX]
+   ;
+
+fragment Z_digit
+   : [zZ?]
+   ;
+
+
+/* Token groups ============================================== */
+
 defined_connection_id: IDENTIFIER;
-defined_connection_id_list:
-	defined_connection_id (',' defined_connection_id)*;
-identifier_list: IDENTIFIER (',' IDENTIFIER)*;
+defined_connection_id_list:	defined_connection_id (',' defined_connection_id)*;
+identifier_list: identifier (',' identifier)*;
+range: '[' rangestart = Decimal_number ':' rangeend = Decimal_number ']';
 
-number: UNSIGNED_NUMBER | BINARY_NUMBER;
-range: '[' start = UNSIGNED_NUMBER ':' end = UNSIGNED_NUMBER ']';
-
-/* Tokens ============================================================= */
+/* Tokens ===================================================== */
 
 NOT: '!';
 NEG: '~';
@@ -186,21 +352,28 @@ GT: '>';
 EQUAL: '==';
 NOTEQUAL: '!=';
 
+/* 9.2 Comments  ============================================== */
 
-ONE_LINE_COMMENT:
-	'//' .*? ('\r')? (EOF | '\n') -> channel(HIDDEN);
-BLOCK_COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
-WHITE_SPACE: [ \t\n\r\f]+ -> channel(HIDDEN);
+One_line_comment
+   : '//' .*? '\r'? '\n' -> channel (HIDDEN)
+   ;
 
-MAIN: 'Main';
+Block_comment
+   : '/*' .*? '*/' -> channel (HIDDEN)
+   ;
+
+/* 9.3 Identifiers ============================================ */
 
 IDENTIFIER: [a-zA-Z_] ( [a-zA-Z0-9_$])*;
 
-UNSIGNED_NUMBER: DECIMAL_DIGIT+;
+identifier
+	: IDENTIFIER																			#idPlain
+	| IDENTIFIER '[' expression ']'										#idOffset
+	| IDENTIFIER '[' expression ':' expression ']'		#idRange
+	;
 
-fragment BINARY_NUMBER: BINARY_BASE BINARY_VALUE;
-fragment BINARY_BASE: '`b';
-fragment BINARY_VALUE: BINARY_DIGIT+;
+/* 9.5 Whitespace ============================================= */
 
-fragment BINARY_DIGIT: 'x' | 'z' | [01];
-fragment DECIMAL_DIGIT: [0-9];
+White_space
+   : [ \t\n\r] + -> channel (HIDDEN)
+   ;

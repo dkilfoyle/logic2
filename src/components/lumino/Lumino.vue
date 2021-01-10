@@ -78,6 +78,8 @@ export default {
       fileMenu.title.label = "File";
       fileMenu.addItem({ command: "file:new-tab" });
       fileMenu.addItem({ type: "separator" });
+      fileMenu.addItem({ command: "file:open" });
+      fileMenu.addItem({ type: "separator" });
       fileMenu.addItem({ command: "file:compile" });
       fileMenu.addItem({ command: "file:simulate" });
 
@@ -122,6 +124,14 @@ export default {
         caption: "Open a new tab",
         execute: () => {
           this.$emit("newFile");
+        }
+      });
+      this.commands.addCommand("file:open", {
+        label: "Open",
+        mnemonic: 0,
+        caption: "Open a file from the library",
+        execute: () => {
+          this.$emit("openLibrary");
         }
       });
       this.commands.addCommand("file:compile", {

@@ -1,8 +1,8 @@
 <template>
-  <div class="dk-flex-col dk-gap-10 dk-h-100">
-    <h4 class="dk-pad-t10 dk-pad-x10">CIRCUIT LIBRARY</h4>
+  <div class="dk-flex-col dk-gap-5 dk-h-100">
+    <h4 class="dk-pt-10 dk-px-10">CIRCUIT LIBRARY</h4>
     <liquor-tree
-      class="dk-h-100"
+      class="dk-h-100 skinny-scroll"
       id="codeLiquorTree"
       :data="sourceTree"
       :options="{ nodeIndent: 22 }"
@@ -50,18 +50,4 @@ export default {
 };
 </script>
 
-<style>
-#codeLiquorTree::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-
-  /* border-left: #4a4a4a 1px solid; */
-}
-
-#codeLiquorTree::-webkit-scrollbar-thumb {
-  background-color: #808080;
-  /* border-left: #4a4a4a 1px solid; */
-  border-radius: 6px;
-  fill-opacity: 0.5;
-}
-</style>
+<style></style>

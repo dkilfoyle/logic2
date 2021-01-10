@@ -1,12 +1,25 @@
+/* eslint-disable no-debugger */
+import Variable from "./Variable";
+import Numeric from "./Numeric";
+import Operation from "./Operation";
+
 var modules, instances, gates;
 
-// const stripReactive = x => JSON.parse(JSON.stringify(x));
+const stripReactive = x => JSON.parse(JSON.stringify(x));
 
 const createInstance = (parentNamespace, instanceDeclaration) => {
+  console.group(
+    "createInstance: ",
+    parentNamespace,
+    instanceDeclaration.module
+  );
+  console.log("instanceDeclaration: ", instanceDeclaration);
   var namespace;
   if (parentNamespace == "") namespace = "main";
   else namespace = parentNamespace + "_" + instanceDeclaration.id;
   const instanceModule = modules[instanceDeclaration.module];
+  console.log("instanceModule: ", instanceModule);
+
   const varMap = {};
 
   var newInstance = {
@@ -25,43 +38,94 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
   // Build varMap - do it now because gates may be referred to before declaration
   instanceModule.wires.forEach(wire => {
-    varMap[wire] = `${namespace}_${wire}`;
+    varMap[wire.id] = `${namespace}_${wire.id}`;
   });
   instanceModule.regs.forEach(reg => {
-    varMap[reg] = `${namespace}_${reg}`;
+    varMap[reg.id] = `${namespace}_${reg.id}`;
   });
   instanceModule.ports.forEach(port => {
     varMap[port.id] = `${namespace}_${port.id}`;
   });
 
-  // console.log("-- instance varMap: ", varMap);
+  // console.log("varMap: ", varMap);
 
   // create all the gates defined in the instance's module statements
   // gate declaration has the form { id: "X", gate: "and", inputs: ["a", "b"], type: "gate"}
   // if the gate has the same id as an output port then map that id to id.gate and set the output ports input to id.gate
+
+  const gateBitSizes = {
+    number: 10,
+    sevenseg: 4
+  };
+
   instanceModule.instantiations
     .filter(statement => statement.type == "gate")
     .forEach(gateDeclaration => {
-      // if this gate shares an output id, ie is connected to an output port then add ! to indicate last gate before output
       const newGate = {
         id: varMap[gateDeclaration.id],
         logic: gateDeclaration.gate,
-        inputs: gateDeclaration.inputs.map(input => varMap[input]),
+        inputs: gateDeclaration.inputs.map(x => x.instance(namespace)),
         instance: namespace,
-        state: 0,
+        state: new Numeric(0, gateBitSizes[gateDeclaration.gate] || 1),
         type: "gate"
       };
       gates.push(newGate);
       newInstance.gates.push(newGate.id);
     });
 
+  // ~a & b | c
+  // op(op(op(a, not) & b) | c)
+
+  let counter;
+
+  const walkOperationTree = (namespace, id, op) => {
+    let gateID = id + (counter == 0 ? "" : counter);
+    counter = counter + 1;
+
+    if (op instanceof Variable) {
+      return op;
+    }
+
+    const newGate = {
+      id: namespace + "_" + gateID,
+      instance: namespace,
+      type: "gate",
+      state: new Numeric(0),
+      logic: op.op,
+      inputs: op.rhs
+        ? [
+            walkOperationTree(namespace, id, op.lhs).instance(namespace),
+            walkOperationTree(namespace, id, op.rhs).instance(namespace)
+          ]
+        : [walkOperationTree(namespace, id, op.lhs).instance(namespace)]
+    };
+
+    gates.push(newGate);
+    newInstance.gates.push(newGate.id);
+    return new Variable(gateID, null, namespace);
+  };
+
+  instanceModule.netAssignments.forEach(net => {
+    console.group("netAsssigment: ", net.id.name);
+    counter = 0;
+    if (net.operationTree instanceof Variable)
+      walkOperationTree(
+        namespace,
+        net.id,
+        0,
+        new Operation(net.OperationTree, "buffer", null)
+      );
+    else walkOperationTree(namespace, net.id, net.operationTree);
+    console.groupEnd();
+  });
+
   instanceModule.regs.forEach(reg => {
     const newGate = {
-      id: varMap[reg],
+      id: varMap[reg.id],
       logic: "reg",
       inputs: [],
       instance: namespace,
-      state: 0,
+      state: new Numeric(0, reg.bitSize),
       type: "gate"
     };
     gates.push(newGate);
@@ -81,7 +145,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
   instanceModule.ports.forEach(port => {
     if (namespace == "main") {
-      const portType = port.type == "input" ? "control" : "response";
+      const portType = port.direction == "input" ? "control" : "response";
 
       // output ports may already be defined as a buffer eg buffer(F, Fe);
       // if main_port.id already exists then just change it's logic to responsebuffer
@@ -94,11 +158,10 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
           logic: portType,
           inputs: [],
           instance: "main",
-          state: 0,
+          state: new Numeric(0, port.bitSize),
           type: "gate"
         };
 
-        // console.log("main port ", port);
         gates.push(newGate);
         newInstance.gates.push(newGate.id);
       }
@@ -106,11 +169,12 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     }
 
     const portGate = {
-      id: `${namespace}_${port.id}` + (port.type == "output" ? "-out" : ""),
+      id:
+        `${namespace}_${port.id}` + (port.direction == "output" ? "-out" : ""),
       logic: "portbuffer",
       instance: namespace,
       inputs: [],
-      state: 0,
+      state: new Numeric(0, port.bitSize),
       type: "port"
     };
 
@@ -122,13 +186,19 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       param.value.id ----->| input     | 
                            |           | 
     */
-    if (port.type == "input") {
+    if (port.direction == "input") {
       const connection = instanceDeclaration.connections.find(
         connection => connection.port.id == port.id
       );
       if (connection) {
         // if the input port is connected
-        portGate.inputs.push(`${parentNamespace}_${connection.value.id}`);
+        // portGate.inputs.push(`${parentNamespace}_${connection.value.id}`);
+        let newInput = new Variable(
+          connection.value.id.name,
+          connection.value.id.offset,
+          parentNamespace
+        );
+        portGate.inputs.push(newInput);
         newInstance.inputs.push(varMap[port.id]);
       }
     }
@@ -140,7 +210,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         |             |   |
         | varMap[port.id] |
     */
-    if (port.type == "output") {
+    if (port.direction == "output") {
       const connection = instanceDeclaration.connections.find(
         connection => connection.port.id == port.id
       );
@@ -151,22 +221,23 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         // push the output gate (output-out) to the mapped parent gate's inputs
         // output-out ------> parentGate = {parentNamespace}_{param.value.id}
         let parentGate = gates.find(
-          gate => gate.id == `${parentNamespace}_${connection.value.id}`
+          gate => gate.id == `${parentNamespace}_${connection.value.id.name}`
         );
         if (!parentGate) {
           console.log(instanceDeclaration, port, connection);
           throw new Error(
-            `${connection.value.id} is not a gate in ${parentNamespace}`
+            `${connection.value.id.name} is not a gate in ${parentNamespace}`
           );
         }
         // console.log(
         //   `---- parentGate: ${parentGate.id} will get input from ${portGate.id}`
         // );
-        parentGate.inputs.push(portGate.id); // portGate.id already has -out appended
+        parentGate.inputs.push(new Variable(port.id + "-out", null, namespace)); // portGate.id already has -out appended
 
         //  push the gate with the same name as the output into the output port buffer gate's inputs
-        const sameNameGate = gates.find(gate => gate.id == varMap[port.id]);
-        if (sameNameGate) portGate.inputs.push(sameNameGate.id);
+        // const sameNameGate = gates.find(gate => gate.id == varMap[port.id]);
+        // if (sameNameGate)
+        portGate.inputs.push(new Variable(port.id, null, namespace));
 
         // console.log(
         //   `---- sameNameGate: ${sameNameGate.id}. ${portGate.id} will get this as input`
@@ -175,6 +246,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         newInstance.outputs.push(portGate.id);
       }
     }
+    // console.log("portGate: ", port.id, port.direction, portGate);
+
     gates.push(portGate);
   });
 
@@ -186,30 +259,21 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       newInstance.instances.push(childInstance.id);
     });
 
-  const varMapStatement = s => {
-    if (s.statement_type == "seq_block")
-      s.statements.forEach(ss => varMapStatement(ss));
-    else if (s.statement_type == "blocking_assignment") {
-      s.lhs = varMap[s.lhs];
-      if (s.rhs != +s.rhs) s.rhs = varMap[s.rhs]; // varMap rhs if it is not a number
-    }
-  };
-
   if (instanceModule.initial) {
-    newInstance.initial = { ...instanceModule.initial };
-    varMapStatement(newInstance.initial.statement);
+    // no need to instantiate statements because statements are always evaluated in local (module instance) namespace
+    // using optional namespace overide to setvalue and getvalue for Variable and Operation
+    newInstance.initial = instanceModule.initial;
   }
 
   if (instanceModule.always) {
-    newInstance.always = { ...instanceModule.always };
-    newInstance.always.sensitivities.forEach(sensitivity => {
-      sensitivity.id = varMap[sensitivity.id];
-    });
-    varMapStatement(newInstance.always.statement);
+    newInstance.always = instanceModule.always;
   }
 
   newInstance.varMap = varMap;
   instances.push(newInstance);
+
+  console.log("Instance: ", stripReactive(newInstance));
+  console.groupEnd();
 
   return newInstance;
 };

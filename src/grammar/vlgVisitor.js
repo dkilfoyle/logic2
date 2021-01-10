@@ -42,8 +42,14 @@ vlgVisitor.prototype.visitModule_ports = function(ctx) {
 };
 
 
-// Visit a parse tree produced by vlgParser#ansi_port_declaration.
-vlgVisitor.prototype.visitAnsi_port_declaration = function(ctx) {
+// Visit a parse tree produced by vlgParser#port_declaration.
+vlgVisitor.prototype.visitPort_declaration = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#port_identifier_list.
+vlgVisitor.prototype.visitPort_identifier_list = function(ctx) {
   return this.visitChildren(ctx);
 };
 
@@ -60,12 +66,6 @@ vlgVisitor.prototype.visitNet = function(ctx) {
 };
 
 
-// Visit a parse tree produced by vlgParser#gate.
-vlgVisitor.prototype.visitGate = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
 // Visit a parse tree produced by vlgParser#reg.
 vlgVisitor.prototype.visitReg = function(ctx) {
   return this.visitChildren(ctx);
@@ -74,6 +74,12 @@ vlgVisitor.prototype.visitReg = function(ctx) {
 
 // Visit a parse tree produced by vlgParser#assign.
 vlgVisitor.prototype.visitAssign = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#gate.
+vlgVisitor.prototype.visitGate = function(ctx) {
   return this.visitChildren(ctx);
 };
 
@@ -126,6 +132,24 @@ vlgVisitor.prototype.visitTime_assignment = function(ctx) {
 };
 
 
+// Visit a parse tree produced by vlgParser#net_declaration.
+vlgVisitor.prototype.visitNet_declaration = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#reg_declaration.
+vlgVisitor.prototype.visitReg_declaration = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#simple_identifier_list.
+vlgVisitor.prototype.visitSimple_identifier_list = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by vlgParser#module_instantiation.
 vlgVisitor.prototype.visitModule_instantiation = function(ctx) {
   return this.visitChildren(ctx);
@@ -144,20 +168,8 @@ vlgVisitor.prototype.visitNamed_port_connection = function(ctx) {
 };
 
 
-// Visit a parse tree produced by vlgParser#net_declaration.
-vlgVisitor.prototype.visitNet_declaration = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#reg_declaration.
-vlgVisitor.prototype.visitReg_declaration = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#gate_declaration.
-vlgVisitor.prototype.visitGate_declaration = function(ctx) {
+// Visit a parse tree produced by vlgParser#gate_instantiation.
+vlgVisitor.prototype.visitGate_instantiation = function(ctx) {
   return this.visitChildren(ctx);
 };
 
@@ -168,86 +180,20 @@ vlgVisitor.prototype.visitGate_type = function(ctx) {
 };
 
 
-// Visit a parse tree produced by vlgParser#continuous_assign.
-vlgVisitor.prototype.visitContinuous_assign = function(ctx) {
+// Visit a parse tree produced by vlgParser#net_assignment.
+vlgVisitor.prototype.visitNet_assignment = function(ctx) {
   return this.visitChildren(ctx);
 };
 
 
-// Visit a parse tree produced by vlgParser#list_of_assignments.
-vlgVisitor.prototype.visitList_of_assignments = function(ctx) {
+// Visit a parse tree produced by vlgParser#initial_construct.
+vlgVisitor.prototype.visitInitial_construct = function(ctx) {
   return this.visitChildren(ctx);
 };
 
 
-// Visit a parse tree produced by vlgParser#assignment.
-vlgVisitor.prototype.visitAssignment = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#negateExpr.
-vlgVisitor.prototype.visitNegateExpr = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#binaryExpr.
-vlgVisitor.prototype.visitBinaryExpr = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#parenExpr.
-vlgVisitor.prototype.visitParenExpr = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#idExpr.
-vlgVisitor.prototype.visitIdExpr = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#binary_operator.
-vlgVisitor.prototype.visitBinary_operator = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#primaryExpression.
-vlgVisitor.prototype.visitPrimaryExpression = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#binaryExpression.
-vlgVisitor.prototype.visitBinaryExpression = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#unaryPrimaryExpression.
-vlgVisitor.prototype.visitUnaryPrimaryExpression = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#primary.
-vlgVisitor.prototype.visitPrimary = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#initial_statement.
-vlgVisitor.prototype.visitInitial_statement = function(ctx) {
-  return this.visitChildren(ctx);
-};
-
-
-// Visit a parse tree produced by vlgParser#always_statement.
-vlgVisitor.prototype.visitAlways_statement = function(ctx) {
+// Visit a parse tree produced by vlgParser#always_construct.
+vlgVisitor.prototype.visitAlways_construct = function(ctx) {
   return this.visitChildren(ctx);
 };
 
@@ -276,6 +222,12 @@ vlgVisitor.prototype.visitEvent_type = function(ctx) {
 };
 
 
+// Visit a parse tree produced by vlgParser#seq_block.
+vlgVisitor.prototype.visitSeq_block = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by vlgParser#statement.
 vlgVisitor.prototype.visitStatement = function(ctx) {
   return this.visitChildren(ctx);
@@ -288,8 +240,122 @@ vlgVisitor.prototype.visitBlocking_assignment = function(ctx) {
 };
 
 
-// Visit a parse tree produced by vlgParser#seq_block.
-vlgVisitor.prototype.visitSeq_block = function(ctx) {
+// Visit a parse tree produced by vlgParser#conditional_statement.
+vlgVisitor.prototype.visitConditional_statement = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#statement_block.
+vlgVisitor.prototype.visitStatement_block = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#concatenation.
+vlgVisitor.prototype.visitConcatenation = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#binaryExpression.
+vlgVisitor.prototype.visitBinaryExpression = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#atomExpression.
+vlgVisitor.prototype.visitAtomExpression = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#parensExpression.
+vlgVisitor.prototype.visitParensExpression = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#unaryExpression.
+vlgVisitor.prototype.visitUnaryExpression = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#unaryExpr.
+vlgVisitor.prototype.visitUnaryExpr = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#atomExpr.
+vlgVisitor.prototype.visitAtomExpr = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#binaryExpr.
+vlgVisitor.prototype.visitBinaryExpr = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#parensExpr.
+vlgVisitor.prototype.visitParensExpr = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#binary_gate_op.
+vlgVisitor.prototype.visitBinary_gate_op = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#unary_gate_op.
+vlgVisitor.prototype.visitUnary_gate_op = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#lvalue.
+vlgVisitor.prototype.visitLvalue = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#unary_operator.
+vlgVisitor.prototype.visitUnary_operator = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#binary_operator.
+vlgVisitor.prototype.visitBinary_operator = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#decimal.
+vlgVisitor.prototype.visitDecimal = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#octal.
+vlgVisitor.prototype.visitOctal = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#binary.
+vlgVisitor.prototype.visitBinary = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#hex.
+vlgVisitor.prototype.visitHex = function(ctx) {
   return this.visitChildren(ctx);
 };
 
@@ -312,14 +378,26 @@ vlgVisitor.prototype.visitIdentifier_list = function(ctx) {
 };
 
 
-// Visit a parse tree produced by vlgParser#number.
-vlgVisitor.prototype.visitNumber = function(ctx) {
+// Visit a parse tree produced by vlgParser#range.
+vlgVisitor.prototype.visitRange = function(ctx) {
   return this.visitChildren(ctx);
 };
 
 
-// Visit a parse tree produced by vlgParser#range.
-vlgVisitor.prototype.visitRange = function(ctx) {
+// Visit a parse tree produced by vlgParser#idPlain.
+vlgVisitor.prototype.visitIdPlain = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#idOffset.
+vlgVisitor.prototype.visitIdOffset = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#idRange.
+vlgVisitor.prototype.visitIdRange = function(ctx) {
   return this.visitChildren(ctx);
 };
 

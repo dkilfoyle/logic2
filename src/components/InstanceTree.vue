@@ -1,28 +1,44 @@
 <template>
-  <div class="dk-flex-col dk-pad-10 dk-gap-10">
-    <h4>INSTANCES</h4>
+  <div class="dk-flex-col dk-grow-1 dk-gap-10 dk-py-10">
+    <h4 class="dk-px-10">INSTANCES</h4>
     <liquor-tree
+      class="skinny-scroll"
+      style="margin-top: -10px"
       ref="tree"
       :data="$store.getters.instanceTree"
       :options="{ nodeIndent: 14 }"
       @node:selected="onInstanceTreeSelection"
     ></liquor-tree>
-    <h4>GATE FILTER</h4>
-    <b-radio v-model="showWhichGates" name="showWhichGates" native-value="all"
-      >All</b-radio
-    >
-    <b-radio
-      v-model="showWhichGates"
-      name="showWhichGates"
-      native-value="inputs"
-      >Inputs</b-radio
-    >
-    <b-radio
-      v-model="showWhichGates"
-      name="showWhichGates"
-      native-value="outputs"
-      >Outputs</b-radio
-    >
+    <h4 class="dk-px-10">GATE FILTER</h4>
+    <div class="dk-flex-col dk-gap-10 dk-px-10">
+      <b-radio v-model="showWhichGates" name="showWhichGates" native-value="all"
+        >All</b-radio
+      >
+      <b-radio
+        v-model="showWhichGates"
+        name="showWhichGates"
+        native-value="inputs"
+        >Inputs</b-radio
+      >
+      <b-radio
+        v-model="showWhichGates"
+        name="showWhichGates"
+        native-value="outputs"
+        >Outputs</b-radio
+      >
+      <b-radio
+        v-model="showWhichGates"
+        name="showWhichGates"
+        native-value="ports"
+        >Ports</b-radio
+      >
+      <b-radio
+        v-model="showWhichGates"
+        name="showWhichGates"
+        native-value="wires"
+        >Wires</b-radio
+      >
+    </div>
   </div>
 </template>
 
