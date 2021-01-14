@@ -25,6 +25,7 @@ export const SourceFiles = {
   OneHotUpCounter: require("./onehotupcounter.v").default,
   HalfAdder: require("./halfadder.v").default,
   FullAdder: require("./fulladder.v").default,
+  FullAdderSingle: require("./fulladdersingle.v").default,
   // Scratch: require("./fulladder.v").default,
   RippleAdder: require("./rippleadder.v").default,
   RippleSubtractor: require("./ripplesubtractor.v").default,
@@ -64,6 +65,7 @@ export const SourceTree = [
           { text: "BitAdder" },
           { text: "HalfAdder" },
           { text: "FullAdder" },
+          { text: "FullAdderSingle" },
           { text: "RippleAdder" },
           { text: "RippleSubtractor" }
         ]

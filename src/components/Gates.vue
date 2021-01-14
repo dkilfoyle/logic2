@@ -34,7 +34,7 @@
               <td>{{ g }}</td>
               <td>
                 <img
-                  :src="require('@/assets/' + getGate(g).logic + '.svg')"
+                  :src="require('@/assets/' + getGate(g).type + '.svg')"
                   class="gateicon"
                 />
               </td>

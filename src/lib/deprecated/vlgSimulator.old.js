@@ -20,6 +20,72 @@ const indexBy = (array, prop) =>
 
 const getLocalId = x => x.substr(x.lastIndexOf("_") + 1);
 
+const not = x => ~x & 1;
+
+const logicFunctions = {
+  not: ([a]) => ~a & 1,
+  inv: ([a]) => ~a & 1,
+  buffer: ([a]) => a,
+  portbuffer: ([a]) => a,
+  response: ([a]) => a,
+  and: ([a, b, c]) => (c == undefined ? a && b : a && b && c),
+  nand: ([a, b, c]) => (c == undefined ? not(a && b) : not(a && b && c)),
+  or: ([a, b, c]) => (c == undefined ? a || b : a || b || c),
+  nor: ([a, b, c]) => (c == undefined ? not(a || b) : not(a || b || c)),
+  xor: ([a, b, c]) => (c == undefined ? a ^ b : a ^ b ^ c),
+  xnor: ([a, b, c]) => (c == undefined ? not(a ^ b) : not(a ^ b ^ c)),
+  sevenseg: () => 0,
+  number: bits => parseInt(bits.reverse().join(""), 2),
+  ledbar: bits => parseInt(bits.reverse().join(""), 2)
+};
+
+const evaluateGates = gates => {
+  const logicOperation = gate => {
+    // unconected ports will have 0 length inputs
+    if (gate.logic == "portbuffer" && gate.inputs.length == 0) return true;
+
+    let logicFn = gate.logic;
+    let inputValues = gate.inputs.map(input => input.getValue(gatesLookup));
+
+    if (
+      ["not", "response", "portbuffer"].includes(logicFn) &&
+      gate.inputs.length > 1
+    ) {
+      // TODO: allow portbuffers to have separate bit inputs?
+      console.log(
+        "Gate evaluation error - 1 input only valid for not and response and port buffer gates",
+        gate
+      );
+      return false;
+    }
+
+    if (logicFn == "sevenseg" && gate.inputs.length != 7) {
+      console.log("Gate evaluation error - sevenseg must have 7 inputs", gate);
+      return false;
+    }
+
+    if (logicFn == "reg") return true;
+
+    try {
+      gate.state.setValue(
+        inputValues.some(input => input === "x")
+          ? "x"
+          : logicFunctions[logicFn](inputValues, gate.inputs)
+      );
+    } catch (e) {
+      logger(chalk.cyan("└── ") + chalk.white(`${gate.id} ` + e));
+      console.log(e, gate);
+      return false;
+    }
+
+    return true;
+  };
+
+  return gates.every(gate => {
+    return gate.logic === "control" ? true : logicOperation(gate);
+  });
+};
+
 const evaluateSensitivities = (sensitivities, namespace) => {
   return sensitivities.some(sens => {
     const current = sens.id.getValue(gatesLookup, namespace);
@@ -75,7 +141,7 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
   // reset all gates to state = 0
   // TODO: should set state to 'x'??
   gates.forEach(g => {
-    g.setValue(0);
+    g.state.setValue(0);
     newSimulation.gates[g.id] = [];
   });
 
@@ -93,7 +159,7 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
     0
   );
 
-  if (gatesLookup["main_clock"]) gatesLookup["main_clock"].setValue(1);
+  if (gatesLookup["main_clock"]) gatesLookup["main_clock"].state.setValue(1);
 
   // run the clock
   for (let clock = 0; clock <= maxClock; clock++) {
@@ -104,7 +170,7 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
       return c.time == clock
         ? c.assignments.every(a => {
             // can only assign values to control types
-            if (!gatesLookup["main_" + a.id].type == "control") {
+            if (!gatesLookup["main_" + a.id].logic == "control") {
               logger(
                 "Can only assign simulation values to inputs of Main: " + a.id
               );
@@ -135,13 +201,8 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
 
     // run gate evaluation and instance always for this time step (not t=0)
     for (let i = 0; i < EVALS_PER_STEP; i++) {
-      try {
-        gates.forEach(gate => gate.update(gatesLookup));
-      } catch (e) {
-        logger(chalk.red(e));
-        return false;
-      }
-
+      let gatesRes = evaluateGates(gates);
+      if (!gatesRes) return false;
       // run always section for each instance
       let alwaysRes = instances.every(instance => {
         return instance.always &&
@@ -154,7 +215,7 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
 
     // and store gate results in newSimulation
     gates.forEach(g => {
-      newSimulation.gates[g.id].push(gatesLookup[g.id].getValue());
+      newSimulation.gates[g.id].push(gatesLookup[g.id].state.decimalValue);
     });
     newSimulation.clock.push(clock % 2);
 
@@ -180,7 +241,7 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
           chalk.cyan(" => ") +
           shortJoin(
             instancesLookup.main.gates
-              .filter(gateId => gatesLookup[gateId].type == "response")
+              .filter(gateId => gatesLookup[gateId].logic == "response")
               .map(o => getLocalId(o) + "=" + gatesLookup[o].state.decimalValue)
           )
       );

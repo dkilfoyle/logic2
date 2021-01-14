@@ -512,7 +512,7 @@ class Listener extends vlgListener {
     this.curModule.instantiations.push({
       type: "gate",
       id: gateOutput,
-      gate: gateType,
+      gateType: gateType,
       inputs: gateInputs,
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
       sourceStop: { column: ctx.stop.column, line: ctx.stop.line }

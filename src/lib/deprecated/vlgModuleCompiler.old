@@ -2,18 +2,10 @@
 import Variable from "./Variable";
 import Numeric from "./Numeric";
 import Operation from "./Operation";
-import LogicGate from "./LogicGate";
-import BufferGate from "./BufferGate";
 
 var modules, instances, gates;
 
 const stripReactive = x => JSON.parse(JSON.stringify(x));
-
-const isLogicGate = x => ["and", "nand", "or", "xor", "nor", "not"].includes(x);
-const isBuffer = x =>
-  ["buffer", "portbuffer", "response", "number", "ledbar", "control"].includes(
-    x
-  );
 
 const createInstance = (parentNamespace, instanceDeclaration) => {
   console.group(
@@ -44,6 +36,17 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   // instanceDeclaration is generated from module statement Mymodule foo(.a(user1), .b(user2), .X(o1))
   // => { id: "foo", module: "Mymodule", connections: [{port: {id: "a"}, value: {id: "user1", index: 0}}, ...]}
 
+  // Build varMap - do it now because gates may be referred to before declaration
+  instanceModule.wires.forEach(wire => {
+    varMap[wire.id] = `${namespace}_${wire.id}`;
+  });
+  instanceModule.regs.forEach(reg => {
+    varMap[reg.id] = `${namespace}_${reg.id}`;
+  });
+  instanceModule.ports.forEach(port => {
+    varMap[port.id] = `${namespace}_${port.id}`;
+  });
+
   // console.log("varMap: ", varMap);
 
   // create all the gates defined in the instance's module statements
@@ -57,19 +60,16 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
   instanceModule.instantiations
     .filter(statement => statement.type == "gate")
-    .forEach(gateDef => {
-      const newGate = isLogicGate(gateDef.gateType)
-        ? new LogicGate(namespace, gateDef.id, gateDef.gateType)
-        : isBuffer(gateDef.gateType)
-        ? new BufferGate(namespace, gateDef.id, gateDef.gateType)
-        : null;
-      if (!newGate)
-        throw new Error(
-          `Invalid gate type ${gateDef.gateType} in id ${gateDef.id}`
-        );
-      (newGate.inputs = gateDef.inputs.map(x => x.instance(namespace))),
-        (newGate.state = new Numeric(0, gateBitSizes[gateDef.gate] || 1)),
-        gates.push(newGate);
+    .forEach(gateDeclaration => {
+      const newGate = {
+        id: varMap[gateDeclaration.id],
+        logic: gateDeclaration.gate,
+        inputs: gateDeclaration.inputs.map(x => x.instance(namespace)),
+        instance: namespace,
+        state: new Numeric(0, gateBitSizes[gateDeclaration.gate] || 1),
+        type: "gate"
+      };
+      gates.push(newGate);
       newInstance.gates.push(newGate.id);
     });
 
@@ -86,14 +86,19 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       return op;
     }
 
-    const newGate = new LogicGate(namespace, gateID, op.op);
-    (newGate.state = new Numeric(0)),
-      (newGate.inputs = op.rhs
+    const newGate = {
+      id: namespace + "_" + gateID,
+      instance: namespace,
+      type: "gate",
+      state: new Numeric(0),
+      logic: op.op,
+      inputs: op.rhs
         ? [
             walkOperationTree(namespace, id, op.lhs).instance(namespace),
             walkOperationTree(namespace, id, op.rhs).instance(namespace)
           ]
-        : [walkOperationTree(namespace, id, op.lhs).instance(namespace)]);
+        : [walkOperationTree(namespace, id, op.lhs).instance(namespace)]
+    };
 
     gates.push(newGate);
     newInstance.gates.push(newGate.id);
@@ -115,7 +120,14 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   });
 
   instanceModule.regs.forEach(reg => {
-    const newGate = new BufferGate(namespace, reg.id, "register", reg.bitSize);
+    const newGate = {
+      id: varMap[reg.id],
+      logic: "reg",
+      inputs: [],
+      instance: namespace,
+      state: new Numeric(0, reg.bitSize),
+      type: "gate"
+    };
     gates.push(newGate);
     newInstance.gates.push(newGate.id);
   });
@@ -141,19 +153,31 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       if (gates.some(x => x.id == "main_" + port.id)) {
         // console.log("main_" + port.id);
       } else {
-        const newGate = new BufferGate("main", port.id, portType, port.bitSize);
+        const newGate = {
+          id: "main_" + port.id,
+          logic: portType,
+          inputs: [],
+          instance: "main",
+          state: new Numeric(0, port.bitSize),
+          type: "gate"
+        };
+
         gates.push(newGate);
         newInstance.gates.push(newGate.id);
       }
       return;
     }
 
-    const portGate = new BufferGate(
-      namespace,
-      port.id + (port.direction == "output" ? "-out" : ""),
-      "portbuffer",
-      port.bitSize
-    );
+    const portGate = {
+      id:
+        `${namespace}_${port.id}` + (port.direction == "output" ? "-out" : ""),
+      logic: "portbuffer",
+      instance: namespace,
+      inputs: [],
+      state: new Numeric(0, port.bitSize),
+      type: "port"
+    };
+
     // console.log("-- port: ", port.id, ", gate: ", portGate.id);
 
     // connect the input port buffer gate's input to the mapped parent value in the instanceDeclaration parameters
@@ -175,7 +199,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
           parentNamespace
         );
         portGate.inputs.push(newInput);
-        newInstance.inputs.push(portGate.id);
+        newInstance.inputs.push(varMap[port.id]);
       }
     }
 
