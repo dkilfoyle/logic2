@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */ /* eslint-disable no-debugger */
 <template>
   <div class="dk-flex-row dk-h-100 dk-align-center">
     <svg ref="svgSchematic" id="svgSchematic" />
@@ -202,7 +203,7 @@ export default {
 
       // await here
       this.buildInstance(this.elkData);
-      // console.log("elkData: ", this.stripReactive(this.elkData));
+      console.log("elkData: ", this.stripReactive(this.elkData));
 
       const filter = this.g.defs
         .append("filter")
@@ -352,9 +353,9 @@ export default {
             id: input.id + "-" + gate.id + "_input_" + i,
             type: "gate2gate",
             source: this.getAllGates.some(
-              x => x.type == "port" && x.id == input.id
+              x => x.type == "portbuffer" && x.id == input.id
             )
-              ? this.getGate(input.id).instance // input.namespace // if the gate input is a port then source is the instance,
+              ? this.getGate(input.id).namespace // input.namespace // if the gate input is a port then source is the instance,
               : input.id + "_gate", // else source is a gate
             sourcePort: input.id,
             target: gate.id + "_gate",
@@ -395,6 +396,8 @@ export default {
 
         childInstance.outputs.forEach(output => {
           // console.log(`---- Port Output: ${this.getLocalId(output)} = ${output}`);
+          // eslint-disable-next-line no-debugger
+          debugger;
           let port = {
             id: output, // output will be in form {this.getNamespace}_{port}-out
             hwMeta: { name: this.getLocalId(output) },
