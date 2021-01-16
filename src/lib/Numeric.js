@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 import Operand from "./Operand";
 
 // Variable is a key into the gatesLookup object (which acts as 'memory')
@@ -40,7 +41,14 @@ class Numeric extends Operand {
     if (bitRange == null) this.decimalValue = newDecimalValue;
     else {
       // set only specific bits
-      this.decimalValue |= newDecimalValue << Math.min(...bitRange);
+      let numBits = bitRange.length
+        ? Math.abs(bitRange[1] - bitRange[0]) + 1
+        : 1;
+      let shift = bitRange.length ? Math.min(...bitRange) : bitRange;
+      let mask = ((1 << numBits) - 1) << shift; // eg bitrange[4:2] mask = 0b11100
+      // first set all the masked bits to 0 then | in the new bits
+      this.decimalValue = this.decimalValue & ~mask;
+      this.decimalValue |= newDecimalValue << shift;
     }
   }
   getValue() {

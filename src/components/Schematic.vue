@@ -1,3 +1,5 @@
+/* eslint-disable no-debugger */ /* eslint-disable no-debugger */ /*
+eslint-disable no-debugger */ /* eslint-disable no-debugger */
 <template>
   <div class="dk-flex-row dk-h-100 dk-align-center">
     <svg ref="svgSchematic" id="svgSchematic" />
@@ -48,7 +50,7 @@ export default {
       var COLOR_OFF = "white";
 
       this.getAllGates
-        .filter(gate => gate.logic == "ledbar")
+        .filter(gate => gate.type == "ledbar")
         .forEach(gate => {
           d3.select("#svgSchematic #" + gate.id + "_gate_LEDBAR")
             .selectAll(".bar")
@@ -58,9 +60,9 @@ export default {
         });
 
       this.getAllGates
-        .filter(gate => gate.logic == "sevenseg")
+        .filter(gate => gate.type == "sevenseg")
         .forEach(gate => {
-          let inputValues = gate.inputs.map(x => timestate[x]);
+          let inputValues = gate.inputs.map(x => timestate[x.id]);
           ["a", "b", "c", "d", "e", "f", "g"].forEach((letter, i) => {
             const element = document.getElementById(
               gate.id + "_gate_seg" + letter
@@ -77,7 +79,7 @@ export default {
       COLOR_OFF = "#181917";
 
       this.getAllGates
-        .filter(gate => gate.logic == "number")
+        .filter(gate => gate.type == "number")
         .forEach(gate => {
           let id = gate.id + "_gate_NUMBER";
           // let element = document.querySelector("#svgSchematic #" + id);
@@ -106,7 +108,7 @@ export default {
           element.setAttribute("class", `${gateid}_link link-${gatevalue}`)
         );
         let gate = this.getGate(gateid);
-        if (gate.logic == "control" || gate.logic == "response") {
+        if (gate.type == "control" || gate.type == "response") {
           const querystr = "#svgSchematic ." + gateid + "_external";
           const element = document.querySelector(querystr);
           if (element)
@@ -202,7 +204,7 @@ export default {
 
       // await here
       this.buildInstance(this.elkData);
-      // console.log("elkData: ", this.stripReactive(this.elkData));
+      console.log("elkData: ", this.stripReactive(this.elkData));
 
       const filter = this.g.defs
         .append("filter")
@@ -306,16 +308,16 @@ export default {
             maxId: currentNet.hwMeta.maxId + 50 + gateCount,
             cls: "Operator",
             cssClass:
-              gate.logic == "control" || gate.logic == "response"
+              gate.type == "control" || gate.type == "response"
                 ? gate.id + "_external"
                 : gate.id + "_internal",
             name:
-              gate.logic == "control" ||
-              gate.logic == "portbuffer" ||
-              gate.logic == "response"
+              gate.type == "control" ||
+              gate.type == "portbuffer" ||
+              gate.type == "response"
                 ? this.getLocalId(gate.id)
-                : gate.logic.toUpperCase(),
-            isExternalPort: gate.logic == "control" || gate.logic == "response"
+                : gate.type.toUpperCase(),
+            isExternalPort: gate.type == "control" || gate.type == "response"
           },
           properties: {
             "org.eclipse.elk.portConstraints": "FIXED_ORDER",
@@ -327,7 +329,7 @@ export default {
         };
 
         // single output unless response
-        if (gate.logic != "response") {
+        if (gate.type != "response") {
           // console.log("gate: ", gate);
           gateNet.ports.push({
             id: gate.id,
@@ -352,9 +354,9 @@ export default {
             id: input.id + "-" + gate.id + "_input_" + i,
             type: "gate2gate",
             source: this.getAllGates.some(
-              x => x.type == "port" && x.id == input.id
+              x => x.type == "portbuffer" && x.id == input.id
             )
-              ? this.getGate(input.id).instance // input.namespace // if the gate input is a port then source is the instance,
+              ? this.getGate(input.id).namespace // input.namespace // if the gate input is a port then source is the instance,
               : input.id + "_gate", // else source is a gate
             sourcePort: input.id,
             target: gate.id + "_gate",
@@ -395,6 +397,7 @@ export default {
 
         childInstance.outputs.forEach(output => {
           // console.log(`---- Port Output: ${this.getLocalId(output)} = ${output}`);
+          // eslint-disable-next-line no-debugger
           let port = {
             id: output, // output will be in form {this.getNamespace}_{port}-out
             hwMeta: { name: this.getLocalId(output) },

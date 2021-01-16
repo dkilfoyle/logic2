@@ -6,8 +6,8 @@ module FullAdder (
   input a, b, ci,
   output sum, cout );
 
-  wire [1:0] res;
-  buffer(res);
+  wire [1:0] res; // todo, gates default to 1 bit LogicGates unless there is a wire declaration in which case become multibit buffers
+  buffer(res); // todo, unnecessary becuase will be made in walker?
 
   always @(*)
     begin
@@ -26,6 +26,9 @@ module Add4 (
 
   wire [2:0] cob;
   buffer(cob);
+  buffer(cob);
+  buffer(sum);
+  buffer(cout);
 
   FullAdder fa0(.a(a[0]), .b(b[0]), .ci(ci),     .sum(sum[0]), .cout(cob[0]));
   FullAdder fa1(.a(a[1]), .b(b[1]), .ci(cob[0]), .sum(sum[1]), .cout(cob[1]));

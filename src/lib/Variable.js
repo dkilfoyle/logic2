@@ -6,8 +6,9 @@ import Operand from "./Operand";
 // offset can be null (return the entire value) or a single number (bit index) or a 2 value array (bit range)
 
 class Variable extends Operand {
-  constructor(name, offset = null, namespace = null) {
+  constructor(namespace, name, offset = null) {
     super("variable");
+    this.namespace = namespace;
     this.name = name;
     // valid offset checking
     if (offset != null) {
@@ -30,10 +31,9 @@ class Variable extends Operand {
       this.offsetType = "none";
     }
     this.offset = offset;
-    this.namespace = namespace;
   }
   instance(namespace) {
-    return new Variable(this.name, this.offset, namespace);
+    return new Variable(namespace, this.name, this.offset);
   }
   get id() {
     if (this.namespace === null)
