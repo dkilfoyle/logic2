@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 const Chalk = require("chalk");
 let options = { enabled: true, level: 2 };
 const chalk = new Chalk.Instance(options);
@@ -97,6 +98,12 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
 
   // run the clock
   for (let clock = 0; clock <= maxClock; clock++) {
+    // store tick or tock
+    if (gatesLookup["main_clock"])
+      gatesLookup["main_clock"].state.setValue(
+        ~gatesLookup["main_clock"].state.decimalValue & 1
+      );
+
     newSimulation.time.push(clock);
 
     // assign control values if matching time point
@@ -126,12 +133,6 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
       console.log("setupres false");
       return false;
     }
-
-    // store tick or tock
-    if (gatesLookup["main_clock"])
-      gatesLookup["main_clock"].state.setValue(
-        ~gatesLookup["main_clock"].state.decimalValue & 1
-      );
 
     // run gate evaluation and instance always for this time step (not t=0)
     for (let i = 0; i < EVALS_PER_STEP; i++) {

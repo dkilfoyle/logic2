@@ -1,4 +1,5 @@
-/* eslint-disable no-debugger */ /* eslint-disable no-debugger */
+/* eslint-disable no-debugger */ /* eslint-disable no-debugger */ /*
+eslint-disable no-debugger */ /* eslint-disable no-debugger */
 <template>
   <div class="dk-flex-row dk-h-100 dk-align-center">
     <svg ref="svgSchematic" id="svgSchematic" />
@@ -61,7 +62,7 @@ export default {
       this.getAllGates
         .filter(gate => gate.type == "sevenseg")
         .forEach(gate => {
-          let inputValues = gate.inputs.map(x => timestate[x]);
+          let inputValues = gate.inputs.map(x => timestate[x.id]);
           ["a", "b", "c", "d", "e", "f", "g"].forEach((letter, i) => {
             const element = document.getElementById(
               gate.id + "_gate_seg" + letter
@@ -397,7 +398,6 @@ export default {
         childInstance.outputs.forEach(output => {
           // console.log(`---- Port Output: ${this.getLocalId(output)} = ${output}`);
           // eslint-disable-next-line no-debugger
-          debugger;
           let port = {
             id: output, // output will be in form {this.getNamespace}_{port}-out
             hwMeta: { name: this.getLocalId(output) },

@@ -11,9 +11,16 @@ const stripReactive = x => JSON.parse(JSON.stringify(x));
 
 const isLogicGate = x => ["and", "nand", "or", "xor", "nor", "not"].includes(x);
 const isBuffer = x =>
-  ["buffer", "portbuffer", "response", "number", "ledbar", "control"].includes(
-    x
-  );
+  [
+    "buffer",
+    "portbuffer",
+    "response",
+    "control",
+    "number",
+    "ledbar",
+    "sevenseg",
+    "reg"
+  ].includes(x);
 
 const createInstance = (parentNamespace, instanceDeclaration) => {
   console.group(
@@ -78,6 +85,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
   let counter;
 
+  // walk the operation tree until both lhs and rhs are variables
+  // then make a new gate namespace.idx which is op(lhs, rhs)
   const walkOperationTree = (namespace, id, op) => {
     let gateID = id + (counter == 0 ? "" : counter);
     counter = counter + 1;
@@ -86,14 +95,20 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       return op;
     }
 
-    const newGate = new LogicGate(namespace, gateID, op.op);
-    (newGate.state = new Numeric(0)),
-      (newGate.inputs = op.rhs
-        ? [
-            walkOperationTree(namespace, id, op.lhs).instance(namespace),
-            walkOperationTree(namespace, id, op.rhs).instance(namespace)
-          ]
-        : [walkOperationTree(namespace, id, op.lhs).instance(namespace)]);
+    if (op.op == "assign") debugger;
+
+    const newGate =
+      op.op == "assign"
+        ? new BufferGate(namespace, gateID, "buffer") // TODO: if gateID is an output newGate = gates.get(gateID+"-out")??
+        : new LogicGate(namespace, gateID, op.op);
+
+    newGate.state = new Numeric(0);
+    newGate.inputs = op.rhs
+      ? [
+          walkOperationTree(namespace, id, op.lhs).instance(namespace),
+          walkOperationTree(namespace, id, op.rhs).instance(namespace)
+        ]
+      : [walkOperationTree(namespace, id, op.lhs).instance(namespace)];
 
     gates.push(newGate);
     newInstance.gates.push(newGate.id);
@@ -107,15 +122,14 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       walkOperationTree(
         namespace,
         net.id,
-        0,
-        new Operation(net.OperationTree, "buffer", null)
+        new Operation(net.operationTree, "assign", null)
       );
     else walkOperationTree(namespace, net.id, net.operationTree);
     console.groupEnd();
   });
 
   instanceModule.regs.forEach(reg => {
-    const newGate = new BufferGate(namespace, reg.id, "register", reg.bitSize);
+    const newGate = new BufferGate(namespace, reg.id, "reg", reg.bitSize);
     gates.push(newGate);
     newInstance.gates.push(newGate.id);
   });

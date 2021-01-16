@@ -10,7 +10,9 @@ class BufferGate extends BaseComponent {
         "response",
         "control",
         "number",
-        "ledbar"
+        "ledbar",
+        "sevenseg",
+        "reg"
       ].includes(type)
     )
       throw new Error(

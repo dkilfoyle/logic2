@@ -27,6 +27,9 @@ class Operation extends Operand {
     this.rhs = rhs;
 
     switch (op) {
+      case "assign":
+        this.op = "assign";
+        break;
       case "parens":
         this.op = "parens";
         break;
