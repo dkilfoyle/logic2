@@ -112,7 +112,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
     gates.push(newGate);
     newInstance.gates.push(newGate.id);
-    return new Variable(gateID, null, namespace);
+    return new Variable(namespace, gateID, null);
   };
 
   instanceModule.netAssignments.forEach(net => {
@@ -184,9 +184,9 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         // if the input port is connected
         // portGate.inputs.push(`${parentNamespace}_${connection.value.id}`);
         let newInput = new Variable(
+          parentNamespace,
           connection.value.id.name,
-          connection.value.id.offset,
-          parentNamespace
+          connection.value.id.offset
         );
         portGate.inputs.push(newInput);
         newInstance.inputs.push(portGate.id);
@@ -222,12 +222,12 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         // console.log(
         //   `---- parentGate: ${parentGate.id} will get input from ${portGate.id}`
         // );
-        parentGate.inputs.push(new Variable(port.id + "-out", null, namespace)); // portGate.id already has -out appended
+        parentGate.inputs.push(new Variable(namespace, port.id + "-out", null)); // portGate.id already has -out appended
 
         //  push the gate with the same name as the output into the output port buffer gate's inputs
         // const sameNameGate = gates.find(gate => gate.id == varMap[port.id]);
         // if (sameNameGate)
-        portGate.inputs.push(new Variable(port.id, null, namespace));
+        portGate.inputs.push(new Variable(namespace, port.id, null));
 
         // console.log(
         //   `---- sameNameGate: ${sameNameGate.id}. ${portGate.id} will get this as input`

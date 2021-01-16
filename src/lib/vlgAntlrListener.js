@@ -343,12 +343,13 @@ class Listener extends vlgListener {
   // | IDENTIFIER '[' expression ':' expression ']'		#idRange
 
   exitIdPlain(ctx) {
-    this.valueStack.push(new Variable(ctx.IDENTIFIER().getText(), null));
+    this.valueStack.push(new Variable(null, ctx.IDENTIFIER().getText(), null));
   }
 
   exitIdOffset(ctx) {
     this.valueStack.push(
       new Variable(
+        null,
         ctx.IDENTIFIER().getText(),
         this.expressionStack.pop()
         // parseInt(ctx.expression().getText(), 10)
@@ -360,7 +361,7 @@ class Listener extends vlgListener {
     let rend = this.expressionStack.pop();
     let rstart = this.expressionStack.pop();
     this.valueStack.push(
-      new Variable(ctx.IDENTIFIER().getText(), [rstart, rend])
+      new Variable(null, ctx.IDENTIFIER().getText(), [rstart, rend])
       // parseInt(ctx.expression(0).getText(), 10),
       // parseInt(ctx.expression(1).getText(), 10)
       // ])
