@@ -4,7 +4,7 @@ export const SourceFiles = {
   Scratch: require("./scratch.v").default,
   // Scratch: require("./dflipflopb.v").default,
   OneHotDecoder: require("./onehotdecoder.v").default,
-  SevenSeg: require("./7seg.v").default,
+  SevenSeg: require("./sevenseg.v").default,
   Mux2_1: require("./mux.v").default,
   DeMux: require("./demux.v").default,
   RippleCounter: require("./ripplecounter.v").default,
