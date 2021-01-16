@@ -14,3 +14,4 @@
 7. Case statement - example 4.25 7-seg decoder
 8. Concatenation and parameter - example 5.1 full addder
 9. Comparator - example 5.3
+10. Tests!
