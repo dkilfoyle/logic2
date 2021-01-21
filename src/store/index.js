@@ -8,6 +8,7 @@ export default new Vuex.Store({
     openFiles: {},
     currentFileTab: "Scratch",
     showWhichGates: "all",
+    stateFormat: "logic",
     evals_per_step: 15,
     traceHeight: 30
   },
@@ -98,7 +99,7 @@ export default new Vuex.Store({
       if (!getters.isCompiled) return null;
       return getters
         .getInstance(id)
-        .gates.filter(x => getters.getGate(x).type == "gate");
+        .gates.filter(x => getters.getGate(x).type != "portbuffer");
     },
 
     getSelectedInstanceInputs: (state, getters) =>
@@ -150,6 +151,9 @@ export default new Vuex.Store({
     },
     setShowWhichGates(state, payload) {
       state.showWhichGates = payload;
+    },
+    setStateFormat(state, payload) {
+      state.stateFormat = payload;
     },
     setSelectedInstanceID(state, id) {
       state.openFiles[state.currentFileTab].selectedInstanceID = id;

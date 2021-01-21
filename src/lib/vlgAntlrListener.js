@@ -183,7 +183,7 @@ class Listener extends vlgListener {
     ctx.ids.IDENTIFIER().forEach(id => {
       this.curModule.wires.push({
         id: id.getText(),
-        bitSize: dim ? dim[1] - dim[0] + 1 : 1,
+        bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1,
         dim
       });
     });

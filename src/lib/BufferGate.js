@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 import BaseComponent from "./BaseComponent";
 
 class BufferGate extends BaseComponent {
@@ -25,6 +26,8 @@ class BufferGate extends BaseComponent {
     if (this.inputs.length == 0) return; // nothing to process
     let inputValues = this.inputs.map(input => input.getValue(gatesLookup));
 
+    // if (this.id == "main_myAdder_sum-out") debugger;
+
     if (this.inputMasks.length == 0) {
       inputValues.forEach((x, i) => {
         this.setValue(x, i);
@@ -36,6 +39,7 @@ class BufferGate extends BaseComponent {
     }
   }
   setValue(x, range = 0) {
+    // if (this.id == "main_myAdder_sum-out" && x == 3) debugger;
     this.state.setValue(x, range);
   }
   getValue() {

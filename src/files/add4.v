@@ -1,17 +1,15 @@
-// 4 bit adder behavioural model
-// not implemented yet, needs multibit wire support
-// so that .cout(cob[1]) can perfom myadder_cob[1] = fa1_cout-out
+// 4 bit adder behavioural model (experimental)
 
 module FullAdder (
   input a, b, ci,
   output sum, cout );
 
-  wire [1:0] res; // todo, gates default to 1 bit LogicGates unless there is a wire declaration in which case become multibit buffers
-  buffer(res); // todo, unnecessary becuase will be made in walker?
+  wire [1:0] res;
+  buffer(res);
 
   always @(*)
     begin
-      res = a + b;
+      res = a + b + ci;
     end
 
   assign sum = res[0];
@@ -26,7 +24,6 @@ module Add4 (
 
   wire [2:0] cob;
   buffer(cob);
-  buffer(cob);
   buffer(sum);
   buffer(cout);
 
@@ -39,24 +36,26 @@ endmodule
 
 module Main(
   input [3:0] x, y,
+  input ci,
   output [3:0] SUM, COUT
 ); 
 
   Add4 myAdder(
 		.a(x),
 		.b(y),
+    .ci(ci),
 		.sum(SUM),
 		.cout(COUT)
   );
 
   test begin
-    #0  { x=0, y=0 };
-    #1  { x=0, y=1 };
-    #2  { x=1, y=1 };
-    #3  { x=1, y=2 };
-    #4  { x=1, y=2 };
-    #5  { x=1, y=2 };
-    #6  { x=2, y=2 };
+    #0  { ci=0, x=0, y=0 };
+    #1  { ci=0, x=0, y=1 };
+    #2  { ci=0, x=1, y=1 };
+    #3  { ci=0, x=1, y=2 };
+    #4  { ci=0, x=1, y=2 };
+    #5  { ci=0, x=1, y=2 };
+    #6  { ci=0, x=2, y=2 };
     #8;
   end
 endmodule

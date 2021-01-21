@@ -39,6 +39,18 @@
         >Wires</b-radio
       >
     </div>
+    <h4 class="dk-px-10">State Format</h4>
+    <div class="dk-flex-col dk-gap-10 dk-px-10">
+      <b-radio v-model="stateFormat" name="stateFormat" native-value="logic"
+        >Logic</b-radio
+      >
+      <b-radio v-model="stateFormat" name="stateFormat" native-value="decimal"
+        >Decimal</b-radio
+      >
+      <b-radio v-model="stateFormat" name="stateFormat" native-value="binary"
+        >Binary</b-radio
+      >
+    </div>
   </div>
 </template>
 
@@ -63,6 +75,14 @@ export default {
       },
       set(value) {
         this.$store.commit("setShowWhichGates", value);
+      }
+    },
+    stateFormat: {
+      get() {
+        return this.$store.state.stateFormat;
+      },
+      set(value) {
+        this.$store.commit("setStateFormat", value);
       }
     }
   },

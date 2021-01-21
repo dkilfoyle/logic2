@@ -1,5 +1,6 @@
 /* eslint-disable no-debugger */ /* eslint-disable no-debugger */ /*
-eslint-disable no-debugger */ /* eslint-disable no-debugger */
+eslint-disable no-debugger */ /* eslint-disable no-debugger */ /* eslint-disable
+no-debugger */
 <template>
   <div class="dk-flex-row dk-h-100 dk-align-center">
     <svg ref="svgSchematic" id="svgSchematic" />
@@ -445,7 +446,7 @@ export default {
               name: null,
               cssClass: portGate.inputs[0].id + "_link"
             },
-            source: currentInstance.inputs.some(x => x == portGate.inputs[0].id) // is the input to the port gate itself a port of the parent instance rather than a local gate
+            source: currentInstance.inputs.includes(portGate.inputs[0].id) // is the input to the port gate itself a port of the parent instance rather than a local gate
               ? currentInstance.id
               : portGate.inputs[0].id + "_gate", // TODO: source might be a gate or a port - ie a pass through, is this handled??
             sourcePort: portGate.inputs[0].id,

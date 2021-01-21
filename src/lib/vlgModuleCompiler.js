@@ -57,10 +57,15 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   // gate declaration has the form { id: "X", gate: "and", inputs: ["a", "b"], type: "gate"}
   // if the gate has the same id as an output port then map that id to id.gate and set the output ports input to id.gate
 
-  const gateBitSizes = {
+  const gateBitSizesType = {
     number: 10,
     sevenseg: 4
   };
+
+  const gateBitSizesID = [
+    ...instanceModule.wires,
+    ...instanceModule.ports
+  ].reduce((acc, x) => ({ ...acc, [x.id]: x.bitSize }), {});
 
   instanceModule.instantiations
     .filter(statement => statement.type == "gate")
@@ -74,9 +79,12 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         throw new Error(
           `Invalid gate type ${gateDef.gateType} in id ${gateDef.id}`
         );
-      (newGate.inputs = gateDef.inputs.map(x => x.instance(namespace))),
-        (newGate.state = new Numeric(0, gateBitSizes[gateDef.gate] || 1)),
-        gates.push(newGate);
+      newGate.inputs = gateDef.inputs.map(x => x.instance(namespace));
+      newGate.state = new Numeric(
+        0,
+        gateBitSizesType[gateDef.gate] || gateBitSizesID[gateDef.id] || 1
+      );
+      gates.push(newGate);
       newInstance.gates.push(newGate.id);
     });
 
@@ -94,8 +102,6 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     if (op instanceof Variable) {
       return op;
     }
-
-    if (op.op == "assign") debugger;
 
     const newGate =
       op.op == "assign"

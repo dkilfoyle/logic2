@@ -1,5 +1,5 @@
-1. Fix seven seg display
-2. Implement a component class
+1. Fix seven seg display - done
+2. Implement a component class - done
    1. Component {state:Numeric, inputs:[], update(), setValue(), getValue()}
       1. Gate extends Component {logicFn: and, or etc, function in update}
       2. SevenSeg

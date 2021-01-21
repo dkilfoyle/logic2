@@ -23,9 +23,10 @@
             <tr class="text-white">
               <th class="text-left">GlobalID</th>
               <!-- <th>InstanceID</th> -->
-              <th class="text-left">Fn</th>
-              <th class="text-left">Inputs</th>
-              <th class="text-right">State</th>
+              <th class="has-text-left">Fn</th>
+              <th class="has-text-left">Inputs</th>
+              <th class="has-text-right">State</th>
+              <th class="has-text-right">BitSize</th>
             </tr>
           </thead>
 
@@ -46,19 +47,42 @@
                 }}
               </td>
               <td
-                class="text-right"
-                v-if="$store.getters.getGateStateAtSelectedTime(g) == 1"
+                class="-text-right"
+                v-if="$store.state.stateFormat == 'logic'"
               >
-                <!-- <i class="fa fa-check"></i> -->
-                <img src="@/assets/icons8-number-1-48.png" class="gateicon" />
+                <img
+                  v-if="$store.getters.getGateStateAtSelectedTime(g) == 0"
+                  src="@/assets/icons8-0-52.png"
+                  class="gateicon"
+                />
+                <img
+                  v-else
+                  src="@/assets/icons8-number-1-48.png"
+                  class="gateicon"
+                />
               </td>
-              <td v-else-if="$store.getters.getGateStateAtSelectedTime(g) == 0">
-                <!-- <i class="fa fa-times"></i> -->
-                <img src="@/assets/icons8-0-52.png" class="gateicon" />
+              <td
+                class="has-text-right"
+                v-else-if="$store.state.stateFormat == 'decimal'"
+              >
+                {{
+                  $store.getters
+                    .getGateStateAtSelectedTime(g)
+                    .toString(stateFormatBase[$store.state.stateFormat])
+                }}
               </td>
-              <td v-else>
-                {{ $store.getters.getGateStateAtSelectedTime(g) }}
+              <td
+                class="has-text-right"
+                v-else-if="$store.state.stateFormat == 'binary'"
+              >
+                0b{{
+                  $store.getters
+                    .getGateStateAtSelectedTime(g)
+                    .toString(stateFormatBase[$store.state.stateFormat])
+                    .padStart(getGate(g).state.bitSize, "0")
+                }}
               </td>
+              <td class="has-text-right">{{ getGate(g).state.bitSize }}</td>
             </tr>
           </tbody>
         </table>
@@ -90,7 +114,12 @@ import InstanceCrumbs from "./InstanceCrumbs";
 
 export default {
   data() {
-    return { showWhichGates: "all" };
+    return {
+      stateFormatBase: {
+        binary: 2,
+        decimal: 10
+      }
+    };
   },
   mixins: [UtilsMixin, SelectionsMixin],
   components: { InstanceCrumbs },

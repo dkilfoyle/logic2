@@ -23,6 +23,7 @@ const getLocalId = x => x.substr(x.lastIndexOf("_") + 1);
 
 const evaluateSensitivities = (sensitivities, namespace) => {
   return sensitivities.some(sens => {
+    if (sens.type == "everytime") return true;
     const current = sens.id.getValue(gatesLookup, namespace);
     const edge =
       sens.last == 0 && current == 1
@@ -163,7 +164,11 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
     instances.forEach(instance => {
       if (instance.always) {
         instance.always.sensitivities.forEach(sensitivity => {
-          sensitivity.last = sensitivity.id.getValue(gatesLookup, instance.id);
+          if (sensitivity.type != "everytime")
+            sensitivity.last = sensitivity.id.getValue(
+              gatesLookup,
+              instance.id
+            );
         });
       }
     });
