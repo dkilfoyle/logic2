@@ -3,11 +3,9 @@
     <div class="dk-flex-col" v-show="isSimulated">
       <div
         class="dk-flex-row dk-align-center"
-        style="height:60px;padding:0 20px"
+        style="height:60px;padding:0 10px"
       >
-        <instance-crumbs
-          @show-outline="$emit('show-outline')"
-        ></instance-crumbs>
+        <instance-crumbs owner="traces"></instance-crumbs>
         <span class="dk-push-right">
           t = {{ $store.getters.currentFile.selectedTime }}</span
         >
@@ -34,21 +32,6 @@
       </h4>
     </div>
   </div>
-  <!-- <div ref="container" style="height:100%">
-    <div class="rows" v-show="isSimulated">
-      <instance-crumbs @show-outline="$emit('show-outline')"></instance-crumbs>
-      <div class="row">
-        <div class="traces" id="mytraces" ref="traces"></div>
-      </div>
-    </div>
-    <div
-      class="rows"
-      style="align-items:center; justify-content:center; height:100%"
-      v-show="!isSimulated"
-    >
-      <div class="row"><h4>Simulate to show traces</h4></div>
-    </div>
-  </div> -->
 </template>
 
 <script>

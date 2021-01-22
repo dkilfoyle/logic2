@@ -3,11 +3,9 @@
     <div class="dk-flex-col dk-h-100" v-if="$store.getters.isCompiled">
       <div
         class="dk-flex-row dk-align-center"
-        style="height:60px;padding:0 20px"
+        style="height:60px;padding:0 10px"
       >
-        <instance-crumbs
-          @show-outline="$emit('show-outline')"
-        ></instance-crumbs>
+        <instance-crumbs owner="gates"></instance-crumbs>
         <span class="dk-push-right">
           t = {{ $store.getters.currentFile.selectedTime }}</span
         >
