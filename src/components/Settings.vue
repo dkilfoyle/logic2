@@ -9,6 +9,46 @@
     </b-field>
     <h4>CURRENT FILE</h4>
     <b-checkbox v-model="autoCompile">Auto Compile</b-checkbox>
+    <b-field label="Gate Filter">
+      <b-radio v-model="showWhichGates" name="showWhichGates" native-value="all"
+        >All</b-radio
+      >
+      <b-radio
+        v-model="showWhichGates"
+        name="showWhichGates"
+        native-value="inputs"
+        >Inputs</b-radio
+      >
+      <b-radio
+        v-model="showWhichGates"
+        name="showWhichGates"
+        native-value="outputs"
+        >Outputs</b-radio
+      >
+      <b-radio
+        v-model="showWhichGates"
+        name="showWhichGates"
+        native-value="ports"
+        >Ports</b-radio
+      >
+      <b-radio
+        v-model="showWhichGates"
+        name="showWhichGates"
+        native-value="wires"
+        >Wires</b-radio
+      >
+    </b-field>
+    <b-field label="State Format">
+      <b-radio v-model="stateFormat" name="stateFormat" native-value="logic"
+        >Logic</b-radio
+      >
+      <b-radio v-model="stateFormat" name="stateFormat" native-value="decimal"
+        >Decimal</b-radio
+      >
+      <b-radio v-model="stateFormat" name="stateFormat" native-value="binary"
+        >Binary</b-radio
+      >
+    </b-field>
   </div>
 </template>
 
@@ -44,6 +84,22 @@ export default {
       },
       set(value) {
         this.$store.commit("setTraceHeight", parseInt(value, 10));
+      }
+    },
+    showWhichGates: {
+      get() {
+        return this.$store.state.showWhichGates;
+      },
+      set(value) {
+        this.$store.commit("setShowWhichGates", value);
+      }
+    },
+    stateFormat: {
+      get() {
+        return this.$store.state.stateFormat;
+      },
+      set(value) {
+        this.$store.commit("setStateFormat", value);
       }
     }
   },

@@ -42,15 +42,18 @@ export default new Vuex.Store({
     getAllGates: (state, getters) =>
       getters.isCompiled ? getters.currentFile.compileResult.gates : [],
     getInstanceTree: (state, getters) => {
+      let maxid = 0;
       const buildNode = id => {
         const instance = getters.getInstance(id); // instances.find(x => x.id == id);
         const res = {
           text:
             instance.id.slice(instance.id.lastIndexOf("_") + 1) +
-            " : " +
-            instance.module,
+            "_" +
+            instance.module +
+            maxid,
           data: { id: instance.id }
         };
+        maxid = maxid + 1;
         res.state = {};
         if (getters.currentFile.selectedInstanceID.includes(id))
           res.state = { expanded: true };
