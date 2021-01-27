@@ -35,7 +35,10 @@ export default {
   name: "tree-menu",
   props: ["node", "depth", "canSelectBranch"],
   data() {
-    return { showChildren: this.depth == 0 };
+    return {
+      showChildren:
+        this.depth == 0 || (this.node.state && this.node.state.expanded)
+    };
   },
   computed: {
     iconClasses() {
@@ -60,7 +63,9 @@ export default {
     },
     labelWrapperStyle() {
       return {
-        "--hover-margin": this.node.children ? "0px" : "-15px"
+        "--hover-margin": this.node.children ? "0px" : "-15px",
+        "background-color":
+          this.node.state && this.node.state.selected ? "#cccccc" : ""
       };
     }
   },
@@ -100,7 +105,7 @@ export default {
 }
 
 .label-wrapper:hover {
-  background-color: #a0a0a0a0;
+  background-color: #cecccca0;
   margin-left: var(--hover-margin);
 }
 
