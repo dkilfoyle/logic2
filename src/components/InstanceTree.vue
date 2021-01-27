@@ -4,6 +4,7 @@
       @selected="node => $store.commit('setSelectedInstanceID', node.data.id)"
       :node="{ text: 'INSTANCES', children: getInstanceTree }"
       :depth="0"
+      :can-select-branch="true"
     ></tree-menu>
   </div>
 </template>

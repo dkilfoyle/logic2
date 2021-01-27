@@ -3,7 +3,12 @@
     <div class="label-wrapper" :style="labelWrapperStyle" @click="onLabelClick">
       <div :class="labelClasses">
         <div :class="labelContentClass">
-          <i v-if="node.children" class="fa" :class="iconClasses"></i>
+          <i
+            v-if="node.children"
+            class="fa"
+            :class="iconClasses"
+            @click="onIconClick"
+          ></i>
           {{ node.text }}
         </div>
       </div>
@@ -17,6 +22,7 @@
         :key="childNode.id || childNode.text"
         :node="childNode"
         :depth="depth + 1"
+        :can-select-branch="canSelectBranch"
       >
     </tree-menu>
     </transition-group>
@@ -27,7 +33,7 @@
 <script>
 export default {
   name: "tree-menu",
-  props: ["node", "depth"],
+  props: ["node", "depth", "canSelectBranch"],
   data() {
     return { showChildren: this.depth == 0 };
   },
@@ -66,8 +72,13 @@ export default {
       this.$emit("selected", x);
     },
     onLabelClick() {
-      if (this.node.children) this.toggleChildren();
+      if (this.canSelectBranch) {
+        this.$emit("selected", this.node);
+      } else if (this.node.children) this.toggleChildren();
       else this.$emit("selected", this.node);
+    },
+    onIconClick() {
+      if (this.node.children) this.toggleChildren();
     }
   }
 };
