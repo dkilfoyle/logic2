@@ -164,6 +164,9 @@ export default new Vuex.Store({
     setCurrentFileTab(state, payload) {
       state.currentFileTab = payload;
     },
+    setSelectedGate(state, payload) {
+      state.selectedGate = payload;
+    },
     openFile(state, payload) {
       Vue.set(state.openFiles, payload.newSourceName, {
         type: "editor",
@@ -176,6 +179,7 @@ export default new Vuex.Store({
         status: "Parse Error",
         selectedTime: 0,
         selectedInstanceID: "main",
+        selectedGate: null,
         autoCompile: true
       });
     },
@@ -191,6 +195,7 @@ export default new Vuex.Store({
         status: "Parse Error",
         selectedTime: 0,
         selectedInstanceID: "main",
+        selectedGate: null,
         autoCompile: true
       });
     },

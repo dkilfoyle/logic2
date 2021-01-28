@@ -29,7 +29,14 @@
           </thead>
 
           <tbody>
-            <tr v-for="g in filteredInstanceGates" :key="g">
+            <tr
+              v-for="g in filteredInstanceGates"
+              :key="g"
+              @click="$store.commit('setSelectedGate', g)"
+              :style="
+                $store.state.selectedGate == g ? 'background-color:#eeeeee' : ''
+              "
+            >
               <td>{{ g }}</td>
               <td>
                 <img
@@ -163,5 +170,9 @@ export default {
   /* border-left: #4a4a4a 1px solid; */
   border-radius: 6px;
   fill-opacity: 0.5;
+}
+
+tbody tr:hover {
+  background-color: #e6e6e6a0;
 }
 </style>
