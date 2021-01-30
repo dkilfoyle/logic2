@@ -253,10 +253,10 @@ class Listener extends vlgListener {
 
   enterBlocking_assignment(ctx) {
     console.groupCollapsed(`Blocking_assignment: ${ctx.getText()}`);
-    if (this.expressionStack.length > 0)
-      throw new Error(
-        `enterBlocking_assignment: expressionStack should be empty, not ${this.expressionStack}`
-      );
+    // if (this.expressionStack.length > 0)
+    //   throw new Error(
+    //     `enterBlocking_assignment: expressionStack should be empty, not ${this.expressionStack}`
+    //   );
   }
 
   exitBlocking_assignment(ctx) {
@@ -266,6 +266,30 @@ class Listener extends vlgListener {
       sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
       rhs: this.expressionStack.pop(),
       lhs: this.valueStack.pop() // pop the ids in expressions first
+    };
+    this.statementBlockStack[
+      this.statementBlockStack.length - 1
+    ].statements.push(newStatement);
+    console.log("Statement: ", strip(newStatement));
+    console.groupEnd();
+  }
+
+  enterConditional_statement(ctx) {
+    console.groupCollapsed(`Conditional_statement: ${ctx.getText()}`);
+    // if (this.expressionStack.length > 0)
+    //   throw new Error(
+    //     `conditional_statement: expressionStack should be empty, not ${this.expressionStack}`
+    //   );
+  }
+
+  exitConditional_statement(ctx) {
+    const newStatement = {
+      type: "conditional_statement",
+      sourceStart: { column: ctx.start.column, line: ctx.start.line },
+      sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
+      elseBlock: this.statementBlockStack.pop(),
+      ifBlock: this.statementBlockStack.pop(),
+      condition: this.expressionStack.pop()
     };
     this.statementBlockStack[
       this.statementBlockStack.length - 1

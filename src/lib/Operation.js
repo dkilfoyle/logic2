@@ -11,7 +11,13 @@ const opLookup = {
   nor: "~|",
   xor: "^",
   not: "!",
-  inv: "~"
+  inv: "~",
+  lt: "<",
+  lte: "<=",
+  gt: ">",
+  gte: ">=",
+  equality: "==",
+  ne: "!="
 };
 
 class Operation extends Operand {
@@ -26,74 +32,34 @@ class Operation extends Operand {
     this.lhs = lhs;
     this.rhs = rhs;
 
-    switch (op) {
-      case "assign":
-        this.op = "assign";
-        break;
-      case "parens":
-        this.op = "parens";
-        break;
-      case "+":
-        this.op = "add";
-        break;
-      case "-":
-        this.op = "sub";
-        break;
-      case "*":
-        this.op = "mul";
-        break;
-      case "/":
-        this.op = "div";
-        break;
-      case "&":
-        this.op = "and";
-        break;
-      case "~&":
-        this.op = "nand";
-        break;
-      case "|":
-        this.op = "or";
-        break;
-      case "~|":
-        this.op = "nor";
-        break;
-      case "^":
-        this.op = "xor";
-        break;
-      case "!":
-        this.op = "not";
-        break;
-      case "~":
-        this.op = "not";
-        break;
-      default:
-        throw new Error(`Operation constructor: invalid op ${op}`);
-    }
+    this.op = Object.entries(opLookup).find(x => x[1] == op)[0];
   }
   getValue(gatesLookup, namespace) {
+    const lhs = this.lhs.getValue(gatesLookup, namespace);
+    const rhs = this.rhs ? this.rhs.getValue(gatesLookup, namespace) : null;
     switch (this.op) {
       case "parens":
-        return this.lhs.getValue(gatesLookup, namespace);
+        return lhs;
       case "add":
-        return this.rhs == null // unary +
-          ? this.lhs.getValue(gatesLookup, namespace)
-          : this.lhs.getValue(gatesLookup, namespace) +
-              this.rhs.getValue(gatesLookup, namespace);
+        return rhs ? lhs + rhs : lhs; // sum or unary +
       case "sub":
-        return this.rhs == null // unary -(
-          ? this.lhs.getValue(gatesLookup, namespace) * -1
-          : this.lhs.getValue(gatesLookup, namespace) -
-              this.rhs.getValue(gatesLookup, namespace);
+        return rhs ? lhs - rhs : lhs * -1; // sub or unary -
       case "mul":
-        return (
-          this.lhs.getValue(gatesLookup, namespace) *
-          this.rhs.getValue(gatesLookup, namespace)
-        );
+        return lhs * rhs;
       case "div":
-        return (
-          this.lhs.getValue(gatesLookup, namespace) /
-          this.rhs.getValue(gatesLookup, namespace)
-        );
+        return lhs / rhs;
+      case "lt":
+        return lhs < rhs ? 1 : 0;
+      case "lte":
+        return lhs <= rhs ? 1 : 0;
+      case "gt":
+        return lhs > rhs ? 1 : 0;
+      case "gte":
+        return lhs >= rhs ? 1 : 0;
+      case "equality":
+        return lhs == rhs ? 1 : 0;
+      case "ne":
+        return lhs != rhs ? 1 : 0;
       default:
         throw new Error(`Operation getValue: invalid op ${this.op}`);
     }

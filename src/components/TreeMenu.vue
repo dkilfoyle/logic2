@@ -54,7 +54,7 @@ export default {
       return this.node.children ? "label-content-branch" : "label-content-leaf";
     },
     treeMenuStyle() {
-      return this.depth < 2 ? "" : "margin-left: 15px";
+      return this.depth < 2 ? "" : "margin-left: 10px";
     },
     accordionStyle() {
       return this.depth < 1
@@ -63,7 +63,7 @@ export default {
     },
     labelWrapperStyle() {
       return {
-        "--hover-margin": this.node.children ? "0px" : "-15px",
+        "--hover-margin": this.node.children ? "0px" : "-10px",
         "background-color":
           this.node.state && this.node.state.selected ? "#cccccc" : ""
       };

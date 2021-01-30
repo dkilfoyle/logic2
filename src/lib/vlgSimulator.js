@@ -55,6 +55,25 @@ const evaluateStatementTree = (s, namespace) => {
       return false;
     }
     return true;
+  } else if (s.type == "conditional_statement") {
+    let pass = false;
+    switch (s.condition.type) {
+      case "variable":
+      case "numeric":
+      case "operation":
+        pass = s.condition.getValue(gatesLookup, namespace) != 0;
+        break;
+      default:
+        throw new Error(
+          `evaluateStatementTree: invalid condition type ${s.condition}`
+        );
+    }
+    if (pass) {
+      return evaluateStatementTree(s.ifBlock, namespace);
+    } else {
+      if (s.elseBlock) return evaluateStatementTree(s.elseBlock, namespace);
+      else return true;
+    }
   } else {
     throw new Error(`unknown statement type: ${s.type}`);
   }
