@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 90 70" width="90px" height="70px" xmlns="http://www.w3.org/2000/svg">
+  <g id="g2022" style="fill:none" transform="matrix(0.751795, 0, 0, 0.846666, -129.766571, -139.143005)">
+    <path d="m 268.97837,205.68101 a 70.866142,70.866142 0 0 1 -61.37188,35.43307" id="path1321-1-6-2-6-9" style="opacity: 1; vector-effect: none; fill: none; fill-opacity: 1; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 4; stroke-dasharray: none; stroke-dashoffset: 0; stroke-opacity: 1; stroke-width: 7.50722px;"/>
+    <path d="m 207.60643,170.2479 a 70.866142,70.866142 0 0 1 61.37188,35.43307" id="path1321-9-6-5-9" style="opacity: 1; vector-effect: none; fill: none; fill-opacity: 1; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 4; stroke-dasharray: none; stroke-dashoffset: 0; stroke-opacity: 1; stroke-width: 7.50722px;"/>
+    <path d="m 179.28477,170.24794 a 70.866142,70.866142 0 0 1 0,70.86615" id="path1321-15-8-7-7-6" style="opacity: 1; vector-effect: none; fill: none; fill-opacity: 1; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 4; stroke-dasharray: none; stroke-dashoffset: 0; stroke-opacity: 1; stroke-width: 7.50722px;"/>
+    <path id="path1315-0-6-3-9" d="m 179.25967,170.24791 h 28.34647" style="fill: none; fill-rule: evenodd; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: miter; stroke-miterlimit: 4; stroke-dasharray: none; stroke-opacity: 1; stroke-width: 7.50722px;"/>
+    <path id="path1317-2-1-6-5" d="m 179.25966,241.11406 h 28.34648" style="fill: none; fill-rule: evenodd; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: miter; stroke-miterlimit: 4; stroke-dasharray: none; stroke-opacity: 1; stroke-width: 7.50722px;"/>
+    <ellipse ry="7.640605" rx="7.640614" cy="205.68098" cx="278.03101" id="path1247-3-1" style="opacity: 1; vector-effect: none; fill: none; fill-opacity: 1; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-dashoffset: 0; stroke-opacity: 1; stroke-width: 7.50722px;"/>
+  </g>
+</svg>

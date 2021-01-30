@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 90 70" width="90px" height="70px" xmlns="http://www.w3.org/2000/svg">
+  <g id="g3025-0" transform="matrix(0.749371, 0, 0, 0.845942, -228.567612, -272.926514)" style="fill:none">
+    <g id="g1277-3-2" transform="translate(-0.96962922,109.29087)" style="fill:none">
+      <path style="fill: none; fill-rule: evenodd; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: miter; stroke-miterlimit: 4; stroke-dasharray: none; stroke-opacity: 1; stroke-width: 7.52203px;" d="M 365.80411,219.31068 H 312.6545 v 70.86614 h 53.14961" id="path1269-2-00"/>
+      <path style="opacity: 1; vector-effect: none; fill: none; fill-opacity: 1; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 4; stroke-dasharray: none; stroke-dashoffset: 0; stroke-opacity: 1; stroke-width: 7.52203px;" id="path1271-9-0" d="m -219.25,366.14874 a 35.433071,35.433071 0 0 1 -17.91589,30.80018 35.433071,35.433071 0 0 1 -35.63018,-0.34657 35.433071,35.433071 0 0 1 -17.31337,-31.14285" transform="rotate(-90)"/>
+    </g>
+    <ellipse ry="7.640605" rx="7.640614" cy="363.97394" cx="410.80054" id="path1247-8-4" style="opacity: 1; vector-effect: none; fill: none; fill-opacity: 1; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-dashoffset: 0; stroke-opacity: 1; stroke-width: 7.52203px;"/>
+  </g>
+</svg>
