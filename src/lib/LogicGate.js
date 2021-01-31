@@ -5,10 +5,11 @@ const not = a => ~a & 1;
 class LogicGate extends BaseComponent {
   constructor(namespace, name, type, bitSize = 1) {
     super(namespace, name, type, bitSize);
-    if (!["and", "nand", "or", "xor", "xnor", "nor", "not"].includes(type))
+    if (!["and", "nand", "or", "xor", "xnor", "nor", "inv"].includes(type))
       throw new Error(
         `LogicGate.constructor(${namespace},${name},${type},${bitSize}): invalid type ${type}`
       );
+    if (type == "inv") this.type = "not";
   }
   update(gatesLookup) {
     // update is called each clock and processes inputs to call this.setValue

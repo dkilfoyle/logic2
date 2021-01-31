@@ -326,6 +326,15 @@ vlgListener.prototype.exitEvent_type = function(ctx) {
 };
 
 
+// Enter a parse tree produced by vlgParser#statement_block.
+vlgListener.prototype.enterStatement_block = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#statement_block.
+vlgListener.prototype.exitStatement_block = function(ctx) {
+};
+
+
 // Enter a parse tree produced by vlgParser#seq_block.
 vlgListener.prototype.enterSeq_block = function(ctx) {
 };
@@ -362,12 +371,30 @@ vlgListener.prototype.exitConditional_statement = function(ctx) {
 };
 
 
-// Enter a parse tree produced by vlgParser#statement_block.
-vlgListener.prototype.enterStatement_block = function(ctx) {
+// Enter a parse tree produced by vlgParser#case_statement.
+vlgListener.prototype.enterCase_statement = function(ctx) {
 };
 
-// Exit a parse tree produced by vlgParser#statement_block.
-vlgListener.prototype.exitStatement_block = function(ctx) {
+// Exit a parse tree produced by vlgParser#case_statement.
+vlgListener.prototype.exitCase_statement = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#case_clause.
+vlgListener.prototype.enterCase_clause = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#case_clause.
+vlgListener.prototype.exitCase_clause = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#case_default.
+vlgListener.prototype.enterCase_default = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#case_default.
+vlgListener.prototype.exitCase_default = function(ctx) {
 };
 
 

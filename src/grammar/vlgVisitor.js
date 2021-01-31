@@ -222,6 +222,12 @@ vlgVisitor.prototype.visitEvent_type = function(ctx) {
 };
 
 
+// Visit a parse tree produced by vlgParser#statement_block.
+vlgVisitor.prototype.visitStatement_block = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by vlgParser#seq_block.
 vlgVisitor.prototype.visitSeq_block = function(ctx) {
   return this.visitChildren(ctx);
@@ -246,8 +252,20 @@ vlgVisitor.prototype.visitConditional_statement = function(ctx) {
 };
 
 
-// Visit a parse tree produced by vlgParser#statement_block.
-vlgVisitor.prototype.visitStatement_block = function(ctx) {
+// Visit a parse tree produced by vlgParser#case_statement.
+vlgVisitor.prototype.visitCase_statement = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#case_clause.
+vlgVisitor.prototype.visitCase_clause = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#case_default.
+vlgVisitor.prototype.visitCase_default = function(ctx) {
   return this.visitChildren(ctx);
 };
 

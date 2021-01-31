@@ -118,11 +118,15 @@ event_type: 'posedge' | 'negedge';
 
 /* 6.3 Sequential blocks ============================================= */
 
+statement_block: seq_block | statement;
 seq_block: 'begin' statement* 'end';
 
 /* 6.4 Statements ==================================================== */
 
-statement: blocking_assignment ';' | conditional_statement;
+statement:
+	blocking_assignment ';'
+	| conditional_statement
+	| case_statement;
 
 blocking_assignment: lhs = lvalue '=' rhs = expression;
 
@@ -131,7 +135,12 @@ conditional_statement:
 		'else' elsestate = statement_block
 	)?;
 
-statement_block: seq_block | statement;
+case_statement:
+	'case' '(' casevar = identifier ')' clauses += case_clause+ defaultclause = case_default?
+		'endcase';
+
+case_clause: number ':' statement_block;
+case_default: 'default' ':' statement_block;
 
 /* 8.1 Concatenations============================================ */
 

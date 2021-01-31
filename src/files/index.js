@@ -5,6 +5,7 @@ export const SourceFiles = {
   // Scratch: require("./dflipflopb.v").default,
   OneHotDecoder: require("./onehotdecoder.v").default,
   SevenSeg: require("./sevenseg.v").default,
+  SevenSegB: require("./sevensegb.v").default,
   Mux2_1: require("./mux.v").default,
   DeMux: require("./demux.v").default,
   RippleCounter: require("./ripplecounter.v").default,
@@ -31,7 +32,8 @@ export const SourceFiles = {
   RippleSubtractor: require("./ripplesubtractor.v").default,
   // Behavioural models
   Add4: require("./add4.v").default,
-  DFlipFlopB: require("./dflipflopb.v").default
+  DFlipFlopB: require("./dflipflopb.v").default,
+  NBitAdder: require("./nbitaddder.v").default
 };
 
 export const SourceTree = [
@@ -114,6 +116,11 @@ export const SourceTree = [
   },
   {
     text: "Behavioural Models",
-    children: [{ text: "DFlipFlopB" }, { text: "Add4" }]
+    children: [
+      { text: "DFlipFlopB" },
+      { text: "Add4" },
+      { text: "NBitAdder" },
+      { text: "SevenSegB" }
+    ]
   }
 ];

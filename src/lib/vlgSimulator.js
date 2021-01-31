@@ -74,6 +74,17 @@ const evaluateStatementTree = (s, namespace) => {
       if (s.elseBlock) return evaluateStatementTree(s.elseBlock, namespace);
       else return true;
     }
+  } else if (s.type == "case_statement") {
+    const caseVal = s.casevar.getValue(gatesLookup, namespace); // todo: caseval could be expression rather than just variable
+    const matchingClause = s.caseclauses.find(
+      clause => clause.clauseval.getValue(gatesLookup, namespace) == caseVal
+    );
+    if (matchingClause) {
+      return evaluateStatementTree(matchingClause.statements, namespace);
+    } else {
+      if (s.casedefault) return evaluateStatementTree(s.casedefault, namespace);
+      else return true;
+    }
   } else {
     throw new Error(`unknown statement type: ${s.type}`);
   }

@@ -161,21 +161,21 @@ class Listener extends vlgListener {
   }
 
   exitModule_ports(ctx) {
-    const portDeclarations = ctx.port_declaration();
-    portDeclarations.forEach(portDecCtx => {
-      const dir = portDecCtx.port_direction().getText();
-      const ids = portDecCtx.port_identifier_list().IDENTIFIER();
-      const dim = portDecCtx.portdim ? this.valueStack.pop() : null;
-      this.curModule.ports.push(
-        ...ids.map(id => ({
-          id: id.getText(),
-          direction: dir,
-          bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1,
-          dim
-        }))
-      );
-    });
     console.log("exitModule_ports: ", this.curModule.ports);
+  }
+
+  exitPort_declaration(ctx) {
+    const dir = ctx.port_direction().getText();
+    const ids = ctx.port_identifier_list().IDENTIFIER();
+    const dim = ctx.portdim ? this.valueStack.pop() : null;
+    this.curModule.ports.push(
+      ...ids.map(id => ({
+        id: id.getText(),
+        direction: dir,
+        bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1,
+        dim
+      }))
+    );
   }
 
   exitNet_declaration(ctx) {
@@ -298,7 +298,40 @@ class Listener extends vlgListener {
     console.groupEnd();
   }
 
-  // Expressions ============================================
+  enterCase_statement(ctx) {
+    console.groupCollapsed(`case_statement: ${ctx.getText()}`);
+    // if (this.expressionStack.length > 0)
+    //   throw new Error(
+    //     `conditional_statement: expressionStack should be empty, not ${this.expressionStack}`
+    //   );
+  }
+
+  exitCase_statement(ctx) {
+    const newStatement = {
+      type: "case_statement",
+      sourceStart: { column: ctx.start.column, line: ctx.start.line },
+      sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
+      casedefault: ctx.defaultclause ? this.statementBlockStack.pop() : null,
+      caseclauses: this.valueStack.splice(-ctx.clauses.length),
+      casevar: this.valueStack.pop()
+    };
+    this.statementBlockStack[
+      this.statementBlockStack.length - 1
+    ].statements.push(newStatement);
+    console.log("Statement: ", strip(newStatement));
+    console.groupEnd();
+  }
+
+  exitCase_clause(ctx) {
+    const newItem = {
+      type: "case_clause",
+      sourceStart: { column: ctx.start.column, line: ctx.start.line },
+      sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
+      statements: this.statementBlockStack.pop(),
+      clauseval: this.valueStack.pop()
+    };
+    this.valueStack.push(newItem);
+  }
 
   // expression
   // 	: number    																	# atomExpression
@@ -421,7 +454,7 @@ class Listener extends vlgListener {
   //  ;
 
   exitDecimal(ctx) {
-    const x = ctx.getText();
+    const x = ctx.getText().replace(/_/g, ""); // remove '_' which is for human benefit only
     if (x == +x) {
       // Decimal_number: Unsigned_number
       this.valueStack.push(new Numeric(parseInt(x, 10), null, "decimal"));
@@ -440,44 +473,44 @@ class Listener extends vlgListener {
   }
 
   exitBinary(ctx) {
-    const x = ctx.getText();
+    const x = ctx.getText().replace(/_/g, "");
 
     let sizeStr = x.substring(0, x.indexOf("'"));
     let size = sizeStr != "" ? parseInt(sizeStr) : null;
 
-    const valueStart = Math.max(x.indexOf("B", x.indexOf("b")));
+    const valueStart = Math.max(x.indexOf("B"), x.indexOf("b"));
     if (valueStart == -1) throw new Error("exitBinary: shouldn't be here");
 
     this.valueStack.push(
-      new Numeric(parseInt(x.substring(valueStart), 2), size, "binary")
+      new Numeric(parseInt(x.substring(valueStart + 1), 2), size, "binary")
     );
   }
 
   exitOctal(ctx) {
-    const x = ctx.getText();
+    const x = ctx.getText().replace(/_/g, "");
 
     let sizeStr = x.substring(0, x.indexOf("'"));
     let size = sizeStr != "" ? parseInt(sizeStr) : null;
 
-    const valueStart = Math.max(x.indexOf("O", x.indexOf("o")));
+    const valueStart = Math.max(x.indexOf("O"), x.indexOf("o"));
     if (valueStart == -1) throw new Error("exitOctal: shouldn't be here");
 
     this.valueStack.push(
-      new Numeric(parseInt(x.substring(valueStart), 8), size, "octal")
+      new Numeric(parseInt(x.substring(valueStart + 1), 8), size, "octal")
     );
   }
 
   exitHex(ctx) {
-    const x = ctx.getText();
+    const x = ctx.getText().replace(/_/g, "");
 
     let sizeStr = x.substring(0, x.indexOf("'"));
     let size = sizeStr != "" ? parseInt(sizeStr) : null;
 
-    const valueStart = Math.max(x.indexOf("H", x.indexOf("h")));
+    const valueStart = Math.max(x.indexOf("H"), x.indexOf("h"));
     if (valueStart == -1) throw new Error("exitHex: shouldn't be here");
 
     this.valueStack.push(
-      new Numeric(parseInt(x.substring(valueStart), 16), size, "hex")
+      new Numeric(parseInt(x.substring(valueStart + 1), 16), size, "hex")
     );
   }
 
