@@ -35,6 +35,11 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   const instanceModule = modules[instanceDeclaration.module];
   console.log("instanceModule: ", instanceModule);
 
+  const parentInstance = instances.find(x => x.id == namespace) || {
+    id: "",
+    parameters: {}
+  };
+
   const varMap = {};
 
   var newInstance = {
@@ -43,8 +48,48 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     inputs: [], // input port gate ids
     outputs: [], // output port gate ids
     instances: [], // child instance ids
-    gates: [] // non port gate ids
+    gates: [], // non port gate ids
+    parameters: {}
   };
+
+  // combine moduleParameters and instanceParameters and evaluate any expressions to get constant value
+  Object.entries(instanceModule.moduleParameters).forEach((entry, i) => {
+    if (i < instanceDeclaration.instanceParameters.length) {
+      // overwrite module defined parameters eg module Adder #(parameter N=8) with instance defined eg Adder myAdder #(8)
+      // module defined are named, instance defined by order
+      newInstance.parameters[namespace + "_" + entry[0]] = {
+        state: new Numeric(
+          instanceDeclaration.instanceParameters[i].getValue(
+            parentInstance.parameters,
+            parentInstance.id
+          )
+        )
+      };
+    } else
+      newInstance.parameters[namespace + "_" + entry[0]] = {
+        state: entry[1]
+      }; // should be numeric
+  });
+  console.log("parameters: ", newInstance.parameters);
+
+  const gateBitSizesType = {
+    number: 10,
+    sevenseg: 4
+  };
+
+  // calculate bitsize for wires and ports and regs which may include calculated parameters constants
+  const gateBitSizesID = [
+    ...instanceModule.wires,
+    ...instanceModule.ports,
+    ...instanceModule.regs
+  ].reduce((acc, x) => {
+    const dim = x.dim
+      ? x.dim.map(x => x.getValue(newInstance.parameters, newInstance.id))
+      : null;
+    return { ...acc, [x.id]: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1 };
+  }, {});
+
+  console.log("gateBitSizes: ", gateBitSizesID);
 
   // console.log("createInstance: ", newInstance.id);
   // console.log("-- instance connections: ", instanceDeclaration.connections);
@@ -56,16 +101,6 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   // create all the gates defined in the instance's module statements
   // gate declaration has the form { id: "X", gate: "and", inputs: ["a", "b"], type: "gate"}
   // if the gate has the same id as an output port then map that id to id.gate and set the output ports input to id.gate
-
-  const gateBitSizesType = {
-    number: 10,
-    sevenseg: 4
-  };
-
-  const gateBitSizesID = [
-    ...instanceModule.wires,
-    ...instanceModule.ports
-  ].reduce((acc, x) => ({ ...acc, [x.id]: x.bitSize }), {});
 
   instanceModule.instantiations
     .filter(statement => statement.type == "gate")
@@ -135,7 +170,12 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   });
 
   instanceModule.regs.forEach(reg => {
-    const newGate = new BufferGate(namespace, reg.id, "reg", reg.bitSize);
+    const newGate = new BufferGate(
+      namespace,
+      reg.id,
+      "reg",
+      gateBitSizesID[reg.id]
+    );
     gates.push(newGate);
     newInstance.gates.push(newGate.id);
   });
@@ -161,7 +201,12 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       if (gates.some(x => x.id == "main_" + port.id)) {
         // console.log("main_" + port.id);
       } else {
-        const newGate = new BufferGate("main", port.id, portType, port.bitSize);
+        const newGate = new BufferGate(
+          "main",
+          port.id,
+          portType,
+          gateBitSizesID[port.id]
+        );
         gates.push(newGate);
         newInstance.gates.push(newGate.id);
       }
@@ -172,7 +217,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       namespace,
       port.id + (port.direction == "output" ? "-out" : ""),
       "portbuffer",
-      port.bitSize
+      gateBitSizesID[port.id]
     );
     // console.log("-- port: ", port.id, ", gate: ", portGate.id);
 

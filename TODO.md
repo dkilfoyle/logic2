@@ -10,9 +10,10 @@
 3. Replace Buefy with Tailwind - maybe stick with buefy
 4. Custom instance breadcrumb component - done
 5. Implement continuous assignment operator precedence - see Table 4.1 of Digital Design and Computer Architecture: ~, \*/, +-, <<>>, &~&, ^~^, |~|, ?: Use Full adder to test
-6. If/else eg register with enable and reset lines - Example 4.20
-7. Case statement - example 4.25 7-seg decoder
-8. Concatenation and parameter - example 5.1 full addder
+6. If/else eg register with enable and reset lines - Example 4.20 - done
+7. Case statement - example 4.25 7-seg decoder - done
+8. Concatenation and parameter - example 5.1 full addder - done
 9. Comparator - example 5.3
 10. Tests! - some
 11. Unfortunately should switch from Listener to Visitor so don't need to pass values by stacks
+12. Monaco language definition

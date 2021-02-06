@@ -68,7 +68,12 @@ simple_identifier_list: IDENTIFIER (',' IDENTIFIER)*;
 // 3. Instantiations ==============================================  
 
 module_instantiation:
-	moduleID = IDENTIFIER instanceID = IDENTIFIER module_connections_list ';';
+	moduleID = IDENTIFIER instanceID = IDENTIFIER (
+		params = parameter_value_assignment
+	)? module_connections_list ';';
+
+parameter_value_assignment:
+	'#' '(' params += expression (',' params += expression)* ')';
 
 module_connections_list:
 	'(' named_port_connection (',' named_port_connection)* ')';

@@ -236,6 +236,15 @@ vlgListener.prototype.exitModule_instantiation = function(ctx) {
 };
 
 
+// Enter a parse tree produced by vlgParser#parameter_value_assignment.
+vlgListener.prototype.enterParameter_value_assignment = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#parameter_value_assignment.
+vlgListener.prototype.exitParameter_value_assignment = function(ctx) {
+};
+
+
 // Enter a parse tree produced by vlgParser#module_connections_list.
 vlgListener.prototype.enterModule_connections_list = function(ctx) {
 };

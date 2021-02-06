@@ -162,6 +162,12 @@ vlgVisitor.prototype.visitModule_instantiation = function(ctx) {
 };
 
 
+// Visit a parse tree produced by vlgParser#parameter_value_assignment.
+vlgVisitor.prototype.visitParameter_value_assignment = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by vlgParser#module_connections_list.
 vlgVisitor.prototype.visitModule_connections_list = function(ctx) {
   return this.visitChildren(ctx);

@@ -120,7 +120,7 @@ class Listener extends vlgListener {
       ports: [],
       wires: [],
       regs: [],
-      parameterLookup: {},
+      moduleParameters: {},
       instantiations: [],
       netAssignments: []
     };
@@ -148,7 +148,7 @@ class Listener extends vlgListener {
       ports: [],
       wires: [],
       regs: [],
-      parameterLookup: {},
+      moduleParameters: {},
       instantiations: [],
       netAssignments: [],
       clock: []
@@ -165,9 +165,7 @@ class Listener extends vlgListener {
 
   exitModule_parameter(ctx) {
     const paramName = ctx.IDENTIFIER().getText();
-    this.curModule.parameterLookup[this.curModule.id + "_" + paramName] = {
-      state: this.valueStack.pop()
-    };
+    this.curModule.moduleParameters[paramName] = this.valueStack.pop();
   }
 
   exitModule_ports(ctx) {
@@ -182,7 +180,7 @@ class Listener extends vlgListener {
       ...ids.map(id => ({
         id: id.getText(),
         direction: dir,
-        bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1,
+        // bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1,
         dim
       }))
     );
@@ -191,8 +189,8 @@ class Listener extends vlgListener {
       ids.forEach(id => {
         this.curModule.regs.push({
           id: id.getText(),
-          dim,
-          bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1
+          dim
+          // bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1
         });
       });
     }
@@ -203,7 +201,7 @@ class Listener extends vlgListener {
     ctx.ids.IDENTIFIER().forEach(id => {
       this.curModule.wires.push({
         id: id.getText(),
-        bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1,
+        // bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1,
         dim
       });
     });
@@ -460,11 +458,10 @@ class Listener extends vlgListener {
 
   exitRange(ctx) {
     this.valueStack.push(
-      this.expressionStack
-        .splice(-2)
-        .map(dimexpr =>
-          dimexpr.getValue(this.curModule.parameterLookup, this.curModule.id)
-        )
+      this.expressionStack.splice(-2)
+      // .map(dimexpr =>
+      //   dimexpr.getValue(this.curModule.parameterLookup, this.curModule.id)
+      // )
     );
   }
 
@@ -661,6 +658,9 @@ class Listener extends vlgListener {
 
     const instanceID = ctx.instanceID.text;
     const connections = ctx.module_connections_list().connections;
+    const params = ctx.params
+      ? ctx.params.params.map(x => this.expressionStack.pop())
+      : null;
 
     console.log(`Module ${moduleID} connections: `, connections);
 
@@ -683,7 +683,8 @@ class Listener extends vlgListener {
       type: "instance",
       id: instanceID,
       module: moduleID,
-      connections
+      connections,
+      instanceParameters: params
     };
 
     this.curModule.instantiations.push(newInstance);
