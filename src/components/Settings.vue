@@ -1,15 +1,22 @@
 <template>
   <div class="dk-flex-col dk-pa-10 dk-gap-10">
-    <h4>GLOBAL</h4>
+    <div class="dk-heading">GLOBAL</div>
     <b-field label="Evals per Step">
       <b-input v-model="evalsPerStep" size="is-small"></b-input>
     </b-field>
     <b-field label="Trace Height">
       <b-slider v-model="traceHeight" size="is-small"></b-slider>
     </b-field>
-    <h4>CURRENT FILE</h4>
-    <b-checkbox v-model="autoCompile">Auto Compile</b-checkbox>
-    <b-field label="Gate Filter">
+
+    <div class="dk-heading">CURRENT FILE</div>
+
+    <div class="dk-label">Options</div>
+    <div class="dk-flex-col dk-gap-8 dk-pl-5">
+      <b-checkbox v-model="autoCompile">Auto Compile</b-checkbox>
+    </div>
+
+    <div class="dk-label">Gate Filter</div>
+    <div class="dk-flex-col dk-gap-8 dk-pl-5">
       <b-radio v-model="showWhichGates" name="showWhichGates" native-value="all"
         >All</b-radio
       >
@@ -37,8 +44,9 @@
         native-value="wires"
         >Wires</b-radio
       >
-    </b-field>
-    <b-field label="State Format">
+    </div>
+    <div class="dk-label">State Format</div>
+    <div class="dk-flex-col dk-gap-8 dk-pl-5">
       <b-radio v-model="stateFormat" name="stateFormat" native-value="logic"
         >Logic</b-radio
       >
@@ -48,7 +56,7 @@
       <b-radio v-model="stateFormat" name="stateFormat" native-value="binary"
         >Binary</b-radio
       >
-    </b-field>
+    </div>
   </div>
 </template>
 
@@ -110,5 +118,15 @@ export default {
 <style>
 .label {
   font-size: 13px !important;
+  font-weight: 500;
+}
+.dk-label {
+  font-size: 13px !important;
+  font-weight: 500;
+  margin-top: 10px;
+}
+.dk-heading {
+  border-bottom: 1px solid darkgray;
+  padding-bottom: 5px;
 }
 </style>

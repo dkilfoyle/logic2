@@ -106,7 +106,10 @@ export default {
         const querystr = "#svgSchematic ." + gateid + "_link";
         const elements = document.querySelectorAll(querystr);
         elements.forEach(element =>
-          element.setAttribute("class", `${gateid}_link link-${gatevalue}`)
+          element.setAttribute(
+            "class",
+            `${gateid}_link link-${gatevalue == 0 ? 0 : 1}`
+          )
         );
         let gate = this.getGate(gateid);
         if (gate.type == "control" || gate.type == "response") {
@@ -115,7 +118,9 @@ export default {
           if (element)
             element.setAttribute(
               "class",
-              `node-external-port ${gateid}_external external-${gatevalue}`
+              `node-external-port ${gateid}_external external-${
+                gatevalue == 0 ? 0 : 1
+              }`
             );
         }
       }

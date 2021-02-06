@@ -545,6 +545,12 @@ body {
 .dk-pa-10 {
   padding: 10px;
 }
+.dk-pl-5 {
+  padding-left: 5px;
+}
+.dk-pl-10 {
+  padding-left: 10px;
+}
 .dk-pa-20 {
   padding: 20px;
 }
@@ -592,6 +598,9 @@ body {
 }
 .dk-gap-5 {
   gap: 5px;
+}
+.dk-gap-8 {
+  gap: 8px;
 }
 .dk-gap-10 {
   gap: 10px;

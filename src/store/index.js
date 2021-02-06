@@ -158,6 +158,12 @@ export default new Vuex.Store({
     setStateFormat(state, payload) {
       state.stateFormat = payload;
     },
+    toggleStateFormat(state) {
+      const formats = ["logic", "decimal", "binary"];
+      let cur = formats.indexOf(state.stateFormat);
+      cur = (cur + 1) % formats.length;
+      state.stateFormat = formats[cur];
+    },
     setSelectedInstanceID(state, id) {
       state.openFiles[state.currentFileTab].selectedInstanceID = id;
     },

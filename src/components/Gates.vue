@@ -23,7 +23,11 @@
               <!-- <th>InstanceID</th> -->
               <th class="has-text-left">Fn</th>
               <th class="has-text-left">Inputs</th>
-              <th class="has-text-right">State</th>
+              <th class="has-text-right">
+                <b-button size="is-small" @click="toggleStateFormat"
+                  >State</b-button
+                >
+              </th>
               <th class="has-text-right">BitSize</th>
             </tr>
           </thead>
@@ -52,18 +56,18 @@
                 }}
               </td>
               <td
-                class="-text-right"
+                class="has-text-right"
                 v-if="$store.state.stateFormat == 'logic'"
               >
                 <img
                   v-if="$store.getters.getGateStateAtSelectedTime(g) == 0"
                   src="@/assets/icons8-0-52.png"
-                  class="gateicon"
+                  class="stateicon"
                 />
                 <img
                   v-else
                   src="@/assets/icons8-number-1-48.png"
-                  class="gateicon"
+                  class="stateicon"
                 />
               </td>
               <td
@@ -130,6 +134,9 @@ export default {
   components: { InstanceCrumbs },
 
   methods: {
+    toggleStateFormat() {
+      this.$store.commit("toggleStateFormat");
+    },
     selectBreadcumb(node) {
       if (node == "main") {
         this.$store.commit("setSelectedInstanceID", "main");
@@ -154,6 +161,18 @@ export default {
   vertical-align: middle;
 }
 
+.stateicon {
+  width: 1.5em;
+  height: 1.5em;
+  vertical-align: middle;
+}
+
+td img.stateicon {
+  display: block;
+  margin-left: auto;
+  margin-right: 0;
+}
+
 #gatestable {
   font-size: 10pt;
 }
@@ -174,5 +193,13 @@ export default {
 
 tbody tr:hover {
   background-color: #e6e6e6a0;
+}
+
+.button {
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  height: auto;
 }
 </style>
