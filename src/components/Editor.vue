@@ -185,7 +185,8 @@ export default {
           "test",
           "assign",
           "always",
-          "initial"
+          "initial",
+          "parameter"
         ],
         typeKeywords: [
           "and",
@@ -202,7 +203,7 @@ export default {
           "posedge",
           "negedge"
         ],
-        operators: ["=", "&", "|", "~", "^"],
+        operators: ["=", "&", "|", "~", "^", "+", "-", "*", "/"],
         symbols: /[=><!~?:&|+\-*/^%]+/,
         // C# style strings
         escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,

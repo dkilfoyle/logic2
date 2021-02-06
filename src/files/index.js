@@ -33,7 +33,7 @@ export const SourceFiles = {
   // Behavioural models
   Add4: require("./add4.v").default,
   DFlipFlopB: require("./dflipflopb.v").default,
-  NBitAdder: require("./nbitaddder.v").default
+  NBitAdder: require("./nbitadder.v").default
 };
 
 export const SourceTree = [

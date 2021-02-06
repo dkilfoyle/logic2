@@ -1,36 +1,39 @@
 // 4 bit adder behavioural model (experimental)
 
-module Addder #(parameter N=8) (
+module Adder #(parameter N=8) (
   input [N-1:0] a, b,
   input cin,
-  output [N-1:0] s,
-  output cout
+  output reg [N-1:0] sum,
+  output reg cout
 );
-  assign {cout, s} = a + b + cin;
+  always @(*)
+  begin
+    {cout, sum} = a + b + cin;
+  end
 endmodule
 
 module Main(
   input [7:0] x, y,
-  input ci,
+  input cin,
   output [7:0] SUM, COUT
 ); 
 
   Adder myAdder(
 		.a(x),
 		.b(y),
-    .ci(ci),
+    .cin(cin),
 		.sum(SUM),
 		.cout(COUT)
   );
 
   test begin
-    #0  { ci=0, x=0,  y=0 };
-    #1  { ci=0, x=5,  y=1 };
-    #2  { ci=0, x=10, y=2 };
-    #3  { ci=0, x=15, y=3 };
-    #4  { ci=0, x=20, y=4 };
-    #5  { ci=0, x=25, y=5 };
-    #6  { ci=0, x=40, y=6 };
+    #0  { cin=0, x=0,  y=0 };
+    #1  { cin=0, x=5,  y=1 };
+    #2  { cin=0, x=10, y=2 };
+    #3  { cin=0, x=15, y=3 };
+    #4  { cin=0, x=20, y=4 };
+    #5  { cin=0, x=25, y=5 };
+    #6  { cin=0, x=254, y=6 };
     #8;
   end
 endmodule

@@ -36,6 +36,12 @@ vlgVisitor.prototype.visitModule = function(ctx) {
 };
 
 
+// Visit a parse tree produced by vlgParser#module_parameter.
+vlgVisitor.prototype.visitModule_parameter = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by vlgParser#module_ports.
 vlgVisitor.prototype.visitModule_ports = function(ctx) {
   return this.visitChildren(ctx);

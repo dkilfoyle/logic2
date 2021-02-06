@@ -14,17 +14,19 @@ modules: module* module_main EOF;
 /* Module declaration ============================================== */
 
 module_main:
-	'module' MAIN (module_ports)? ';' module_item* test_bench? 'endmodule';
+	'module' MAIN module_parameter? (module_ports)? ';' module_item* test_bench? 'endmodule';
 
 MAIN: 'Main';
 
 module:
-	'module' IDENTIFIER (module_ports)? ';' module_item* 'endmodule';
+	'module' IDENTIFIER module_parameter? (module_ports)? ';' module_item* 'endmodule';
+
+module_parameter: '#' '(' 'parameter' IDENTIFIER '=' number ')';
 
 module_ports: '(' port_declaration (',' port_declaration)* ')';
 
 port_declaration:
-	port_direction (portdim = range)? port_identifier_list;
+	port_direction (reg = 'reg')? (portdim = range)? port_identifier_list;
 
 port_identifier_list: IDENTIFIER (',' IDENTIFIER)*;
 
@@ -72,7 +74,7 @@ module_connections_list:
 	'(' named_port_connection (',' named_port_connection)* ')';
 
 named_port_connection:
-	'.' portID = IDENTIFIER '(' identifier ')';
+	'.' portID = IDENTIFIER '(' value = identifier ')';
 
 gate_instantiation:
 	gate_type '(' gateID = IDENTIFIER (',' ids = identifier_list)? ')' ';';
@@ -144,7 +146,7 @@ case_default: 'default' ':' statement_block;
 
 /* 8.1 Concatenations============================================ */
 
-concatenation: '{' identifier (',' identifier)* '}';
+concatenation: '{' identifier_list '}';
 
 /* 8.3 Expressions ============================================== */
 
@@ -239,7 +241,7 @@ defined_connection_id_list:
 	defined_connection_id (',' defined_connection_id)*;
 identifier_list: identifier (',' identifier)*;
 range:
-	'[' rangestart = Decimal_number ':' rangeend = Decimal_number ']';
+	'[' rangestart = expression ':' rangeend = expression ']';
 
 /* Tokens ===================================================== */
 

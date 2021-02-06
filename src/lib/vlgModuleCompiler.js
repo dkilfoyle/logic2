@@ -242,6 +242,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         newInstance.outputs.push(portGate.id);
       }
     }
+
     // console.log("portGate: ", port.id, port.direction, portGate);
 
     gates.push(portGate);

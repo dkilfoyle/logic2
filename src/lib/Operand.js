@@ -1,6 +1,11 @@
 class Operand {
   constructor(type) {
-    if (type == "variable" || type == "numeric" || type == "operation")
+    if (
+      type == "variable" ||
+      type == "numeric" ||
+      type == "operation" ||
+      type == "concatenation"
+    )
       this.type = type;
     else throw new Error(`Operand constructor supported type ${type}`);
   }

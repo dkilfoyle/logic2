@@ -47,6 +47,15 @@ vlgListener.prototype.exitModule = function(ctx) {
 };
 
 
+// Enter a parse tree produced by vlgParser#module_parameter.
+vlgListener.prototype.enterModule_parameter = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#module_parameter.
+vlgListener.prototype.exitModule_parameter = function(ctx) {
+};
+
+
 // Enter a parse tree produced by vlgParser#module_ports.
 vlgListener.prototype.enterModule_ports = function(ctx) {
 };

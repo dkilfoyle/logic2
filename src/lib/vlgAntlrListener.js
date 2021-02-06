@@ -9,6 +9,7 @@ import { vlgParser } from "../grammar/vlgParser.js";
 import Numeric from "./Numeric.js";
 import Operation from "./Operation.js";
 import Variable from "./Variable.js";
+import Concatenation from "./Concatenation.js";
 
 const strip = x => JSON.parse(JSON.stringify(x));
 
@@ -119,6 +120,7 @@ class Listener extends vlgListener {
       ports: [],
       wires: [],
       regs: [],
+      parameterLookup: {},
       instantiations: [],
       netAssignments: []
     };
@@ -146,6 +148,7 @@ class Listener extends vlgListener {
       ports: [],
       wires: [],
       regs: [],
+      parameterLookup: {},
       instantiations: [],
       netAssignments: [],
       clock: []
@@ -158,6 +161,13 @@ class Listener extends vlgListener {
     this.modules.push(this.curModule);
     this.curModule = null;
     console.groupEnd();
+  }
+
+  exitModule_parameter(ctx) {
+    const paramName = ctx.IDENTIFIER().getText();
+    this.curModule.parameterLookup[this.curModule.id + "_" + paramName] = {
+      state: this.valueStack.pop()
+    };
   }
 
   exitModule_ports(ctx) {
@@ -176,6 +186,16 @@ class Listener extends vlgListener {
         dim
       }))
     );
+    // if the output is declared as a reg eg output reg sum
+    if (dir == "output" && ctx.reg) {
+      ids.forEach(id => {
+        this.curModule.regs.push({
+          id: id.getText(),
+          dim,
+          bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1
+        });
+      });
+    }
   }
 
   exitNet_declaration(ctx) {
@@ -434,11 +454,18 @@ class Listener extends vlgListener {
     );
   }
 
+  exitConcatenation(ctx) {
+    this.valueStack.push(new Concatenation(this.valueStack.pop()));
+  }
+
   exitRange(ctx) {
-    this.valueStack.push([
-      parseInt(ctx.rangestart.text, 10),
-      parseInt(ctx.rangeend.text, 10)
-    ]);
+    this.valueStack.push(
+      this.expressionStack
+        .splice(-2)
+        .map(dimexpr =>
+          dimexpr.getValue(this.curModule.parameterLookup, this.curModule.id)
+        )
+    );
   }
 
   // number
@@ -562,7 +589,7 @@ class Listener extends vlgListener {
     if (!this.isWireOrOutput(gateOutput)) {
       const idctx = ctx.gateID;
       this.addSemanticError(
-        idctx.symbol,
+        idctx,
         `'${gateOutput}' is not defined as a wire or module output`
       );
     }
@@ -611,7 +638,10 @@ class Listener extends vlgListener {
       .map(x => {
         return {
           port: { id: x.portID.text, token: x.portID },
-          value: { id: this.valueStack.pop(), token: x.value }
+          value: {
+            id: this.valueStack.pop(),
+            token: x.value.IDENTIFIER().getSymbol()
+          }
         };
       });
   }
