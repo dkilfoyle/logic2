@@ -367,8 +367,8 @@ class Listener extends vlgListener {
   }
 
   exitParensExpression(ctx) {
-    const lhs = this.expressionStack.pop();
-    this.expressionStack.push(new Operation(lhs, "parens", null));
+    // const lhs = this.expressionStack.pop();
+    // this.expressionStack.push(new Operation(lhs, "parens", null));
   }
 
   exitUnaryExpression(ctx) {

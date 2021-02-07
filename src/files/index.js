@@ -33,7 +33,8 @@ export const SourceFiles = {
   // Behavioural models
   Add4: require("./add4.v").default,
   DFlipFlopB: require("./dflipflopb.v").default,
-  NBitAdder: require("./nbitadder.v").default
+  NBitAdder: require("./nbitadder.v").default,
+  Alu: require("./alu.v").default
 };
 
 export const SourceTree = [
@@ -117,9 +118,12 @@ export const SourceTree = [
   {
     text: "Behavioural Models",
     children: [
+      {
+        text: "Maths",
+        children: [{ text: "Add4" }, { text: "NBitAdder" }, { text: "Alu" }]
+      },
       { text: "DFlipFlopB" },
-      { text: "Add4" },
-      { text: "NBitAdder" },
+
       { text: "SevenSegB" }
     ]
   }
