@@ -144,24 +144,35 @@ export default {
       monaco.languages.register({ id: "miniVerilog" });
 
       const miniVerilogConfig = {
-        surroundingPairs: [{ open: "(", close: ")" }],
-        autoClosingPairs: [{ open: "(", close: ")" }],
+        surroundingPairs: [
+          { open: "(", close: ")" },
+          { open: "[", close: "]" },
+          { open: "{", close: "}" }
+        ],
+        autoClosingPairs: [
+          { open: "(", close: ")" },
+          { open: "[", close: "]" },
+          { open: "{", close: "}" }
+        ],
         brackets: [
           ["(", ")"],
+          ["{", "}"],
           ["begin", "end"],
+          ["case", "endcase"],
           ["module", "endmodule"]
         ],
         comments: {
-          lineComment: "//"
+          lineComment: "//",
+          blockComment: ["/*", "*/"]
         },
         folding: {
           offSide: false,
           markers: {
             start: new RegExp(
-              "^(?:\\s*|.*(?!\\/[\\/\\*])[^\\w])(?:begin|module)\\b"
+              "^(?:\\s*|.*(?!\\/[\\/\\*])[^\\w])(?:begin|module|case)\\b"
             ),
             end: new RegExp(
-              "^(?:\\s*|.*(?!\\/[\\/\\*])[^\\w])(?:end|endmodule)\\b"
+              "^(?:\\s*|.*(?!\\/[\\/\\*])[^\\w])(?:end|endmodule|endcase)\\b"
             )
           }
         }
@@ -174,6 +185,11 @@ export default {
       // Register a tokens provider for the language
       monaco.languages.setMonarchTokensProvider("miniVerilog", {
         declarations: ["module"],
+        brackets: [
+          { token: "delimiter.curly", open: "{", close: "}" },
+          { token: "delimiter.parenthesis", open: "(", close: ")" },
+          { token: "delimiter.square", open: "[", close: "]" }
+        ],
         keywords: [
           "module",
           "endmodule",
@@ -211,7 +227,7 @@ export default {
           root: [
             // identifiers and keywords
             [
-              /[a-z_$][\w$]*/,
+              /[a-zA-Z_$][\w$]*/,
               {
                 cases: {
                   endmodule: { token: "keyword.decl", bracket: "@close" },
@@ -227,7 +243,8 @@ export default {
             { include: "@whitespace" },
 
             // delimiters and operators
-            [/[{}()]/, "@brackets"],
+            // eslint-disable-next-line no-useless-escape
+            [/[{}()\[\]]/, "@brackets"],
             [
               /@symbols/,
               { cases: { "@operators": "operator", "@default": "" } }
@@ -289,7 +306,11 @@ export default {
           { token: "custom-info", foreground: "808080" },
           { token: "custom-error", foreground: "ff0000", fontStyle: "bold" },
           { token: "custom-notice", foreground: "FFA500" },
-          { token: "custom-date", foreground: "008800" }
+          { token: "custom-date", foreground: "008800" },
+          { token: "number", foreground: "#b5cea8" },
+          { token: "operator", foreground: "#CE9178" },
+          { token: "brackets", foreground: "#DCDCAA" },
+          { token: "delimiter", foreground: "#DCDCAA" }
         ]
       });
 
