@@ -24,7 +24,9 @@ class BufferGate extends BaseComponent {
   update(gatesLookup) {
     // update is called each clock and processes inputs to call this.setValue
     if (this.inputs.length == 0) return; // nothing to process
-    let inputValues = this.inputs.map(input => input.getValue(gatesLookup));
+    let inputValues = this.inputs.map(input =>
+      input.getValue(gatesLookup, input.namespace)
+    );
 
     // if (this.id == "main_myAdder_sum-out") debugger;
 

@@ -379,6 +379,7 @@ export default {
       const simulateResult = vlgSimulate(
         this.$store.state.evals_per_step,
         this.$store.getters.currentFile.compileResult.gates,
+        this.$store.getters.currentFile.compileResult.parameters,
         this.$store.getters.currentFile.compileResult.instances,
         this.$store.getters.currentFile.walkResult.modules,
         this.termWriteln

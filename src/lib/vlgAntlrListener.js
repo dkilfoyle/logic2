@@ -660,7 +660,7 @@ class Listener extends vlgListener {
     const connections = ctx.module_connections_list().connections;
     const params = ctx.params
       ? ctx.params.params.map(x => this.expressionStack.pop())
-      : null;
+      : [];
 
     console.log(`Module ${moduleID} connections: `, connections);
 

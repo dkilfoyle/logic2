@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 import BaseComponent from "./BaseComponent";
 
 const not = a => ~a & 1;
@@ -22,20 +23,22 @@ class LogicGate extends BaseComponent {
         `Logic gate ${this.id} has more than 3 inputs (${this.inputs.length})`
       );
 
-    let [a, b, c] = this.inputs.map(input => input.getValue(gatesLookup));
+    let [a, b, c] = this.inputs.map(input =>
+      input.getValue(gatesLookup, input.namespace)
+    );
 
     switch (this.type) {
       case "and":
-        this.setValue(c ? a && b && c : a && b);
+        this.setValue(c ? a & b & c : a & b);
         break;
       case "nand":
-        this.setValue(not(c ? a && b && c : a && b));
+        this.setValue(not(c ? a & b & c : a & b));
         break;
       case "or":
-        this.setValue(c ? a || b || c : a || b);
+        this.setValue(c ? a | b | c : a | b);
         break;
       case "nor":
-        this.setValue(not(c ? a || b || c : a || b));
+        this.setValue(not(c ? a | b | c : a | b));
         break;
       case "xor":
         this.setValue(c ? a ^ b ^ c : a ^ b);

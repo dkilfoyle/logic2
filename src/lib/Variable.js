@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 import Operand from "./Operand";
 
 // Variable is a key into the gatesLookup object (which acts as 'memory')
@@ -84,11 +85,11 @@ class Variable extends Operand {
           this.offset[0].getValue(gatesLookup, namespace),
           this.offset[1].getValue(gatesLookup, namespace)
         ];
-        if (range[0] > gate.state.size - 1)
+        if (range[0] > gate.state.bitSize - 1)
           throw new Error(
             `Variable.getValue: offset[0] (${range[0]}) is larger than gate (${gate.id}) state size (${gate.state.size})`
           );
-        if (range[1] > gate.state.size - 1)
+        if (range[1] > gate.state.bitSize - 1)
           throw new Error(
             `Variable.getValue: offset[1] (${range[1]}) is larger than gate (${gate.id}) state size (${gate.state.size})`
           );
@@ -102,26 +103,16 @@ class Variable extends Operand {
   getBit(num, bit) {
     return (num >> bit) % 2;
   }
+  extract(num, k, p) {
+    // extract k bits from position p to right
+    let mask = (1 << k) - 1;
+    let numFromP = num >> p;
+    return mask & numFromP;
+  }
   getBitRange(num, range) {
-    // TODO: dont use lazy string method
-    const numstr = num.toString(2);
-    // 100111
-
-    if (range[0] > range[1])
-      // eg [3:0]
-      return parseInt(
-        numstr.slice(numstr.length - range[0], numstr.length - range[1]),
-        2
-      );
-    else
-      return parseInt(
-        numstr
-          .slice(numstr.length - range[1], numstr.length - range[0])
-          .split("")
-          .reverse()
-          .join(""),
-        2
-      );
+    let k = Math.abs(range[0] - range[1]) + 1;
+    let p = Math.min(range[0], range[1]);
+    return this.extract(num, k, p);
   }
 }
 

@@ -4,8 +4,9 @@ import Numeric from "./Numeric";
 import Operation from "./Operation";
 import LogicGate from "./LogicGate";
 import BufferGate from "./BufferGate";
+import ParameterGate from "./ParameterGate";
 
-var modules, instances, gates;
+var modules, instances, gates, parameters;
 
 const stripReactive = x => JSON.parse(JSON.stringify(x));
 
@@ -35,13 +36,6 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   const instanceModule = modules[instanceDeclaration.module];
   console.log("instanceModule: ", instanceModule);
 
-  const parentInstance = instances.find(x => x.id == namespace) || {
-    id: "",
-    parameters: {}
-  };
-
-  const varMap = {};
-
   var newInstance = {
     id: namespace,
     module: instanceDeclaration.module,
@@ -49,26 +43,30 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     outputs: [], // output port gate ids
     instances: [], // child instance ids
     gates: [], // non port gate ids
-    parameters: {}
+    parameters: []
   };
+  instances.push(newInstance);
 
   // combine moduleParameters and instanceParameters and evaluate any expressions to get constant value
   Object.entries(instanceModule.moduleParameters).forEach((entry, i) => {
     if (i < instanceDeclaration.instanceParameters.length) {
       // overwrite module defined parameters eg module Adder #(parameter N=8) with instance defined eg Adder myAdder #(8)
       // module defined are named, instance defined by order
-      newInstance.parameters[namespace + "_" + entry[0]] = {
-        state: new Numeric(
-          instanceDeclaration.instanceParameters[i].getValue(
-            parentInstance.parameters,
-            parentInstance.id
-          )
+      parameters[namespace + "_" + entry[0]] = new ParameterGate(
+        namespace,
+        entry[0],
+        instanceDeclaration.instanceParameters[i].getValue(
+          parameters,
+          parentNamespace
         )
-      };
+      );
     } else
-      newInstance.parameters[namespace + "_" + entry[0]] = {
-        state: entry[1]
-      }; // should be numeric
+      parameters[namespace + "_" + entry[0]] = new ParameterGate(
+        namespace,
+        entry[0],
+        entry[1]
+      );
+    newInstance.parameters.push(namespace + "_" + entry[0]);
   });
   console.log("parameters: ", newInstance.parameters);
 
@@ -84,7 +82,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     ...instanceModule.regs
   ].reduce((acc, x) => {
     const dim = x.dim
-      ? x.dim.map(x => x.getValue(newInstance.parameters, newInstance.id))
+      ? x.dim.map(x => x.getValue(parameters, newInstance.id))
       : null;
     return { ...acc, [x.id]: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1 };
   }, {});
@@ -106,9 +104,19 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     .filter(statement => statement.type == "gate")
     .forEach(gateDef => {
       const newGate = isLogicGate(gateDef.gateType)
-        ? new LogicGate(namespace, gateDef.id, gateDef.gateType)
+        ? new LogicGate(
+            namespace,
+            gateDef.id,
+            gateDef.gateType,
+            gateBitSizesID[gateDef.id]
+          )
         : isBuffer(gateDef.gateType)
-        ? new BufferGate(namespace, gateDef.id, gateDef.gateType)
+        ? new BufferGate(
+            namespace,
+            gateDef.id,
+            gateDef.gateType,
+            gateBitSizesID[gateDef.id]
+          )
         : null;
       if (!newGate)
         throw new Error(
@@ -130,7 +138,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
   // walk the operation tree until both lhs and rhs are variables
   // then make a new gate namespace.idx which is op(lhs, rhs)
-  const walkOperationTree = (namespace, id, op) => {
+  const walkOperationTree = (namespace, id, op, netBitSize) => {
     let gateID = id + (counter == 0 ? "" : counter);
     counter = counter + 1;
 
@@ -140,16 +148,25 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
     const newGate =
       op.op == "assign"
-        ? new BufferGate(namespace, gateID, "buffer") // TODO: if gateID is an output newGate = gates.get(gateID+"-out")??
-        : new LogicGate(namespace, gateID, op.op);
+        ? new BufferGate(namespace, gateID, "buffer", netBitSize) // TODO: if gateID is an output newGate = gates.get(gateID+"-out")??
+        : new LogicGate(namespace, gateID, op.op, netBitSize);
 
-    newGate.state = new Numeric(0);
+    console.log("newGate: ", newGate);
+
     newGate.inputs = op.rhs
       ? [
-          walkOperationTree(namespace, id, op.lhs).instance(namespace),
-          walkOperationTree(namespace, id, op.rhs).instance(namespace)
+          walkOperationTree(namespace, id, op.lhs, netBitSize).instance(
+            namespace
+          ),
+          walkOperationTree(namespace, id, op.rhs, netBitSize).instance(
+            namespace
+          )
         ]
-      : [walkOperationTree(namespace, id, op.lhs).instance(namespace)];
+      : [
+          walkOperationTree(namespace, id, op.lhs, netBitSize).instance(
+            namespace
+          )
+        ];
 
     gates.push(newGate);
     newInstance.gates.push(newGate.id);
@@ -159,13 +176,15 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   instanceModule.netAssignments.forEach(net => {
     console.group("netAsssigment: ", net.id.name);
     counter = 0;
+    let netBitSize = gateBitSizesID[net.id.name]; // intermediary gates will be same bitsize as the assign lhs
     if (net.operationTree instanceof Variable)
       walkOperationTree(
         namespace,
         net.id,
-        new Operation(net.operationTree, "assign", null)
+        new Operation(net.operationTree, "assign", null),
+        netBitSize
       );
-    else walkOperationTree(namespace, net.id, net.operationTree);
+    else walkOperationTree(namespace, net.id, net.operationTree, netBitSize);
     console.groupEnd();
   });
 
@@ -311,9 +330,6 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     newInstance.always = instanceModule.always;
   }
 
-  newInstance.varMap = varMap;
-  instances.push(newInstance);
-
   console.log("Instance: ", stripReactive(newInstance));
   console.groupEnd();
 
@@ -326,8 +342,9 @@ const compile = moduleArray => {
     return modules;
   }, {});
 
-  gates = [];
-  instances = [];
+  gates = []; // todo ? change to lookup object instead of array?
+  instances = []; // todo ditto
+  parameters = {};
 
   // create an instance of main module
   const mainInstantiation = {
@@ -338,7 +355,12 @@ const compile = moduleArray => {
 
   createInstance("", mainInstantiation);
 
-  return { instances, gates, timestamp: Date.now() };
+  console.group("Compilation result:");
+  console.log("Instances: ", stripReactive(instances));
+  console.log("Gates: ", stripReactive(gates));
+  console.groupEnd();
+
+  return { instances, gates, parameters, timestamp: Date.now() };
 };
 
 export default compile;

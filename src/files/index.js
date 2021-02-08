@@ -34,6 +34,7 @@ export const SourceFiles = {
   Add4: require("./add4.v").default,
   DFlipFlopB: require("./dflipflopb.v").default,
   NBitAdder: require("./nbitadder.v").default,
+  Comparator: require("./comparator.v").default,
   Alu: require("./alu.v").default
 };
 
@@ -120,7 +121,12 @@ export const SourceTree = [
     children: [
       {
         text: "Maths",
-        children: [{ text: "Add4" }, { text: "NBitAdder" }, { text: "Alu" }]
+        children: [
+          { text: "Add4" },
+          { text: "NBitAdder" },
+          { text: "Comparator" },
+          { text: "Alu" }
+        ]
       },
       { text: "DFlipFlopB" },
 

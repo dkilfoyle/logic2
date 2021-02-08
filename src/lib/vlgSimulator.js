@@ -90,7 +90,14 @@ const evaluateStatementTree = (s, namespace) => {
   }
 };
 
-const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
+const simulate = (
+  EVALS_PER_STEP,
+  gates,
+  parameters,
+  instances,
+  modules,
+  mylogger
+) => {
   logger = mylogger;
 
   const newSimulation = {
@@ -100,7 +107,7 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
     ready: false
   };
 
-  gatesLookup = indexBy(gates, "id");
+  gatesLookup = { ...indexBy(gates, "id"), ...parameters };
   instancesLookup = indexBy(instances, "id");
   modulesLookup = indexBy(modules, "id");
 
@@ -112,7 +119,6 @@ const simulate = (EVALS_PER_STEP, gates, instances, modules, mylogger) => {
   });
 
   // process each instances initial section to set initial gate or register states
-  console.log("initial: ");
   let initialRes = instances.every(instance => {
     return instance.initial
       ? evaluateStatementTree(instance.initial.statementTree, instance.id)

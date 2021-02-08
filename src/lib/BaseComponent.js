@@ -10,7 +10,7 @@ class BaseComponent {
 
     if (!type)
       throw new Error(
-        `Gate.constructor(${namespace}, ${name}, ??) must specify buffer type`
+        `Gate.constructor(${namespace}, ${name}, ??) must specify gate type`
       );
     this.type = type;
     this.inputs = [];
