@@ -52,7 +52,9 @@ describe.each([
     "main_Q1cur",
     [1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0]
   ],
-  ["DFlipFlopB", 2, 7, "main_Qm", [1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1]]
+  ["DFlipFlopB", 2, 9, "main_Qm", [1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0]],
+  ["Alu", 5, 36, "main_y", [2, 3, 5, 0, 2, 3, 1, 1]],
+  ["NBitAdder", 2, 12, "main_SUM", [0, 9, 10, 11, 12, 0, 0]]
 ])("Compile %s", (sourceName, numInstances, numGates, testGate, testOutput) => {
   const sourceCode = getSource(sourceName);
   const parseResult = vlgParse(sourceCode);
@@ -74,6 +76,7 @@ describe.each([
   const simulateResult = vlgSimulate(
     15,
     compileResult.gates,
+    compileResult.parameters,
     compileResult.instances,
     walkResult.modules,
     jest.fn()
