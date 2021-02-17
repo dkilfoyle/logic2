@@ -70,16 +70,22 @@ simple_identifier_list: IDENTIFIER (',' IDENTIFIER)*;
 module_instantiation:
 	moduleID = IDENTIFIER instanceID = IDENTIFIER (
 		params = parameter_value_assignment
-	)? module_connections_list ';';
+	)? (
+		named_module_connections_list
+		| ordered_module_connections_list
+	) ';';
 
 parameter_value_assignment:
 	'#' '(' params += expression (',' params += expression)* ')';
 
-module_connections_list:
+named_module_connections_list:
 	'(' named_port_connection (',' named_port_connection)* ')';
 
 named_port_connection:
 	'.' portID = IDENTIFIER '(' value = identifier ')';
+
+ordered_module_connections_list:
+	'(' ids += identifier (',' ids += identifier)* ')';
 
 gate_instantiation:
 	gate_type '(' gateID = IDENTIFIER (',' ids = identifier_list)? ')' ';';

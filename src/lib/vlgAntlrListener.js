@@ -628,19 +628,38 @@ class Listener extends vlgListener {
 
   // instances =========================================
 
-  exitModule_connections_list(ctx) {
-    ctx.connections = ctx
-      .named_port_connection()
-      .reverse() // reverse in order to pop the identifiers in the correct order
-      .map(x => {
-        return {
-          port: { id: x.portID.text, token: x.portID },
-          value: {
-            id: this.valueStack.pop(),
-            token: x.value.IDENTIFIER().getSymbol()
-          }
-        };
-      });
+  exitNamed_module_connections_list(ctx) {
+    this.valueStack.push(
+      ctx
+        .named_port_connection()
+        .reverse() // reverse in order to pop the identifiers in the correct order
+        .map(x => {
+          return {
+            port: { id: x.portID.text, token: x.portID },
+            value: {
+              id: this.valueStack.pop(),
+              token: x.value.IDENTIFIER().getSymbol()
+            }
+          };
+        })
+    );
+  }
+
+  exitOrdered_module_connections_list(ctx) {
+    this.valueStack.push(
+      ctx.ids
+        .reverse()
+        .map((x, i, a) => {
+          return {
+            port: { index: a.length - i - 1 },
+            value: {
+              id: this.valueStack.pop(),
+              token: x.IDENTIFIER().getSymbol()
+            }
+          };
+        })
+        .reverse()
+    );
   }
 
   enterModule_instantiation(ctx) {
@@ -657,7 +676,7 @@ class Listener extends vlgListener {
     }
 
     const instanceID = ctx.instanceID.text;
-    const connections = ctx.module_connections_list().connections;
+    const connections = this.valueStack.pop(); //ctx.module_connections_list().connections;
     const params = ctx.params
       ? ctx.params.params.map(x => this.expressionStack.pop())
       : [];
@@ -666,6 +685,13 @@ class Listener extends vlgListener {
 
     // check for valid connections
     connections.forEach(connection => {
+      if (connection.port.index != undefined) {
+        // ordered connections
+        connection.port.id = this.getModule(moduleID).ports[
+          connection.port.index
+        ].id;
+        return;
+      }
       if (!this.isPortOf(connection.port.id, moduleID))
         this.addSemanticError(
           connection.port.token,

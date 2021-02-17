@@ -35,7 +35,8 @@ export const SourceFiles = {
   DFlipFlopB: require("./dflipflopb.v").default,
   NBitAdder: require("./nbitadder.v").default,
   Comparator: require("./comparator.v").default,
-  Alu: require("./alu.v").default
+  Alu: require("./alu.v").default,
+  MIPS: require("./mips.v").default
 };
 
 export const SourceTree = [
@@ -129,8 +130,15 @@ export const SourceTree = [
         ]
       },
       { text: "DFlipFlopB" },
-
-      { text: "SevenSegB" }
+      { text: "SevenSegB" },
+      {
+        text: "Architecture",
+        children: [
+          {
+            text: "MIPS"
+          }
+        ]
+      }
     ]
   }
 ];

@@ -29,12 +29,12 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     parentNamespace,
     instanceDeclaration.module
   );
-  console.log("instanceDeclaration: ", instanceDeclaration);
+  console.log("instanceDeclaration: ", { ...instanceDeclaration });
   var namespace;
   if (parentNamespace == "") namespace = "main";
   else namespace = parentNamespace + "_" + instanceDeclaration.id;
   const instanceModule = modules[instanceDeclaration.module];
-  console.log("instanceModule: ", instanceModule);
+  console.log("instanceModule: ", { ...instanceModule });
 
   var newInstance = {
     id: namespace,
@@ -68,7 +68,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       );
     newInstance.parameters.push(namespace + "_" + entry[0]);
   });
-  console.log("parameters: ", newInstance.parameters);
+  console.log("parameters: ", stripReactive(newInstance.parameters));
 
   const gateBitSizesType = {
     number: 10,

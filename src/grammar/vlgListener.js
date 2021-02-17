@@ -245,12 +245,12 @@ vlgListener.prototype.exitParameter_value_assignment = function(ctx) {
 };
 
 
-// Enter a parse tree produced by vlgParser#module_connections_list.
-vlgListener.prototype.enterModule_connections_list = function(ctx) {
+// Enter a parse tree produced by vlgParser#named_module_connections_list.
+vlgListener.prototype.enterNamed_module_connections_list = function(ctx) {
 };
 
-// Exit a parse tree produced by vlgParser#module_connections_list.
-vlgListener.prototype.exitModule_connections_list = function(ctx) {
+// Exit a parse tree produced by vlgParser#named_module_connections_list.
+vlgListener.prototype.exitNamed_module_connections_list = function(ctx) {
 };
 
 
@@ -260,6 +260,15 @@ vlgListener.prototype.enterNamed_port_connection = function(ctx) {
 
 // Exit a parse tree produced by vlgParser#named_port_connection.
 vlgListener.prototype.exitNamed_port_connection = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#ordered_module_connections_list.
+vlgListener.prototype.enterOrdered_module_connections_list = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#ordered_module_connections_list.
+vlgListener.prototype.exitOrdered_module_connections_list = function(ctx) {
 };
 
 
