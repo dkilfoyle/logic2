@@ -8,6 +8,7 @@ import { vlgListener } from "../grammar/vlgListener.js";
 import { vlgParser } from "../grammar/vlgParser.js";
 import Numeric from "./Numeric.js";
 import Operation from "./Operation.js";
+import TernOperation from "./TernOperation.js";
 import Variable from "./Variable.js";
 import Concatenation from "./Concatenation.js";
 
@@ -117,6 +118,7 @@ class Listener extends vlgListener {
           column: ctx.stop.column
         }
       },
+      always: [],
       ports: [],
       wires: [],
       regs: [],
@@ -145,6 +147,7 @@ class Listener extends vlgListener {
           column: ctx.stop.column
         }
       },
+      always: [],
       ports: [],
       wires: [],
       regs: [],
@@ -175,13 +178,12 @@ class Listener extends vlgListener {
   exitPort_declaration(ctx) {
     const dir = ctx.port_direction().getText();
     const ids = ctx.port_identifier_list().IDENTIFIER();
-    const dim = ctx.portdim ? this.valueStack.pop() : null;
+    const bitDim = ctx.bitDim ? this.valueStack.pop() : null;
     this.curModule.ports.push(
       ...ids.map(id => ({
         id: id.getText(),
         direction: dir,
-        // bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1,
-        dim
+        bitDim
       }))
     );
     // if the output is declared as a reg eg output reg sum
@@ -189,33 +191,55 @@ class Listener extends vlgListener {
       ids.forEach(id => {
         this.curModule.regs.push({
           id: id.getText(),
-          dim
-          // bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1
+          bitDim
         });
       });
     }
   }
 
   exitNet_declaration(ctx) {
-    const dim = ctx.netdim ? this.valueStack.pop() : null;
+    const bitDim = ctx.bitDim ? this.valueStack.pop() : null;
     ctx.ids.IDENTIFIER().forEach(id => {
       this.curModule.wires.push({
         id: id.getText(),
         // bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1,
-        dim
+        bitDim
       });
     });
   }
 
   exitReg_declaration(ctx) {
-    const dim = ctx.regdim ? this.valueStack.pop() : null;
-    ctx.ids.IDENTIFIER().forEach(id => {
+    const ids = this.valueStack.pop(); // identifier_list = array of variables
+    const bitDim = ctx.bitDim ? this.valueStack.pop() : null;
+    ids.forEach(v => {
+      if (v.offsetType == "index")
+        throw new Error("invalid reg declaration arraydim");
       this.curModule.regs.push({
-        id: id.getText(),
-        dim,
-        bitSize: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1
+        id: v.name,
+        bitDim,
+        arrayDim: v.offset
+        // bitSize: bitdim ? Math.abs(bitdim[1] - bitdim[0]) + 1 : 1,
       });
     });
+  }
+
+  exitRegister_identifier_list(ctx) {
+    this.valueStack.push(
+      ctx
+        .register_identifier()
+        .map(() => this.valueStack.pop())
+        .reverse()
+    );
+  }
+
+  exitRegister_identifier(ctx) {
+    this.valueStack.push(
+      new Variable(
+        null,
+        ctx.IDENTIFIER().getText(),
+        ctx.range ? this.valueStack.pop() : null
+      )
+    );
   }
 
   enterInitial_construct(ctx) {
@@ -238,21 +262,21 @@ class Listener extends vlgListener {
   }
 
   exitAlways_construct(ctx) {
-    this.curModule.always = {
+    const newAlways = {
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
       sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
       statementTree: this.statementBlockStack.pop()
     };
 
     if (ctx.event_list().event_every() != null) {
-      this.curModule.always.sensitivities = [
+      newAlways.sensitivities = [
         {
           type: "everytime",
           last: null
         }
       ];
     } else {
-      this.curModule.always.sensitivities = ctx
+      newAlways.sensitivities = ctx
         .event_list()
         .event_primary()
         .map(e => ({
@@ -262,6 +286,7 @@ class Listener extends vlgListener {
         }));
     }
 
+    this.curModule.always.push(newAlways);
     console.log("always = ", this.curModule.always);
   }
 
@@ -305,8 +330,8 @@ class Listener extends vlgListener {
       type: "conditional_statement",
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
       sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
-      elseBlock: this.statementBlockStack.pop(),
-      ifBlock: this.statementBlockStack.pop(),
+      elseBlock: ctx.elseBlock ? this.statementBlockStack.pop() : null,
+      thenBlock: this.statementBlockStack.pop(),
       condition: this.expressionStack.pop()
     };
     this.statementBlockStack[
@@ -381,6 +406,14 @@ class Listener extends vlgListener {
     const rhs = this.expressionStack.pop();
     const lhs = this.expressionStack.pop();
     this.expressionStack.push(new Operation(lhs, ctx.op.text, rhs));
+  }
+
+  exitTernaryExpression(ctx) {
+    // test ? lhs1 : lhs0
+    const lhs0 = this.expressionStack.pop();
+    const lhs1 = this.expressionStack.pop();
+    const test = this.expressionStack.pop();
+    this.expressionStack.push(new TernOperation(test, lhs1, lhs0));
   }
 
   // expr // gate
@@ -573,8 +606,11 @@ class Listener extends vlgListener {
     // semantic error if any of the inputs are not defined
     if (gateInputs)
       gateInputs.forEach((gateInput, index) => {
-        if (!this.isWireOrPort(gateInput.name)) {
-          const idctx = ctx.identifier_list().identifier(index);
+        if (!this.isWireOrPortOrReg(gateInput.name)) {
+          const idctx = ctx
+            .identifier_list()
+            .identifier(index)
+            .IDENTIFIER();
           this.addSemanticError(
             idctx.symbol,
             `'${gateInput.name}' is not defined as a wire or module port`

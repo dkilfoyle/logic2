@@ -36,7 +36,8 @@ export const SourceFiles = {
   NBitAdder: require("./nbitadder.v").default,
   Comparator: require("./comparator.v").default,
   Alu: require("./alu.v").default,
-  MIPS: require("./mips.v").default
+  MIPS: require("./mips.v").default,
+  RegFile: require("./regfile.v").default
 };
 
 export const SourceTree = [
@@ -134,6 +135,9 @@ export const SourceTree = [
       {
         text: "Architecture",
         children: [
+          {
+            text: "RegFile"
+          },
           {
             text: "MIPS"
           }

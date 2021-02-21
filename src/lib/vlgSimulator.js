@@ -57,6 +57,7 @@ const evaluateStatementTree = (s, namespace) => {
     return true;
   } else if (s.type == "conditional_statement") {
     let pass = false;
+    debugger;
     switch (s.condition.type) {
       case "variable":
       case "numeric":
@@ -69,7 +70,7 @@ const evaluateStatementTree = (s, namespace) => {
         );
     }
     if (pass) {
-      return evaluateStatementTree(s.ifBlock, namespace);
+      return evaluateStatementTree(s.thenBlock, namespace);
     } else {
       if (s.elseBlock) return evaluateStatementTree(s.elseBlock, namespace);
       else return true;
@@ -180,32 +181,35 @@ const simulate = (
         return false;
       }
 
-      // run always section for each instance
+      // run each always section for each instance
       let alwaysRes = instances.every(instance => {
-        return instance.always &&
-          evaluateSensitivities(instance.always.sensitivities, instance.id)
-          ? evaluateStatementTree(instance.always.statementTree, instance.id)
-          : true;
+        return instance.always.reduce(
+          (acc, curAlways) =>
+            acc && evaluateSensitivities(curAlways.sensitivities, instance.id)
+              ? evaluateStatementTree(curAlways.statementTree, instance.id)
+              : true,
+          true
+        );
       });
       if (!alwaysRes) return false;
     }
 
     // and store gate results in newSimulation
     gates.forEach(g => {
+      if (g.id == "main_regfile_s2" && clock == 7) debugger;
       newSimulation.gates[g.id].push(gatesLookup[g.id].getValue());
     });
     newSimulation.clock.push(clock % 2);
 
     // update always last
     instances.forEach(instance => {
-      if (instance.always) {
-        instance.always.sensitivities.forEach(sensitivity => {
+        instance.always.forEach(curAlways => curAlways.sensitivities.forEach(sensitivity => {
           if (sensitivity.type != "everytime")
             sensitivity.last = sensitivity.id.getValue(
               gatesLookup,
               instance.id
             );
-        });
+        }));
       }
     });
 

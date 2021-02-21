@@ -17,3 +17,9 @@
 10. Tests! - some
 11. Unfortunately should switch from Listener to Visitor so don't need to pass values by stacks
 12. Monaco language definition
+13. Register file
+    1. Arrays of numeric
+    2. ternary operator
+13. MIPS single cycle processor
+13. MIPS single cycle processor
+13. MIPS multi cycle processor

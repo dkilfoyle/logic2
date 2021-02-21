@@ -1,4 +1,4 @@
-// Generated from c:\code\JS\logic2\src\grammar\vlg.g4 by ANTLR 4.8
+// Generated from c:\c\logic2\src\grammar\vlg.g4 by ANTLR 4.8
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
 
@@ -146,6 +146,18 @@ vlgVisitor.prototype.visitNet_declaration = function(ctx) {
 
 // Visit a parse tree produced by vlgParser#reg_declaration.
 vlgVisitor.prototype.visitReg_declaration = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#register_identifier_list.
+vlgVisitor.prototype.visitRegister_identifier_list = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#register_identifier.
+vlgVisitor.prototype.visitRegister_identifier = function(ctx) {
   return this.visitChildren(ctx);
 };
 
@@ -314,6 +326,12 @@ vlgVisitor.prototype.visitParensExpression = function(ctx) {
 
 // Visit a parse tree produced by vlgParser#unaryExpression.
 vlgVisitor.prototype.visitUnaryExpression = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#ternaryExpression.
+vlgVisitor.prototype.visitTernaryExpression = function(ctx) {
   return this.visitChildren(ctx);
 };
 

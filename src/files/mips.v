@@ -13,6 +13,31 @@ module Add #(parameter N = 8) (
   end
 endmodule
 
+module flopr #(parameter WIDTH=8) (
+  input clk, reset,
+  input [WIDTH-1:0] d,
+  output reg [WIDTH-1:0] q
+);
+  always @ (posedge clk, posedge reset)
+    if (reset) q = 0;
+    else q = d;
+endmodule
+
+module regfile (
+  input clk,
+  input we3,
+  input [4:0] ra1, ra2, wa3,
+  input [31:0] wd3,
+  output [31:0] rd1, rd2
+);
+  reg [31:0] rf[31:0];
+  always @ (posedge clk)
+    if (we3) rf[wa3] = wd3;
+
+  assign rd1 = (ra1 != 0) ? rf[ra1] : 0;
+  assign rd2 = (ra2 != 0) ? rf[ra2] : 0;
+endmodule
+
 module Mux2 #(parameter N=8) (
   input [N-1:0] a, b,
   input sel,
@@ -88,10 +113,19 @@ module Mips (
 
   Controller c(
     // inputs
-    .op(instr[31:26], .funct(instr[5:0]), .zero(zero), 
+    .op(instr[31:26],     // 0 for r type, else lw, sw, beq 
+    .funct(instr[5:0]),   // add, sub, and, or, sll, srl etc
+    .zero(zero), 
     // outputs
-    .memtoreg(memtoreg), .memwrite(memwrite), .pcsrc(pcsrc), .alusrc(alusrc), .regdst(regdst), .regwrite(regwrite),
-    .jump(jump), .alucontrol(alucontrol));
+    .memwrite(memwrite),  // write the contents of WD into memory at address A
+    .regwrite(regwrite),  // write the contents of WD3 into register specificed by A3
+    .pcsrc(pcsrc),        // pcnext = pcnextbr & 0 ? pcbranch : pcplus4
+    .alusrc(alusrc),      // srcB (2nd input to ALU) = signedImm | register read data RD2
+    .memtoreg(memtoreg),  // result (input to register write data WD3) = memory read data RD | ALUResult
+    .regdst(regdst),      // writereg (input to register address A3) = regdst ? r.rd : i.rt
+    .jump(jump),          // pcnext = jump ? pcjump : pcnextbr
+    .alucontrol(alucontrol)
+  );
 
   Datapath dp(
     // inputs
@@ -166,9 +200,12 @@ endmodule
 
 module Datapath (
   input clk, reset,
-  input memtoreg, pcsrc,
-  input alusrc, regdst,
-  input regwrite, jump,
+  input memtoreg, 
+  input pcsrc,
+  input alusrc,
+  input regdst,
+  input regwrite, 
+  input jump,
   input [2:0] alucontrol,
   output zero,
   output [31:0] pc,
@@ -182,15 +219,21 @@ module Datapath (
   wire [31:0] srca, srcb;
   wire [31:0] result;
 
+  // signimm = sign extended i.imm
+  signext se(instr[15:0], signimm);
+
   // next PC logic
   flopr #(32) pcreg(clk, reset, pcnext, pc);
   adder pcadd1 (pc, 32'b100, pcplus4); // pcplus4 = pc + 4
-  sl2 immsh(signimm, signimmsh);
+  sl2 immsh(signimm, signimmsh); // signimmsh = signimm * 4 = pc offset
   adder pcadd2(pcplus4, signimmsh, pcbranch); // pcbranch = pcplus4 + (offset * 4)
   mux2 #(32) pcbrmux(pcplus4, pcbranch, pcsrc,  pcnextbr); // pcnextbr = pcsrc ? pcbranch : pcplus4
   mux2 #(32) pcmux(pcnextbr, {pcplus4[31:28],  instr[25:0], 2'b00}, jump, pcnext);
+  // pcnext = jump ? {top4bitspc j.address word_aligning_2bits} : pcnextbr
 
   // register file logic
+  mux2 #(5) wrmux(instr[20:16], instr[15:11],  regdst, writereg); // writereg = regdst ? r.rd : r.rt
+  mux2 #(32) resmux(aluout, readdata,  memtoreg, result); // result = memtoreg ? readdata : aluout
   regfile rf(clk, regwrite, 
     .A1(instr[25:21]), // rs
     .A2(instr[20:16]), // rt
@@ -199,15 +242,10 @@ module Datapath (
     // outputs
     .RD1(srca),
     .RD2(writedata));
-  mux2 #(5) wrmux(instr[20:16], instr[15:11],  regdst, writereg);
-  mux2 #(32) resmux(aluout, readdata,  memtoreg, result);
-  signext se(instr[15:0], signimm);
 
-// ALU logic
-mux2 #(32) srcbmux(writedata, signimm, alusrc,
-srcb);
-alu alu(srca, srcb, alucontrol,
-aluout, zero);
+  // ALU logic
+  mux2 #(32) srcbmux(writedata, signimm, alusrc, srcb); // srcb = alusrc ? signimm : writedata
+  alu alu(srca, srcb, alucontrol, aluout, zero); // aluout = alucontrol(srca, srcb)
 endmodule
 
 module Main (

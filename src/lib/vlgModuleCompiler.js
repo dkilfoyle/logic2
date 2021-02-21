@@ -4,6 +4,7 @@ import Numeric from "./Numeric";
 import Operation from "./Operation";
 import LogicGate from "./LogicGate";
 import BufferGate from "./BufferGate";
+import MemoryGate from "./MemoryGate";
 import ParameterGate from "./ParameterGate";
 
 var modules, instances, gates, parameters;
@@ -81,8 +82,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     ...instanceModule.ports,
     ...instanceModule.regs
   ].reduce((acc, x) => {
-    const dim = x.dim
-      ? x.dim.map(x => x.getValue(parameters, newInstance.id))
+    const dim = x.bitDim
+      ? x.bitDim.map(x => x.getValue(parameters, newInstance.id))
       : null;
     return { ...acc, [x.id]: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1 };
   }, {});
@@ -189,11 +190,14 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   });
 
   instanceModule.regs.forEach(reg => {
-    const newGate = new BufferGate(
+    let arrayDim = reg.arrayDim
+      ? reg.arrayDim.map(x => x.getValue(parameters, newInstance.id))
+      : null;
+    const newGate = new MemoryGate(
       namespace,
       reg.id,
-      "reg",
-      gateBitSizesID[reg.id]
+      gateBitSizesID[reg.id],
+      arrayDim ? Math.abs(arrayDim[1] - arrayDim[0]) + 1 : 1
     );
     gates.push(newGate);
     newInstance.gates.push(newGate.id);
@@ -327,7 +331,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   }
 
   if (instanceModule.always) {
-    newInstance.always = instanceModule.always;
+    newInstance.always = [...instanceModule.always];
   }
 
   console.log("Instance: ", stripReactive(newInstance));

@@ -26,7 +26,7 @@ module_parameter: '#' '(' 'parameter' IDENTIFIER '=' number ')';
 module_ports: '(' port_declaration (',' port_declaration)* ')';
 
 port_declaration:
-	port_direction (reg = 'reg')? (portdim = range)? port_identifier_list;
+	port_direction (reg = 'reg')? (bitDim = range)? port_identifier_list;
 
 port_identifier_list: IDENTIFIER (',' IDENTIFIER)*;
 
@@ -57,9 +57,15 @@ time_assignment: id = IDENTIFIER '=' val = Decimal_number;
 // 2. Declarations
 
 net_declaration:
-	'wire' (netdim = range)? ids = simple_identifier_list ';';
+	'wire' (bitDim = range)? ids = simple_identifier_list ';';
 reg_declaration:
-	'reg' (regdim = range)? ids = simple_identifier_list ';';
+	'reg' (bitDim = range)? ids = register_identifier_list ';';
+	
+register_identifier_list: register_identifier (','  register_identifier)*;
+
+register_identifier: 
+	IDENTIFIER
+	| IDENTIFIER range;
 
 simple_identifier_list: IDENTIFIER (',' IDENTIFIER)*;
 
@@ -144,8 +150,8 @@ statement:
 blocking_assignment: lhs = lvalue '=' rhs = expression;
 
 conditional_statement:
-	'if' '(' cond = expression ')' ifstate = statement_block (
-		'else' elsestate = statement_block
+	'if' '(' cond = expression ')' thenblock = statement_block (
+		'else' elseblock = statement_block
 	)?;
 
 case_statement:
@@ -169,7 +175,9 @@ expression: // behavioural
 	| op = (PLUS | MINUS) expression										# unaryExpression
 	| expression op = (MUL | DIV) expression								# binaryExpression
 	| expression op = (PLUS | MINUS) expression								# binaryExpression
-	| expression op = (LT | LTE | GT | GTE | EQUAL | NOTEQUAL) expression	# binaryExpression;
+	| expression op = (LT | LTE | GT | GTE | EQUAL | NOTEQUAL) expression	# binaryExpression
+	| expression '?' expression ':' expression #ternaryExpression
+	;
 
 expr: // gate
 	identifier						# atomExpr

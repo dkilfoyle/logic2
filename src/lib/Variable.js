@@ -60,7 +60,7 @@ class Variable extends Operand {
     const gate = gatesLookup[id];
     if (!gate)
       throw new Error(`Variable.setValue cannot find gate with id ${id}`);
-    gate.state.setValue(val);
+    gate.setValue(val);
   }
   getValue(gatesLookup, namespace = null) {
     let id = namespace ? namespace + "_" + this.name : this.id;
@@ -72,9 +72,10 @@ class Variable extends Operand {
 
     switch (this.offsetType) {
       case "none":
-        return gate.state.decimalValue;
+        return gate.getValue();
       case "index":
         range = this.offset.getValue(gatesLookup, namespace);
+        if (["reg", "memory"].includes(gate.type)) return gate.getValue(range);
         if (range > gate.state.size - 1)
           throw new Error(
             `Variable.getValue: offset (${this.offset}) is larger than gate (${gate.id}) state size (${gate.state.size})`

@@ -1,4 +1,4 @@
-// Generated from c:\code\JS\logic2\src\grammar\vlg.g4 by ANTLR 4.8
+// Generated from c:\c\logic2\src\grammar\vlg.g4 by ANTLR 4.8
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
 
@@ -215,6 +215,24 @@ vlgListener.prototype.enterReg_declaration = function(ctx) {
 
 // Exit a parse tree produced by vlgParser#reg_declaration.
 vlgListener.prototype.exitReg_declaration = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#register_identifier_list.
+vlgListener.prototype.enterRegister_identifier_list = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#register_identifier_list.
+vlgListener.prototype.exitRegister_identifier_list = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#register_identifier.
+vlgListener.prototype.enterRegister_identifier = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#register_identifier.
+vlgListener.prototype.exitRegister_identifier = function(ctx) {
 };
 
 
@@ -467,6 +485,15 @@ vlgListener.prototype.enterUnaryExpression = function(ctx) {
 
 // Exit a parse tree produced by vlgParser#unaryExpression.
 vlgListener.prototype.exitUnaryExpression = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#ternaryExpression.
+vlgListener.prototype.enterTernaryExpression = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#ternaryExpression.
+vlgListener.prototype.exitTernaryExpression = function(ctx) {
 };
 
 
