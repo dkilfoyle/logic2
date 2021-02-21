@@ -14,10 +14,14 @@ class BaseComponent {
       );
     this.type = type;
     this.inputs = [];
-    this.state = new Numeric(0, bitSize);
+    this.bitSize = bitSize;
+    this.clear();
   }
   get id() {
     return this.namespace + "_" + this.name;
+  }
+  clear() {
+    this.state = new Numeric(0, this.bitSize);
   }
   update() {
     // update is called each clock and processes inputs to call this.setValue

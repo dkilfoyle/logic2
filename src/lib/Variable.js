@@ -60,7 +60,11 @@ class Variable extends Operand {
     const gate = gatesLookup[id];
     if (!gate)
       throw new Error(`Variable.setValue cannot find gate with id ${id}`);
-    gate.setValue(val);
+    if (gate.state.length && this.offsetType == "index") {
+      const index = this.offset.getValue(gatesLookup, namespace);
+      // if target gate is an array gate and this variable has an index offset
+      gate.setValue(val, index);
+    } else gate.setValue(val);
   }
   getValue(gatesLookup, namespace = null) {
     let id = namespace ? namespace + "_" + this.name : this.id;

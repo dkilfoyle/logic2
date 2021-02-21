@@ -57,7 +57,6 @@ const evaluateStatementTree = (s, namespace) => {
     return true;
   } else if (s.type == "conditional_statement") {
     let pass = false;
-    debugger;
     switch (s.condition.type) {
       case "variable":
       case "numeric":
@@ -115,7 +114,7 @@ const simulate = (
   // reset all gates to state = 0
   // TODO: should set state to 'x'??
   gates.forEach(g => {
-    g.setValue(0);
+    g.clear();
     newSimulation.gates[g.id] = [];
   });
 
@@ -196,21 +195,21 @@ const simulate = (
 
     // and store gate results in newSimulation
     gates.forEach(g => {
-      if (g.id == "main_regfile_s2" && clock == 7) debugger;
       newSimulation.gates[g.id].push(gatesLookup[g.id].getValue());
     });
     newSimulation.clock.push(clock % 2);
 
     // update always last
     instances.forEach(instance => {
-        instance.always.forEach(curAlways => curAlways.sensitivities.forEach(sensitivity => {
+      instance.always.forEach(curAlways =>
+        curAlways.sensitivities.forEach(sensitivity => {
           if (sensitivity.type != "everytime")
             sensitivity.last = sensitivity.id.getValue(
               gatesLookup,
               instance.id
             );
-        }));
-      }
+        })
+      );
     });
 
     modulesLookup.Main.clock.forEach((x, index, all) => {
