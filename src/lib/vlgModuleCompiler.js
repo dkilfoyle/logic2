@@ -1,6 +1,5 @@
 /* eslint-disable no-debugger */
 import Variable from "./Variable";
-import Numeric from "./Numeric";
 import Operation from "./Operation";
 import LogicGate from "./LogicGate";
 import BufferGate from "./BufferGate";
@@ -109,14 +108,18 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
             namespace,
             gateDef.id,
             gateDef.gateType,
-            gateBitSizesID[gateDef.id]
+            gateBitSizesType[gateDef.gateType] ||
+              gateBitSizesID[gateDef.id] ||
+              null
           )
         : isBuffer(gateDef.gateType)
         ? new BufferGate(
             namespace,
             gateDef.id,
             gateDef.gateType,
-            gateBitSizesID[gateDef.id]
+            gateBitSizesType[gateDef.gateType] ||
+              gateBitSizesID[gateDef.id] ||
+              null
           )
         : null;
       if (!newGate)
@@ -124,10 +127,6 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
           `Invalid gate type ${gateDef.gateType} in id ${gateDef.id}`
         );
       newGate.inputs = gateDef.inputs.map(x => x.instance(namespace));
-      newGate.state = new Numeric(
-        0,
-        gateBitSizesType[gateDef.gate] || gateBitSizesID[gateDef.id] || 1
-      );
       gates.push(newGate);
       newInstance.gates.push(newGate.id);
     });

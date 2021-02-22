@@ -45,6 +45,7 @@ export default {
       if (status) this.buildNetlist();
     },
     getGatesStateAtSelectedTime(timestate) {
+      // eslint-disable-next-line no-debugger
       if (Object.keys(timestate).length === 0) return;
 
       var COLOR_ON = "#00c853";
@@ -63,7 +64,7 @@ export default {
       this.getAllGates
         .filter(gate => gate.type == "sevenseg")
         .forEach(gate => {
-          let inputValues = gate.inputs.map(x => timestate[x.id]);
+          let segments = timestate[gate.id];
           ["a", "b", "c", "d", "e", "f", "g"].forEach((letter, i) => {
             const element = document.getElementById(
               gate.id + "_gate_seg" + letter
@@ -71,7 +72,7 @@ export default {
             if (element) {
               element.classList.remove("segment-0");
               element.classList.remove("segment-1");
-              element.classList.add("segment-" + inputValues[i]);
+              element.classList.add("segment-" + ((segments >> i) % 2));
             }
           });
         });

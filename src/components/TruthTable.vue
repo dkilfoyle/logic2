@@ -299,7 +299,7 @@
 import UtilsMixin from "../mixins/utils";
 import SelectionsMixin from "../mixins/selections";
 import Editor from "./Editor";
-import template from "../files/truthtemplate.v";
+import template from "../files/theory/truthtemplate.v";
 
 const fillTemplate = function(templateString, templateVars) {
   return new Function("return `" + templateString + "`;").call(templateVars);

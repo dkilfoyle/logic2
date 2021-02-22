@@ -19,9 +19,8 @@ A B C | Fa Fb Fc Fd Fe Ff Fg
 // using standard gate statements
 module Encoder(
   input [3:0] data,
-  output [6:0] segments
+  output reg [6:0] segments
 );
-  reg [6:0] segments;
   always @(*)
     case(data)
       // abcdefg
