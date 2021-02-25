@@ -7,7 +7,9 @@ export const SourceFiles = {
   Alu: require("./alu.v").default,
   MIPS: require("./mips.v").default,
   RegFile: require("./regfile.v").default,
-  SevenSegB: require("./sevensegb.v").default
+  SevenSegB: require("./sevensegb.v").default,
+  LW: require("./lw.v").default,
+  SignExtend: require("./signextend.v").default
 };
 
 export const SourceTree = {
@@ -27,12 +29,10 @@ export const SourceTree = {
     {
       text: "Architecture",
       children: [
-        {
-          text: "RegFile"
-        },
-        {
-          text: "MIPS"
-        }
+        { text: "RegFile" },
+        { text: "LW" },
+        { text: "SignExtend" },
+        { text: "MIPS" }
       ]
     }
   ]

@@ -51,6 +51,9 @@ class Numeric extends Operand {
       this.decimalValue |= newDecimalValue << shift;
     }
   }
+  getBitSize() {
+    return this.bitSize;
+  }
   getValue() {
     return this.decimalValue;
   }

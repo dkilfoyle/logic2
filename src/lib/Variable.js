@@ -66,6 +66,13 @@ class Variable extends Operand {
       gate.setValue(val, index);
     } else gate.setValue(val);
   }
+  getBitSize(gatesLookup, namespace = null) {
+    let id = namespace ? namespace + "_" + this.name : this.id;
+    const gate = gatesLookup[id];
+    if (!gate)
+      throw new Error(`Variable.getValue cannot find gate with id ${id}`);
+    return gate.state.bitSize;
+  }
   getValue(gatesLookup, namespace = null) {
     let id = namespace ? namespace + "_" + this.name : this.id;
     const gate = gatesLookup[id];

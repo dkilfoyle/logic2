@@ -7,12 +7,13 @@ import Operand from "./Operand";
 // offset can be null (return the entire value) or a single number (bit index) or a 2 value array (bit range)
 
 class Concatenation extends Operand {
-  constructor(variables) {
+  constructor(copynum, components) {
     super("concatenation");
-    this.variables = variables.reverse();
+    this.copynum = copynum;
+    this.components = components.reverse();
   }
   toString() {
-    return `{${this.variables
+    return `{${this.components
       .map(x => x.name)
       .reverse()
       .join(",")}}`;
@@ -25,7 +26,7 @@ class Concatenation extends Operand {
     // nextBit = nextBit = b.size
     // a = 0110 = val[a.size-1+nextBit:nextBit]
     let nextStart = 0;
-    this.variables.forEach(curVar => {
+    this.components.forEach(curVar => {
       const gate = gatesLookup[namespace + "_" + curVar.name];
       if (!gate)
         throw new Error(
@@ -38,8 +39,19 @@ class Concatenation extends Operand {
     });
   }
   getValue(gatesLookup, namespace = null) {
-    throw new Error(
-      "Concatenation getValue not implemented" + gatesLookup + namespace
+    const concatstr = this.components.reduce((acc, x) => {
+      return (
+        x
+          .getValue(gatesLookup, namespace)
+          .toString(2)
+          .padStart(x.getBitSize(gatesLookup, namespace), "0") + acc
+      );
+    }, "");
+    return parseInt(
+      concatstr.repeat(
+        this.copynum ? this.copynum.getValue(gatesLookup, namespace) : 1
+      ),
+      2
     );
   }
   getBit(num, bit) {

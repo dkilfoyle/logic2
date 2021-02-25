@@ -14,6 +14,12 @@ class TernOperation extends Operand {
     this.lhs1 = lhs1;
     this.test = test;
   }
+  getBitSize(gatesLookup, namespace) {
+    const testResult = this.test.getValue(gatesLookup, namespace);
+    return testResult > 0
+      ? this.lhs1.getBitSize(gatesLookup, namespace)
+      : this.lhs0.getBitSize(gatesLookup, namespace);
+  }
   getValue(gatesLookup, namespace) {
     const testResult = this.test.getValue(gatesLookup, namespace);
     return testResult > 0

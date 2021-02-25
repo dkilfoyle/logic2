@@ -163,7 +163,10 @@ case_default: 'default' ':' statement_block;
 
 /* 8.1 Concatenations============================================ */
 
-concatenation: '{' identifier_list '}';
+concatenation: '{' expression (',' expression)* '}';
+
+multiple_concatenation: '{' expression '{' 	expression (',' expression)* '}' '}'
+
 
 /* 8.3 Expressions ============================================== */
 
@@ -171,6 +174,7 @@ expression: // behavioural
 	number																	# atomExpression
 	| identifier															# atomExpression
 	| concatenation															# atomExpression
+	| multiple_concatenation				# atomExpression
 	| '(' expression ')'													# parensExpression
 	| op = (PLUS | MINUS) expression										# unaryExpression
 	| expression op = (MUL | DIV) expression								# binaryExpression

@@ -12,6 +12,9 @@ class Operand {
   getValue() {
     throw new Error("Operand subclasses must implement getValue");
   }
+  getBitSize() {
+    throw new Error("Operand subclasses must implement getBitSize");
+  }
 }
 
 export default Operand;

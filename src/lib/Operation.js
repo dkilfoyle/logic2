@@ -34,6 +34,11 @@ class Operation extends Operand {
 
     this.op = Object.entries(opLookup).find(x => x[1] == op)[0];
   }
+  getBitSize(gatesLookup, namespace) {
+    const lhs = this.lhs.getBitSize(gatesLookup, namespace);
+    const rhs = this.rhs ? this.rhs.getBitSize(gatesLookup, namespace) : null;
+    return Math.max(lhs, rhs);
+  }
   getValue(gatesLookup, namespace) {
     const lhs = this.lhs.getValue(gatesLookup, namespace);
     const rhs = this.rhs ? this.rhs.getValue(gatesLookup, namespace) : null;

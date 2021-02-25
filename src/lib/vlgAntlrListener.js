@@ -486,7 +486,25 @@ class Listener extends vlgListener {
   }
 
   exitConcatenation(ctx) {
-    this.valueStack.push(new Concatenation(this.valueStack.pop()));
+    this.valueStack.push(
+      new Concatenation(
+        null,
+        ctx
+          .expression()
+          .map(() => this.expressionStack.pop())
+          .reverse()
+      )
+    );
+  }
+
+  exitMultiple_concatenation(ctx) {
+    const components = ctx
+      .expression()
+      .map(() => this.expressionStack.pop())
+      .reverse();
+    this.valueStack.push(
+      new Concatenation(this.expressionStack.pop(), components)
+    );
   }
 
   exitRange(ctx) {
