@@ -23,20 +23,24 @@ module flopr #(parameter WIDTH=8) (
     else q = d;
 endmodule
 
-module regfile (
+module RegisterFile (
   input clk,
   input we3,
   input [4:0] ra1, ra2, wa3,
   input [31:0] wd3,
-  output [31:0] rd1, rd2
+  output reg [31:0] rd1, rd2
 );
   reg [31:0] rf[31:0];
   always @ (posedge clk)
     if (we3) rf[wa3] = wd3;
 
-  assign rd1 = (ra1 != 0) ? rf[ra1] : 0;
-  assign rd2 = (ra2 != 0) ? rf[ra2] : 0;
+  always @(*)
+  begin
+    rd1 = (ra1 != 0) ? rf[ra1] : 0;
+    rd2 = (ra2 != 0) ? rf[ra2] : 0;
+  end
 endmodule
+
 
 module Mux2 #(parameter N=8) (
   input [N-1:0] a, b,
@@ -98,6 +102,58 @@ module Alu #(parameter N=8) (
 
   buffer(y);
   Mux4 ymux(.a(aandbb), .b(aorbb), .c(S), .d(S[N-1]), .sel(F[1:0]), .y(y));
+endmodule
+
+module ShiftLeft2 (
+  input [31:0] a,
+  output [31:0] y
+);
+  // shift left by 2
+  always @(*)
+    y = { a[29:01], 2'b00 };
+endmodule
+
+module SignExtend(
+  input [15:0] a,
+  output [31:0] y
+);
+  always @(*)
+    y = { { 16 { a[15] } }, a};
+endmodule
+
+module FlopResettable #(parameter WIDTH = 8) (
+  input clk, reset,
+  input [WIDTH-1:0] d,
+  output reg [WIDTH-1:0] q
+);
+  always @ (posedge clk, posedge reset)
+    if (reset) q = 0; else q = d;
+endmodule
+
+module DataMemory(
+  input clk, we,
+  input [31:0] a, wd,
+  output [31:0] rd
+);
+  reg [31:0] RAM[63:0];
+  always @(*)
+    rd = RAM[a[31:2]]; // word aligned
+  always @ (posedge clk)
+    if (we) RAM[a[31:2]] = wd;
+endmodule
+
+module InstructionMemory(
+  input [5:0] a,
+  output [31:0] rd
+);
+  reg [31:0] RAM[63:0];
+  initial
+    begin
+      RAM[0] = 0x20020005; // addi $2, $0, 5
+      RAM[1] = 0x2003000c; // addi $4, $0, 12
+    end
+  always @(*)
+    rd = RAM[a]; // word aligned
 endmodule
 
 module Mips (
