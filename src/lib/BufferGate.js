@@ -40,13 +40,6 @@ class BufferGate extends BaseComponent {
       );
     }
   }
-  setValue(x, range = 0) {
-    // if (this.id == "main_myAdder_sum-out" && x == 3) debugger;
-    this.state.setValue(x, range);
-  }
-  getValue() {
-    return this.state.getValue();
-  }
 }
 
 export default BufferGate;
