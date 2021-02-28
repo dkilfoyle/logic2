@@ -27,18 +27,18 @@ class Concatenation extends Operand {
     // a = 0110 = val[a.size-1+nextBit:nextBit]
     let nextStart = 0;
     this.components.forEach(curVar => {
-      const gate = gatesLookup[namespace + "_" + curVar.name];
-      if (!gate)
-        throw new Error(
-          `Variable.setValue cannot find gate with id ${curVar.name}`
-        );
-      gate.state.setValue(
-        this.getBitRange(val, [gate.state.bitSize - 1 + nextStart, nextStart])
+      const curVarBitSize = curVar.getBitSize(gatesLookup, namespace);
+      curVar.setValue(
+        gatesLookup,
+        this.getBitRange(val, [curVarBitSize - 1 + nextStart, nextStart]),
+        namespace
       );
-      nextStart = nextStart + gate.state.bitSize;
+
+      nextStart = nextStart + curVarBitSize;
     });
   }
   getValue(gatesLookup, namespace = null) {
+    // debugger;
     const concatstr = this.components.reduce((acc, x) => {
       return (
         x
@@ -53,6 +53,15 @@ class Concatenation extends Operand {
       ),
       2
     );
+  }
+  getBitSize(gatesLookup, namespace = null) {
+    return this.copynum
+      ? this.copynum.getValue(gatesLookup, namespace)
+      : 1 *
+          this.components.reduce(
+            (acc, x) => acc + x.getBitSize(gatesLookup, namespace),
+            0
+          );
   }
   getBit(num, bit) {
     return (num >> bit) % 2;

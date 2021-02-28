@@ -27,11 +27,11 @@ class BaseComponent {
     // update is called each clock and processes inputs to call this.setValue
     throw new Error("BaseComponent.update() should be implemented in child");
   }
-  setValue() {
-    throw new Error("BaseComponent.setValue() should be implemented in child");
+  setValue(x, range = 0) {
+    this.state.setValue(x, range);
   }
   getValue() {
-    throw new Error("BaseComponent.getValue() should be implemented in child");
+    return this.state.getValue();
   }
   getLocalId() {
     return this.id.substr(this.id.lastIndexOf("_") + 1);

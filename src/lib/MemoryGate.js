@@ -17,18 +17,16 @@ class MemoryGate extends BaseComponent {
     // registers and memory have no inputs, their values are set in expressions, not by inputs
   }
   setValue(x, index = 0) {
-    if (index > this.state.length)
-      throw new Error(
-        "MemoryGate.setValue " + this.name + " invalid index " + index
-      );
+    this.checkIndex(index, "setValue");
     this.state[index].setValue(x);
   }
   getValue(index = 0) {
-    if (index > this.state.length)
-      throw new Error(
-        "MemoryGate.getValue " + this.name + " invalid index " + index
-      );
+    this.checkIndex(index, "getValue");
     return this.state[index].getValue();
+  }
+  checkIndex(index, msg) {
+    if (index > this.state.length)
+      throw new Error(`MemoryGate.${msg}: ${this.name} invalid index ${index}`);
   }
 }
 

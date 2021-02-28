@@ -57,12 +57,6 @@ class LogicGate extends BaseComponent {
         );
     }
   }
-  setValue(x) {
-    this.state.setValue(x);
-  }
-  getValue() {
-    return this.state.getValue();
-  }
 }
 
 export default LogicGate;

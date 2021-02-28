@@ -1,4 +1,4 @@
-// Generated from c:\c\logic2\src\grammar\vlg.g4 by ANTLR 4.8
+// Generated from c:\code\JS\logic2\src\grammar\vlg.g4 by ANTLR 4.8
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
 
@@ -449,6 +449,15 @@ vlgListener.prototype.enterConcatenation = function(ctx) {
 
 // Exit a parse tree produced by vlgParser#concatenation.
 vlgListener.prototype.exitConcatenation = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#multiple_concatenation.
+vlgListener.prototype.enterMultiple_concatenation = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#multiple_concatenation.
+vlgListener.prototype.exitMultiple_concatenation = function(ctx) {
 };
 
 

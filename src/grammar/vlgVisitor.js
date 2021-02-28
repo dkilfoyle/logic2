@@ -1,4 +1,4 @@
-// Generated from c:\c\logic2\src\grammar\vlg.g4 by ANTLR 4.8
+// Generated from c:\code\JS\logic2\src\grammar\vlg.g4 by ANTLR 4.8
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
 
@@ -302,6 +302,12 @@ vlgVisitor.prototype.visitCase_default = function(ctx) {
 
 // Visit a parse tree produced by vlgParser#concatenation.
 vlgVisitor.prototype.visitConcatenation = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#multiple_concatenation.
+vlgVisitor.prototype.visitMultiple_concatenation = function(ctx) {
   return this.visitChildren(ctx);
 };
 

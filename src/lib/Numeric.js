@@ -3,11 +3,16 @@ import Operand from "./Operand";
 
 // Variable is a key into the gatesLookup object (which acts as 'memory')
 const getBitSize = x => (x == 0 ? 1 : 32 - Math.clz32(x));
-const formatLookup = {
+const radixLookup = {
   decimal: 10,
   binary: 2,
   hex: 16,
   octal: 8
+};
+const formatLookup = {
+  b: "binary",
+  h: "hex",
+  o: "octal"
 };
 
 class BitSizeError {
@@ -21,11 +26,20 @@ class BitSizeError {
 }
 
 class Numeric extends Operand {
-  constructor(decimalValue, bitSize = null, format = "decimal") {
+  constructor(value, bitSize = null) {
     super("numeric");
-    this.decimalValue = decimalValue;
-    this.bitSize = bitSize || getBitSize(decimalValue);
-    this.format = format;
+    if (Number.isInteger(value)) {
+      this.decimalValue = value;
+      this.bitSize = bitSize || getBitSize(value);
+      this.format = "decimal";
+    } else {
+      this.bitSize = value.substring(0, value.indexOf("'"));
+      this.format = this.formatLookup[value.substr(value.indexOf("'") + 1, 1)];
+      this.decimalValue = parseInt(
+        value.substring(value.indexOf("'" + 2)),
+        radixLookup[this.format]
+      );
+    }
   }
   setValue(newDecimalValue, bitRange = null) {
     const destSize = bitRange

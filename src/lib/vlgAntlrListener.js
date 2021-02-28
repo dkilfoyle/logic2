@@ -34,6 +34,8 @@ class Listener extends vlgListener {
       token = node;
     } else if (node.symbol instanceof CommonToken) {
       token = node.symbol;
+    } else if (node.start instanceof CommonToken) {
+      token = node.start;
     } else {
       throw new Error("node is not commontoken", node);
       // ? check if terminal node and if so use ctx.symbol.line
@@ -98,6 +100,10 @@ class Listener extends vlgListener {
 
   isWireOrPortOrReg(id) {
     return this.isWireOrPort(id) | this.isReg(id);
+  }
+
+  isWireOrRegOrOutput(id) {
+    return this.isWire(id) | this.isReg(id) | this.isOutput(id);
   }
 
   // node listeners
@@ -310,10 +316,20 @@ class Listener extends vlgListener {
       rhs: this.expressionStack.pop(),
       lhs: this.valueStack.pop() // pop the ids in expressions first
     };
-    this.statementBlockStack[
-      this.statementBlockStack.length - 1
-    ].statements.push(newStatement);
-    console.log("Statement: ", strip(newStatement));
+    if (
+      newStatement.lhs.type == "variable" &&
+      !this.isReg(newStatement.lhs.name)
+    )
+      this.addSemanticError(
+        ctx.lhs,
+        `${newStatement.lhs.name} is not declared as type reg`
+      );
+    else {
+      this.statementBlockStack[
+        this.statementBlockStack.length - 1
+      ].statements.push(newStatement);
+      console.log("Statement: ", strip(newStatement));
+    }
     console.groupEnd();
   }
 
@@ -330,7 +346,7 @@ class Listener extends vlgListener {
       type: "conditional_statement",
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
       sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
-      elseBlock: ctx.elseBlock ? this.statementBlockStack.pop() : null,
+      elseBlock: ctx.elseblock ? this.statementBlockStack.pop() : null,
       thenBlock: this.statementBlockStack.pop(),
       condition: this.expressionStack.pop()
     };
@@ -485,22 +501,35 @@ class Listener extends vlgListener {
     );
   }
 
+  // multiple concatenation wraps concatenation
+
   exitConcatenation(ctx) {
-    this.valueStack.push(
-      new Concatenation(
-        null,
-        ctx
-          .expression()
-          .map(() => this.expressionStack.pop())
-          .reverse()
-      )
-    );
+    const components = ctx
+      .expression()
+      .map((x, i) => {
+        const comp = this.expressionStack.pop();
+        if (comp.type == "variable" && !this.isWireOrPortOrReg(comp.name))
+          this.addSemanticError(
+            ctx.expression(ctx.expression().length - 1 - i),
+            `Concatenation component ${comp.name} is not declared as type port or wire or reg`
+          );
+        return comp;
+      })
+      .reverse();
+    this.valueStack.push(new Concatenation(null, components));
   }
 
   exitMultiple_concatenation(ctx) {
-    const components = ctx
-      .expression()
-      .map(() => this.expressionStack.pop())
+    const components = ctx.comp
+      .map((x, i) => {
+        const comp = this.expressionStack.pop();
+        if (comp.type == "variable" && !this.isWireOrPortOrReg(comp.name))
+          this.addSemanticError(
+            ctx.expression(ctx.comp.length - 1 - i),
+            `Concatenation component ${comp.name} is not declared as type port or wire or reg`
+          );
+        return comp;
+      })
       .reverse();
     this.valueStack.push(
       new Concatenation(this.expressionStack.pop(), components)
@@ -600,15 +629,17 @@ class Listener extends vlgListener {
         .time_assignment_list()
         .time_assignment()
         .forEach(x => {
-          if (this.isInput(x.id.text))
+          const rhs = this.expressionStack.pop();
+          const lhs = this.valueStack.pop();
+          if (this.isInput(lhs.name))
             newClock.assignments.push({
-              id: x.id.text,
-              value: parseInt(x.val.text)
+              lhs,
+              rhs
             });
           else
             this.addSemanticError(
-              x.id,
-              `'${x.id.text}' is not a valid main module input`
+              x.lhs,
+              `'${x.lhs.text}' is not a valid main module input`
             );
         });
     }
@@ -667,16 +698,25 @@ class Listener extends vlgListener {
 
   exitNet_assignment(ctx) {
     const lvalue = this.valueStack.pop();
-    const expr = this.expressionStack.pop();
-    this.curModule.netAssignments.push({
-      id: lvalue,
-      operationTree: expr
-    });
-    console.log(
-      strip(
-        this.curModule.netAssignments[this.curModule.netAssignments.length - 1]
-      )
-    );
+    if (!this.isWireOrRegOrOutput(lvalue.name)) {
+      this.addSemanticError(
+        ctx.lvalue(),
+        `${lvalue.name} is not a wire or reg or output`
+      );
+    } else {
+      const expr = this.expressionStack.pop();
+      this.curModule.netAssignments.push({
+        id: lvalue,
+        operationTree: expr
+      });
+      console.log(
+        strip(
+          this.curModule.netAssignments[
+            this.curModule.netAssignments.length - 1
+          ]
+        )
+      );
+    }
     console.groupEnd();
   }
 

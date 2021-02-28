@@ -2,9 +2,7 @@
 
 module DFlipFlop (
   input clk, reset, d,
-  output Q);
-
-  reg Q;
+  output reg Q);
 
   initial Q=1;
 

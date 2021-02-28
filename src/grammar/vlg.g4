@@ -52,7 +52,7 @@ time_stamp: '#' num = Decimal_number;
 time_assignment_list:
 	'{' time_assignment (',' time_assignment)* '}';
 
-time_assignment: id = IDENTIFIER '=' val = Decimal_number;
+time_assignment: lhs = lvalue '=' rhs = expression;
 
 // 2. Declarations
 
@@ -60,12 +60,11 @@ net_declaration:
 	'wire' (bitDim = range)? ids = simple_identifier_list ';';
 reg_declaration:
 	'reg' (bitDim = range)? ids = register_identifier_list ';';
-	
-register_identifier_list: register_identifier (','  register_identifier)*;
 
-register_identifier: 
-	IDENTIFIER
-	| IDENTIFIER range;
+register_identifier_list:
+	register_identifier (',' register_identifier)*;
+
+register_identifier: IDENTIFIER | IDENTIFIER range;
 
 simple_identifier_list: IDENTIFIER (',' IDENTIFIER)*;
 
@@ -165,23 +164,22 @@ case_default: 'default' ':' statement_block;
 
 concatenation: '{' expression (',' expression)* '}';
 
-multiple_concatenation: '{' expression '{' 	expression (',' expression)* '}' '}'
+multiple_concatenation:
+	'{' expression '{' comp += expression (
+		',' comp += expression
+	)* '}' '}';
 
-
-/* 8.3 Expressions ============================================== */
-
-expression: // behavioural
+/* 8.3 Expressions ============================================== */ expression: // behavioural
 	number																	# atomExpression
 	| identifier															# atomExpression
 	| concatenation															# atomExpression
-	| multiple_concatenation				# atomExpression
+	| multiple_concatenation												# atomExpression
 	| '(' expression ')'													# parensExpression
 	| op = (PLUS | MINUS) expression										# unaryExpression
 	| expression op = (MUL | DIV) expression								# binaryExpression
 	| expression op = (PLUS | MINUS) expression								# binaryExpression
 	| expression op = (LT | LTE | GT | GTE | EQUAL | NOTEQUAL) expression	# binaryExpression
-	| expression '?' expression ':' expression #ternaryExpression
-	;
+	| expression '?' expression ':' expression								# ternaryExpression;
 
 expr: // gate
 	identifier						# atomExpr

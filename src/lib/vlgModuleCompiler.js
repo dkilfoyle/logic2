@@ -64,7 +64,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       parameters[namespace + "_" + entry[0]] = new ParameterGate(
         namespace,
         entry[0],
-        entry[1]
+        entry[1].getValue(parameters, parentNamespace)
       );
     newInstance.parameters.push(namespace + "_" + entry[0]);
   });

@@ -71,7 +71,34 @@ class Variable extends Operand {
     const gate = gatesLookup[id];
     if (!gate)
       throw new Error(`Variable.getValue cannot find gate with id ${id}`);
-    return gate.state.bitSize;
+
+    let range;
+
+    switch (this.offsetType) {
+      case "none":
+        return gate.bitSize;
+      case "index":
+        range = this.offset.getValue(gatesLookup, namespace);
+        return ["reg", "memory"].includes(gate.type) ? gate.bitSize : 1;
+      case "range":
+        range = [
+          this.offset[0].getValue(gatesLookup, namespace),
+          this.offset[1].getValue(gatesLookup, namespace)
+        ];
+        if (range[0] > gate.state.bitSize - 1)
+          throw new Error(
+            `Variable.getValue: offset[0] (${range[0]}) is larger than gate (${gate.id}) state size (${gate.state.size})`
+          );
+        if (range[1] > gate.state.bitSize - 1)
+          throw new Error(
+            `Variable.getValue: offset[1] (${range[1]}) is larger than gate (${gate.id}) state size (${gate.state.size})`
+          );
+        return Math.abs(range[0] - range[1]) + 1;
+      default:
+        throw new Error(
+          `Variable.getValue invalid offsetType (${this.offsetType})`
+        );
+    }
   }
   getValue(gatesLookup, namespace = null) {
     let id = namespace ? namespace + "_" + this.name : this.id;
@@ -83,7 +110,7 @@ class Variable extends Operand {
 
     switch (this.offsetType) {
       case "none":
-        return gate.getValue();
+        return gate.getValue(0); // 0 ignore for non array gates
       case "index":
         range = this.offset.getValue(gatesLookup, namespace);
         if (["reg", "memory"].includes(gate.type)) return gate.getValue(range);

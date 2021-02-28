@@ -148,17 +148,22 @@ const simulate = (
       return c.time == clock
         ? c.assignments.every(a => {
             // can only assign values to control types
-            if (!gatesLookup["main_" + a.id].type == "control") {
+            if (!gatesLookup["main_" + a.lhs.name].type == "control") {
               logger(
-                "Can only assign simulation values to inputs of Main: " + a.id
+                "Can only assign simulation values to inputs of Main: " +
+                  a.lhs.name
               );
-              console.log("Error: ", a.id);
+              console.log("Error: ", a.lhs.name);
               return false;
             }
             try {
-              gatesLookup["main_" + a.id].state.setValue(a.value);
+              a.lhs.setValue(
+                gatesLookup,
+                a.rhs.getValue(gatesLookup, "main"),
+                "main"
+              );
             } catch (e) {
-              logger(`${c.time}=${a.id}: ${e}`);
+              logger(`${c.time}=${a.lhs.name}: ${e}`);
               console.log(e);
               return false;
             }
@@ -219,9 +224,11 @@ const simulate = (
 
       logger(
         chalk.cyan(
-          `${lineChar}── Time ${clock.toString().padStart(3, "0")} :`
+          `${lineChar}── Time ${clock.toString().padStart(3, "0")}: `
         ) +
-          shortJoin(x.assignments.map(a => a.id + "=" + a.value)) +
+          shortJoin(
+            x.assignments.map(a => a.lhs.toString() + "=" + a.rhs.toString())
+          ) +
           chalk.cyan(" => ") +
           shortJoin(
             instancesLookup.main.gates
