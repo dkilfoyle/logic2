@@ -34,7 +34,7 @@ class Numeric extends Operand {
       this.format = "decimal";
     } else {
       this.bitSize = value.substring(0, value.indexOf("'"));
-      this.format = this.formatLookup[value.substr(value.indexOf("'") + 1, 1)];
+      this.format = formatLookup[value.substr(value.indexOf("'") + 1, 1)];
       this.decimalValue = parseInt(
         value.substring(value.indexOf("'" + 2)),
         radixLookup[this.format]
@@ -71,8 +71,33 @@ class Numeric extends Operand {
   getValue() {
     return this.decimalValue;
   }
-  toString() {
-    return this.decimalValue.toString(formatLookup[this.format]);
+  toString(myFormat) {
+    let format = myFormat || this.format;
+    switch (format) {
+      case "logic":
+      case "binary":
+        return (
+          this.getValue()
+            .toString(2)
+            // .padStart(this.bitSize, "0")
+            .split("")
+            .reverse()
+            .reduce(
+              (acc, x, i) =>
+                (i % 4 == 0) & (i != 0) ? acc + "_" + x : acc + x,
+              ""
+            )
+            .split("")
+            .reverse()
+            .join("")
+        );
+      case "decimal":
+        return this.getValue();
+      case "hex":
+        return this.getValue.toString(16);
+      default:
+        throw new Error("Unknown format " + format);
+    }
   }
 }
 

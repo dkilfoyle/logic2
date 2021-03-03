@@ -1,14 +1,24 @@
 <template>
-  <div class="dk-flex-col dk-pa-10 dk-gap-10">
+  <div class="dk-flex-col dk-pa-10 dk-gap-5">
     <div class="dk-heading">GLOBAL</div>
-    <b-field label="Evals per Step">
-      <b-input v-model="evalsPerStep" size="is-small"></b-input>
-    </b-field>
-    <b-field label="Trace Height">
-      <b-slider v-model="traceHeight" size="is-small"></b-slider>
-    </b-field>
 
-    <div class="dk-heading">CURRENT FILE</div>
+    <div class="dk-label">Evals per Step</div>
+    <div class="dk-flex-col dk-gap-8 dk-pl-5">
+      <b-input v-model="evalsPerStep" size="is-small"></b-input>
+    </div>
+
+    <div class="dk-label">Trace Height</div>
+    <div class="dk-flex-col dk-gap-8 dk-pl-5">
+      <b-slider v-model="traceHeight" size="is-small"></b-slider>
+    </div>
+
+    <div class="dk-label">Memory Dump</div>
+    <div class="dk-flex-col dk-gap-8 dk-pl-5">
+      <b-checkbox v-model="memoryDumpHideZeros">Hide 0s</b-checkbox>
+      <b-checkbox v-model="memoryDumpCompact">Compact Display</b-checkbox>
+    </div>
+
+    <div class="dk-heading dk-pt-10">CURRENT FILE</div>
 
     <div class="dk-label">Options</div>
     <div class="dk-flex-col dk-gap-8 dk-pl-5">
@@ -92,6 +102,22 @@ export default {
       },
       set(value) {
         this.$store.commit("setTraceHeight", parseInt(value, 10));
+      }
+    },
+    memoryDumpHideZeros: {
+      get() {
+        return this.$store.state.memoryDumpHideZeros;
+      },
+      set(value) {
+        this.$store.commit("memoryDumpHideZeros", value);
+      }
+    },
+    memoryDumpCompact: {
+      get() {
+        return this.$store.state.memoryDumpCompact;
+      },
+      set(value) {
+        this.$store.commit("memoryDumpCompact", value);
       }
     },
     showWhichGates: {

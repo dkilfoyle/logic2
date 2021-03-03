@@ -10,7 +10,9 @@ export default new Vuex.Store({
     showWhichGates: "all",
     stateFormat: "logic",
     evals_per_step: 15,
-    traceHeight: 30
+    traceHeight: 30,
+    memoryDumpHideZeros: true,
+    memoryDumpCompact: false
   },
   getters: {
     currentFile: state =>
@@ -154,6 +156,12 @@ export default new Vuex.Store({
     },
     setShowWhichGates(state, payload) {
       state.showWhichGates = payload;
+    },
+    setMemoryDumpCompact(state, payload) {
+      state.memoryDumpCompact = payload;
+    },
+    setMemoryDumpHideZeros(state, payload) {
+      state.memoryDumpHideZeros = payload;
     },
     setStateFormat(state, payload) {
       state.stateFormat = payload;

@@ -16,85 +16,106 @@
         class="dk-h-100"
         style="padding-left:10px;padding-right:10px;overflow:auto;"
       >
-        <table class="table is-fullwidth is-narrow">
-          <thead class="bg-teal">
-            <tr class="text-white">
-              <th class="text-left">GlobalID</th>
-              <!-- <th>InstanceID</th> -->
-              <th class="has-text-left">Fn</th>
-              <th class="has-text-left">Inputs</th>
-              <th class="has-text-right">
-                <b-button size="is-small" @click="toggleStateFormat"
-                  >State</b-button
-                >
-              </th>
-              <th class="has-text-right">BitSize</th>
-            </tr>
-          </thead>
+        <b-table
+          :data="gates"
+          ref="table"
+          :detailed="gates.some(x => x.type == 'memory')"
+          hoverable
+          custom-detail-row
+          :default-sort="['name', 'type']"
+          detail-key="name"
+          :has-detailed-visible="row => row.type == 'memory'"
+        >
+          <b-table-column field="name" label="Name" sortable v-slot="props">
+            <template v-if="showDetailIcon">
+              {{ props.row.id }}
+            </template>
+            <template v-else>
+              <a @click="toggleDetail(props.row)">
+                {{ props.row.id }}
+              </a>
+            </template></b-table-column
+          >
+          <b-table-column field="type" label="Type" v-slot="props" sortable>
+            <img
+              :src="require('@/assets/' + props.row.type + '.svg')"
+              class="gateicon"
+            />
+          </b-table-column>
 
-          <tbody>
-            <tr
-              v-for="g in filteredInstanceGates"
-              :key="g"
-              @click="$store.commit('setSelectedGate', g)"
-              :style="
-                $store.state.selectedGate == g ? 'background-color:#eeeeee' : ''
-              "
-            >
-              <td>{{ g }}</td>
-              <td>
+          <b-table-column field="inputs" label="Inputs" v-slot="props">
+            {{ props.row.inputs.map(x => x.id).join(", ") }}
+          </b-table-column>
+
+          <b-table-column field="state" label="State" numeric>
+            <template v-slot:header="{ column }">
+              <div class="level top">
+                <div class="level-item">{{ column.label }}</div>
+                <div class="level-item">
+                  <b-button
+                    style="margin-left:5px;width:20px"
+                    type="is-primary"
+                    size="is-small"
+                    @click="toggleStateFormat"
+                    >{{ $store.state.stateFormat.substring(0, 1) }}</b-button
+                  >
+                </div>
+              </div>
+            </template>
+
+            <template v-slot="props">
+              <template v-if="$store.state.stateFormat == 'logic'">
                 <img
-                  :src="require('@/assets/' + getGate(g).type + '.svg')"
-                  class="gateicon"
-                />
-              </td>
-              <td>
-                {{
-                  getGate(g)
-                    .inputs.map(x => x.id)
-                    .join(", ")
-                }}
-              </td>
-              <td
-                class="has-text-right"
-                v-if="$store.state.stateFormat == 'logic'"
-              >
-                <img
-                  v-if="$store.getters.getGateStateAtSelectedTime(g) == 0"
+                  v-if="
+                    $store.getters.getGateStateAtSelectedTime(props.row.id) == 0
+                  "
                   src="@/assets/icons8-0-52.png"
-                  class="stateicon"
-                />
+                  class="stateicon"/>
                 <img
                   v-else
                   src="@/assets/icons8-number-1-48.png"
                   class="stateicon"
-                />
-              </td>
-              <td
-                class="has-text-right"
-                v-else-if="$store.state.stateFormat == 'decimal'"
-              >
+              /></template>
+              <template v-else>
                 {{
                   $store.getters
-                    .getGateStateAtSelectedTime(g)
+                    .getGateStateAtSelectedTime(props.row.id)
                     .toString(stateFormatBase[$store.state.stateFormat])
-                }}
-              </td>
-              <td
-                class="has-text-right"
-                v-else-if="$store.state.stateFormat == 'binary'"
+                }}</template
+              ></template
+            >
+          </b-table-column>
+
+          <b-table-column
+            field="bitsize"
+            label="BitSize"
+            v-slot="props"
+            numeric
+          >
+            {{ props.row.bitSize }}
+          </b-table-column>
+
+          <template slot="detail" slot-scope="props">
+            <template v-for="(item, index) in props.row.state">
+              <tr
+                v-if="item.getValue() != 0 || !$store.state.memoryDumpHideZeros"
+                :key="index"
               >
-                0b{{
-                  $store.getters
-                    .getGateStateAtSelectedTime(g)
-                    .toString(stateFormatBase[$store.state.stateFormat])
-                    .padStart(getGate(g).state.bitSize, "0")
-                }}
-              </td>
-              <td class="has-text-right">{{ getGate(g).state.bitSize }}</td>
-            </tr>
-          </tbody>
-        </table>
+                <td></td>
+                <td>
+                  <span style="padding-left:15px"
+                    >{{ props.row.id }}[{{ index }}]</span
+                  >
+                </td>
+                <td></td>
+                <td></td>
+                <td class="has-text-right">
+                  {{ item.toString($store.state.stateFormat) }}
+                </td>
+              </tr></template
+            >
+          </template>
+        </b-table>
       </div>
     </div>
 
@@ -124,16 +145,26 @@ import InstanceCrumbs from "./InstanceCrumbs";
 export default {
   data() {
     return {
+      showDetailIcon: true,
       stateFormatBase: {
         binary: 2,
-        decimal: 10
+        octal: 8,
+        decimal: 10,
+        hex: 16
       }
     };
   },
   mixins: [UtilsMixin, SelectionsMixin],
   components: { InstanceCrumbs },
-
+  computed: {
+    gates() {
+      return this.filteredInstanceGates.map(g => this.getGate(g));
+    }
+  },
   methods: {
+    toggleDetail(row) {
+      this.$refs.table.toggleDetails(row);
+    },
     toggleStateFormat() {
       this.$store.commit("toggleStateFormat");
     },
