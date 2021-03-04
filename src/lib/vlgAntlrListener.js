@@ -216,17 +216,18 @@ class Listener extends vlgListener {
 
   exitReg_declaration(ctx) {
     const ids = this.valueStack.pop(); // identifier_list = array of variables
-    const bitDim = ctx.bitDim ? this.valueStack.pop() : null;
+    const newRegs = [];
     ids.forEach(v => {
       if (v.offsetType == "index")
         throw new Error("invalid reg declaration arraydim");
-      this.curModule.regs.push({
+      newRegs.push({
         id: v.name,
-        bitDim,
         arrayDim: v.offset
         // bitSize: bitdim ? Math.abs(bitdim[1] - bitdim[0]) + 1 : 1,
       });
     });
+    const bitDim = ctx.bitDim ? this.valueStack.pop() : null;
+    newRegs.forEach(x => this.curModule.regs.push({ ...x, bitDim }));
   }
 
   exitRegister_identifier_list(ctx) {
@@ -243,7 +244,7 @@ class Listener extends vlgListener {
       new Variable(
         null,
         ctx.IDENTIFIER().getText(),
-        ctx.range ? this.valueStack.pop() : null
+        ctx.range() ? this.valueStack.pop() : null
       )
     );
   }
@@ -690,10 +691,10 @@ class Listener extends vlgListener {
 
   enterNet_assignment(ctx) {
     console.groupCollapsed(`netAssignment: ${ctx.getText()}`);
-    if (this.expressionStack.length > 0)
-      throw new Error(
-        `enterNet_assignment: expressionStack should be empty, not ${this.expressionStack}`
-      );
+    // if (this.expressionStack.length > 0)
+    //   throw new Error(
+    //     `enterNet_assignment: expressionStack should be empty, not ${this.expressionStack}`
+    //   );
   }
 
   exitNet_assignment(ctx) {
@@ -791,7 +792,7 @@ class Listener extends vlgListener {
           connection.port.token,
           `Invalid port: '${connection.port.id}' is not defined in module '${moduleID}'`
         );
-      if (!this.isWireOrPort(connection.value.id.name))
+      if (!this.isWireOrPortOrReg(connection.value.id.name))
         this.addSemanticError(
           connection.value.token,
           `Invalid value: '${connection.value.id.name}' is not a defined wire or port in module '${moduleID}

@@ -102,9 +102,7 @@ export default new Vuex.Store({
     },
     getInstanceGates: (state, getters) => id => {
       if (!getters.isCompiled) return null;
-      return getters
-        .getInstance(id)
-        .gates.filter(x => getters.getGate(x).type != "portbuffer");
+      return getters.getInstance(id).gates; //.filter(x => getters.getGate(x).type != "portbuffer");
     },
 
     getSelectedInstanceInputs: (state, getters) =>

@@ -82,7 +82,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     ...instanceModule.regs
   ].reduce((acc, x) => {
     const dim = x.bitDim
-      ? x.bitDim.map(x => x.getValue(parameters, newInstance.id))
+      ? x.bitDim.map(y => y.getValue(parameters, newInstance.id))
       : null;
     return { ...acc, [x.id]: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1 };
   }, {});

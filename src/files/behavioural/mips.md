@@ -16,6 +16,13 @@
 | \$fp    | 30     | frame pointer            |
 | \$ra    | 31     | procedure return address |
 
+## RAM
+
+MIPS RAM is byte addressable
+32 bits = 4 \* 8 bit bytes so each 32 bit word starts at a multiple of 4
+
+To convert a byte address to a word address divide by 4 (shift right 2)
+
 ## Instruction Types
 
 inherit from numeric
