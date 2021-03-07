@@ -4,9 +4,7 @@ module FullAdder (
   input a, b, ci,
   output sum, cout );
 
-  wire [1:0] res;
-  buffer(res);
-
+  reg [1:0] res;
   always @(*)
     begin
       res = a + b + ci;
@@ -23,9 +21,6 @@ module Add4 (
   output cout );
 
   wire [2:0] cob;
-  buffer(cob);
-  buffer(sum);
-  buffer(cout);
 
   FullAdder fa0(.a(a[0]), .b(b[0]), .ci(ci),     .sum(sum[0]), .cout(cob[0]));
   FullAdder fa1(.a(a[1]), .b(b[1]), .ci(cob[0]), .sum(sum[1]), .cout(cob[1]));

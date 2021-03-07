@@ -18,8 +18,15 @@
 11. Unfortunately should switch from Listener to Visitor so don't need to pass values by stacks
 12. Monaco language definition
 13. Register file
-    1. Arrays of numeric
-    2. ternary operator
-13. MIPS single cycle processor
-13. MIPS single cycle processor
-13. MIPS multi cycle processor
+    1. Arrays of numeric - done
+    2. ternary operator - done
+14. MIPS single cycle processor - WIP
+15. MIPS single cycle processor
+16. MIPS multi cycle processor
+17. allow behavioural assign ie assign y = a + b instead of using always block
+18. Wires and Outputs not declared as gates should be silently declared as a WireGate with same id. This means that:
+    1. We don't need to declare wire x; buffer(x);
+    2. Output of a child isntance can connect without buffer to input of a sibling instance
+    3. Output of a child instance can connect without buffer to output of the parent instance
+19. Error markers in miniview
+20. Separate MemoryGate into RegGate and ArrayGate

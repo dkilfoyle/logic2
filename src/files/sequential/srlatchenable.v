@@ -14,7 +14,6 @@ module SRLatchEnable (
   output Q );
 
   wire u1, u2, Qn;
-  buffer(Q);
 
   assign u1 = s ~& c;
   assign u2 = r ~& c;

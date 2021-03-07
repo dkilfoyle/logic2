@@ -17,7 +17,8 @@ const opLookup = {
   gt: ">",
   gte: ">=",
   equality: "==",
-  ne: "!="
+  ne: "!=",
+  assign: "assign"
 };
 
 class Operation extends Operand {
@@ -65,6 +66,8 @@ class Operation extends Operand {
         return lhs == rhs ? 1 : 0;
       case "ne":
         return lhs != rhs ? 1 : 0;
+      case "equals":
+        return lhs;
       default:
         throw new Error(`Operation getValue: invalid op ${this.op}`);
     }

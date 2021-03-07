@@ -200,6 +200,24 @@ vlgListener.prototype.exitTime_assignment = function(ctx) {
 };
 
 
+// Enter a parse tree produced by vlgParser#display_bench.
+vlgListener.prototype.enterDisplay_bench = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#display_bench.
+vlgListener.prototype.exitDisplay_bench = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#display_assignment.
+vlgListener.prototype.enterDisplay_assignment = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#display_assignment.
+vlgListener.prototype.exitDisplay_assignment = function(ctx) {
+};
+
+
 // Enter a parse tree produced by vlgParser#net_declaration.
 vlgListener.prototype.enterNet_declaration = function(ctx) {
 };
@@ -443,6 +461,15 @@ vlgListener.prototype.exitCase_default = function(ctx) {
 };
 
 
+// Enter a parse tree produced by vlgParser#error_statement.
+vlgListener.prototype.enterError_statement = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#error_statement.
+vlgListener.prototype.exitError_statement = function(ctx) {
+};
+
+
 // Enter a parse tree produced by vlgParser#concatenation.
 vlgListener.prototype.enterConcatenation = function(ctx) {
 };
@@ -683,6 +710,15 @@ vlgListener.prototype.enterIdRange = function(ctx) {
 
 // Exit a parse tree produced by vlgParser#idRange.
 vlgListener.prototype.exitIdRange = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#string.
+vlgListener.prototype.enterString = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#string.
+vlgListener.prototype.exitString = function(ctx) {
 };
 
 

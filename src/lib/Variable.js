@@ -1,6 +1,26 @@
 /* eslint-disable no-debugger */
 import Operand from "./Operand";
 
+const getBit = (num, bit) => {
+  return (num >> bit) % 2;
+};
+
+const getBitRange = (num, bitsize, range) => {
+  let k = Math.abs(range[0] - range[1]) + 1;
+  let p = Math.max(range[0], range[1]);
+  return extractBits(num, bitsize, k, p);
+};
+
+const extractBits = (num, bitsize, k, p) => {
+  return parseInt(
+    num
+      .toString(2)
+      .padStart(bitsize)
+      .slice(-p - 1, k > p ? undefined : -p - 1 + k),
+    2
+  );
+};
+
 // Variable is a key into the gatesLookup object (which acts as 'memory')
 // namespace_name will be the id of a gate
 // offset will subset the bits of gatesLookup[namespace_name].state
@@ -78,13 +98,9 @@ class Variable extends Operand {
       case "none":
         return gate.bitSize;
       case "index":
-        range = this.offset.getValue(gatesLookup, namespace);
-        return ["reg", "memory"].includes(gate.type) ? gate.bitSize : 1;
+        return gate.type == "array" ? gate.bitSize : 1;
       case "range":
-        range = [
-          this.offset[0].getValue(gatesLookup, namespace),
-          this.offset[1].getValue(gatesLookup, namespace)
-        ];
+        range = this.getRange(gatesLookup, namespace);
         if (range[0] > gate.state.bitSize - 1)
           throw new Error(
             `Variable.getValue: offset[0] (${range[0]}) is larger than gate (${gate.id}) state size (${gate.state.size})`
@@ -104,54 +120,39 @@ class Variable extends Operand {
     let id = namespace ? namespace + "_" + this.name : this.id;
     const gate = gatesLookup[id];
     if (!gate)
-      throw new Error(`Variable.getValue cannot find gate with id ${id}`);
+      throw new Error(
+        `Variable[${this.name}].getValue cannot find gate with id ${id}`
+      );
+    let range = this.getRange(gatesLookup, namespace);
 
-    let range;
+    if (gate.type == "array") {
+      if (!Number.isInteger(range))
+        throw new Error("Array gate must have integer index");
+      else return gate.getValue(range);
+    }
 
+    if (range == null) return gate.getValue();
+    else if (Array.isArray(range))
+      return getBitRange(gate.getValue(), this.bitSize, range);
+    else if (Number.isInteger(range)) return getBit(gate.getValue(), range);
+    else throw new Error("Invalid range");
+  }
+  getRange(gatesLookup, namespace = null) {
     switch (this.offsetType) {
       case "none":
-        return gate.getValue(0); // 0 ignore for non array gates
+        return null;
       case "index":
-        range = this.offset.getValue(gatesLookup, namespace);
-        if (["reg", "memory"].includes(gate.type)) return gate.getValue(range);
-        if (range > gate.state.size - 1)
-          throw new Error(
-            `Variable.getValue: offset (${this.offset}) is larger than gate (${gate.id}) state size (${gate.state.size})`
-          );
-        return this.getBit(gate.state.decimalValue, this.offset);
+        return this.offset.getValue(gatesLookup, namespace);
       case "range":
-        range = [
+        return [
           this.offset[0].getValue(gatesLookup, namespace),
           this.offset[1].getValue(gatesLookup, namespace)
         ];
-        if (range[0] > gate.state.bitSize - 1)
-          throw new Error(
-            `Variable.getValue: offset[0] (${range[0]}) is larger than gate (${gate.id}) state size (${gate.state.size})`
-          );
-        if (range[1] > gate.state.bitSize - 1)
-          throw new Error(
-            `Variable.getValue: offset[1] (${range[1]}) is larger than gate (${gate.id}) state size (${gate.state.size})`
-          );
-        return this.getBitRange(gate.state.decimalValue, range);
       default:
         throw new Error(
-          `Variable.getValue invalid offsetType (${this.offsetType})`
+          `Variable.getRange invalid offsetType (${this.offsetType})`
         );
     }
-  }
-  getBit(num, bit) {
-    return (num >> bit) % 2;
-  }
-  extract(num, k, p) {
-    // extract k bits from position p to right
-    let mask = (1 << k) - 1;
-    let numFromP = num >> p;
-    return mask & numFromP;
-  }
-  getBitRange(num, range) {
-    let k = Math.abs(range[0] - range[1]) + 1;
-    let p = Math.min(range[0], range[1]);
-    return this.extract(num, k, p);
   }
 }
 

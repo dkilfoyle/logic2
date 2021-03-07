@@ -14,7 +14,8 @@ modules: module* module_main EOF;
 /* Module declaration ============================================== */
 
 module_main:
-	'module' MAIN module_parameter? (module_ports)? ';' module_item* test_bench? 'endmodule';
+	'module' MAIN module_parameter? (module_ports)? ';' module_item* test_bench? display_bench?
+		'endmodule';
 
 MAIN: 'Main';
 
@@ -54,6 +55,10 @@ time_assignment_list:
 
 time_assignment: lhs = lvalue '=' rhs = expression;
 
+display_bench: '$display' 'begin' display_assignment* 'end';
+
+display_assignment: lhs = IDENTIFIER '=' rhs = IDENTIFIER ';';
+
 // 2. Declarations
 
 net_declaration:
@@ -87,10 +92,10 @@ named_module_connections_list:
 	'(' named_port_connection (',' named_port_connection)* ')';
 
 named_port_connection:
-	'.' portID = IDENTIFIER '(' value = identifier ')';
+	'.' portID = IDENTIFIER '(' value = expression ')';
 
 ordered_module_connections_list:
-	'(' ids += identifier (',' ids += identifier)* ')';
+	'(' ids += expression (',' ids += expression)* ')';
 
 gate_instantiation:
 	gate_type '(' gateID = IDENTIFIER (',' ids = identifier_list)? ')' ';';
@@ -144,7 +149,8 @@ seq_block: 'begin' statement* 'end';
 statement:
 	blocking_assignment ';'
 	| conditional_statement
-	| case_statement;
+	| case_statement
+	| error_statement;
 
 blocking_assignment: lhs = lvalue '=' rhs = expression;
 
@@ -159,6 +165,8 @@ case_statement:
 
 case_clause: number ':' statement_block;
 case_default: 'default' ':' statement_block;
+
+error_statement: '$error' '(' string ')' ';';
 
 /* 8.1 Concatenations============================================ */
 
@@ -303,3 +311,4 @@ identifier:
 /* 9.5 Whitespace ============================================= */
 
 White_space: [ \t\n\r]+ -> channel (HIDDEN);
+string: '"' .* '"';

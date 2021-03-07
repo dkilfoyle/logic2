@@ -1,14 +1,36 @@
 /* eslint-disable no-debugger */
 import Operand from "./Operand";
 
+// const getBit = (num, bit) => {
+//   return (num >> bit) % 2;
+// };
+
+// const getBitRange = (num, bitsize, range) => {
+//   let k = Math.abs(range[0] - range[1]) + 1;
+//   let p = Math.max(range[0], range[1]);
+//   return extractBits(num, bitsize, k, p);
+// };
+
+const extractBits = (num, bitsize, k, p) => {
+  return parseInt(
+    num
+      .toString(2)
+      .padStart(bitsize)
+      .slice(-p - 1, k > p ? undefined : -p - 1 + k),
+    2
+  );
+};
+
 // Variable is a key into the gatesLookup object (which acts as 'memory')
 const getBitSize = x => (x == 0 ? 1 : 32 - Math.clz32(x));
+
 const radixLookup = {
   decimal: 10,
   binary: 2,
   hex: 16,
   octal: 8
 };
+
 const formatLookup = {
   b: "binary",
   h: "hex",
@@ -33,10 +55,10 @@ class Numeric extends Operand {
       this.bitSize = bitSize || getBitSize(value);
       this.format = "decimal";
     } else {
-      this.bitSize = value.substring(0, value.indexOf("'"));
+      this.bitSize = parseInt(value.substring(0, value.indexOf("'")));
       this.format = formatLookup[value.substr(value.indexOf("'") + 1, 1)];
       this.decimalValue = parseInt(
-        value.substring(value.indexOf("'" + 2)),
+        value.substring(value.indexOf("'") + 2),
         radixLookup[this.format]
       );
     }
@@ -71,13 +93,13 @@ class Numeric extends Operand {
   getValue() {
     return this.decimalValue;
   }
-  toString(myFormat) {
-    let format = myFormat || this.format;
+  formatValue(value, format) {
     switch (format) {
       case "logic":
+        return value.toString(2);
       case "binary":
         return (
-          this.getValue()
+          value
             .toString(2)
             // .padStart(this.bitSize, "0")
             .split("")
@@ -92,11 +114,67 @@ class Numeric extends Operand {
             .join("")
         );
       case "decimal":
-        return this.getValue();
+        return value;
       case "hex":
-        return this.getValue.toString(16);
+        return value.toString(16);
       default:
         throw new Error("Unknown format " + format);
+    }
+  }
+
+  formatInstruction(value, format) {
+    const fmt = format == "binary" ? "logic" : format;
+    const op = extractBits(value, this.bitSize, 6, 31);
+    let rs, rt, rd, shamt, funct, imm;
+    if (op == 0) {
+      // r type
+      rs = extractBits(value, this.bitSize, 5, 25);
+      rt = extractBits(value, this.bitSize, 5, 20);
+      rd = extractBits(value, this.bitSize, 5, 15);
+      shamt = extractBits(value, this.bitSize, 5, 10);
+      funct = extractBits(value, this.bitSize, 6, 5);
+      return (
+        this.formatValue(op, fmt) +
+        "_" +
+        this.formatValue(rs, fmt) +
+        "_" +
+        this.formatValue(rt, fmt) +
+        "_" +
+        this.formatValue(rd, fmt) +
+        "_" +
+        this.formatValue(shamt, fmt) +
+        "_" +
+        this.formatValue(funct, fmt)
+      );
+    } else if (op == 0x02 || op == 0x03) {
+      // jtype
+      imm = extractBits(value, this.bitSize, 25, 25);
+      return this.formatValue(op, fmt) + "_" + this.formatValue(imm, fmt);
+    } else {
+      // i type
+      rs = extractBits(value, this.bitSize, 5, 25);
+      rt = extractBits(value, this.bitSize, 5, 20);
+      imm = extractBits(value, this.bitSize, 16, 15);
+      return (
+        this.formatValue(op, fmt) +
+        "_" +
+        this.formatValue(rs, fmt) +
+        "_" +
+        this.formatValue(rt, fmt) +
+        "_" +
+        this.formatValue(imm, fmt)
+      );
+    }
+  }
+  toString(myFormat, specialFormat = "none") {
+    let format = myFormat || this.format;
+    switch (specialFormat) {
+      case "none":
+        return this.formatValue(this.getValue(), format);
+      case "instruction":
+        return this.formatInstruction(this.getValue(), format);
+      default:
+        throw new Error("Unknown specialFormat " + specialFormat);
     }
   }
 }

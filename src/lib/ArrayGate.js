@@ -2,9 +2,9 @@
 import BaseComponent from "./BaseComponent";
 import Numeric from "./Numeric";
 
-class MemoryGate extends BaseComponent {
+class ArrayGate extends BaseComponent {
   constructor(namespace, name, bitSize = 1, arraySize = 1) {
-    super(namespace, name, arraySize == 1 ? "reg" : "memory", bitSize);
+    super(namespace, name, "array", bitSize);
     this.arraySize = arraySize;
   }
   clear() {
@@ -30,4 +30,4 @@ class MemoryGate extends BaseComponent {
   }
 }
 
-export default MemoryGate;
+export default ArrayGate;

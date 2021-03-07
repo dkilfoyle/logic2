@@ -7,7 +7,7 @@
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint",
-    "test": "jest --silent"
+    "test": "jest"
   },
   "dependencies": {
     "@jupyterlab/ui-components": "^2.2.3",

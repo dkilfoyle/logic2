@@ -25,10 +25,6 @@ module DFlipFlop (
   not(cnn, cn);
 
   wire Qmaster;
-  buffer(Qmaster);
-
-  buffer(Q);
-  buffer(Qn);
 
   DLatch master(.d(d), .c(cn), .Q(Qmaster));
   DLatch slave(.d(Qmaster), .c(cnn), .Q(Q), .Qn(Qn));

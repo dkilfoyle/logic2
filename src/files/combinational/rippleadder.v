@@ -13,12 +13,7 @@ module FullAdder (
   output Sum, Cout
 );
 
-  wire S1, Cout1, Cout2, Cout3;
-  buffer(Sum);
-  
-  buffer(S1);
-  buffer(Cout1);
-  buffer(Cout2);
+  wire S1, Cout1, Cout2;
 
   HalfAdder half1(
 		.a(a),
@@ -52,9 +47,6 @@ module Main(
 );
 
   wire c1, c2, c3;
-  buffer(c1);
-  buffer(c2);
-  buffer(c3);
 
   FullAdder full1(.a(a0), .b(b0), .cin(c0), .Sum(S0), .Cout(c1));
   FullAdder full2(.a(a1), .b(b1), .cin(c1), .Sum(S1), .Cout(c2));

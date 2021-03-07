@@ -3,7 +3,9 @@ import Variable from "./Variable";
 import Operation from "./Operation";
 import LogicGate from "./LogicGate";
 import BufferGate from "./BufferGate";
-import MemoryGate from "./MemoryGate";
+import WireGate from "./WireGate";
+import ArrayGate from "./ArrayGate";
+import RegGate from "./RegGate";
 import ParameterGate from "./ParameterGate";
 
 var modules, instances, gates, parameters;
@@ -189,15 +191,22 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   });
 
   instanceModule.regs.forEach(reg => {
-    let arrayDim = reg.arrayDim
-      ? reg.arrayDim.map(x => x.getValue(parameters, newInstance.id))
-      : null;
-    const newGate = new MemoryGate(
-      namespace,
-      reg.id,
-      gateBitSizesID[reg.id],
-      arrayDim ? Math.abs(arrayDim[1] - arrayDim[0]) + 1 : 1
-    );
+    var newGate;
+    if (reg.arrayDim) {
+      // array of regs = memory
+      let arrayDim = reg.arrayDim.map(x =>
+        x.getValue(parameters, newInstance.id)
+      );
+      newGate = new ArrayGate(
+        namespace,
+        reg.id,
+        gateBitSizesID[reg.id],
+        Math.abs(arrayDim[1] - arrayDim[0]) + 1
+      );
+    } else {
+      newGate = new RegGate(namespace, reg.id, gateBitSizesID[reg.id]);
+    }
+
     gates.push(newGate);
     newInstance.gates.push(newGate.id);
   });
@@ -315,6 +324,28 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     gates.push(portGate);
   });
 
+  // silently instantiate a WireGate for any outputs or wires that have not been declared as as gate (LogicGate, BufferGate or Reg)
+  [
+    ...instanceModule.wires,
+    ...instanceModule.ports.filter(p => p.direction == "output")
+  ].forEach(wire => {
+    if (
+      newInstance.gates.some(gid => gid == `${namespace}_${wire.id}`) == false
+    ) {
+      // wire has not been declared as a gate
+      console.log("WireGate: ");
+      const newWireGate = new WireGate(
+        namespace,
+        wire.id,
+        gateBitSizesID[wire.id]
+      );
+      console.log("newGate: ", newWireGate);
+      // inputs will be set in child instance
+      gates.push(newWireGate);
+      newInstance.gates.push(newWireGate.id);
+    }
+  });
+
   // instantiate a module
   instanceModule.instantiations
     .filter(x => x.type == "instance")
@@ -357,6 +388,10 @@ const compile = moduleArray => {
   };
 
   createInstance("", mainInstantiation);
+
+  modules["Main"].display.forEach(d => {
+    gates.find(g => g.id == d.id).displayType = d.type;
+  });
 
   console.group("Compilation result:");
   console.log("Instances: ", stripReactive(instances));

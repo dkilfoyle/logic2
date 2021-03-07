@@ -19,12 +19,12 @@
         <b-table
           :data="gates"
           ref="table"
-          :detailed="gates.some(x => x.type == 'memory')"
+          :detailed="gates.some(x => x.type == 'array')"
           hoverable
           custom-detail-row
           :default-sort="['name', 'type']"
           detail-key="name"
-          :has-detailed-visible="row => row.type == 'memory'"
+          :has-detailed-visible="row => row.type == 'array'"
         >
           <b-table-column field="name" label="Name" sortable v-slot="props">
             <template v-if="showDetailIcon">
@@ -110,7 +110,12 @@
                 <td></td>
                 <td></td>
                 <td class="has-text-right">
-                  {{ item.toString($store.state.stateFormat) }}
+                  {{
+                    item.toString(
+                      $store.state.stateFormat,
+                      props.row.displayType
+                    )
+                  }}
                 </td>
               </tr></template
             >

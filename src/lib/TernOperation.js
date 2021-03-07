@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 import Operand from "./Operand";
 
 class TernOperation extends Operand {

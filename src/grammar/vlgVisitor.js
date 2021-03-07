@@ -138,6 +138,18 @@ vlgVisitor.prototype.visitTime_assignment = function(ctx) {
 };
 
 
+// Visit a parse tree produced by vlgParser#display_bench.
+vlgVisitor.prototype.visitDisplay_bench = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#display_assignment.
+vlgVisitor.prototype.visitDisplay_assignment = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by vlgParser#net_declaration.
 vlgVisitor.prototype.visitNet_declaration = function(ctx) {
   return this.visitChildren(ctx);
@@ -300,6 +312,12 @@ vlgVisitor.prototype.visitCase_default = function(ctx) {
 };
 
 
+// Visit a parse tree produced by vlgParser#error_statement.
+vlgVisitor.prototype.visitError_statement = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by vlgParser#concatenation.
 vlgVisitor.prototype.visitConcatenation = function(ctx) {
   return this.visitChildren(ctx);
@@ -458,6 +476,12 @@ vlgVisitor.prototype.visitIdOffset = function(ctx) {
 
 // Visit a parse tree produced by vlgParser#idRange.
 vlgVisitor.prototype.visitIdRange = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#string.
+vlgVisitor.prototype.visitString = function(ctx) {
   return this.visitChildren(ctx);
 };
 

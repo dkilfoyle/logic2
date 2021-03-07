@@ -66,8 +66,6 @@ module Alu #(parameter N=8) (
   assign notb = ~b;
 
   wire [N-1:0] bb;
-  buffer(bb);
-
   Mux2 bbmux #(N) (.a(b), .b(notb), .sel(F[2]), .y(bb));
   
   wire [N-1:0] aandbb, aorbb;
@@ -75,11 +73,8 @@ module Alu #(parameter N=8) (
   assign aorbb = a | bb;
 
   wire [N-1:0] S;
-  buffer(S);
-  buffer(cout);
   Add adder #(N) (.a(a), .b(bb), .cin(F[2]), .y(S), .cout(cout));
 
-  buffer(y);
   Mux4 ymux(.a(aandbb), .b(aorbb), .c(S), .d(S[N-1]), .sel(F[1:0]), .y(y));
 endmodule
 

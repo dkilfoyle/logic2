@@ -85,6 +85,8 @@ const evaluateStatementTree = (s, namespace) => {
       if (s.casedefault) return evaluateStatementTree(s.casedefault, namespace);
       else return true;
     }
+  } else if (s.type == "error_statement") {
+    throw new Error(s.text);
   } else {
     throw new Error(`unknown statement type: ${s.type}`);
   }

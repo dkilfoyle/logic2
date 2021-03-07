@@ -25,7 +25,6 @@ module DFlipFlop (
   not(cnn, cn);
 
   wire Qmaster;
-  buffer(Qmaster);
 
   buffer(Q);
   buffer(Qn);
@@ -40,9 +39,6 @@ module Main(
 ); 
 
   wire Qntf1, Qntf2, Qntf3;
-  buffer(Qntf1);
-  buffer(Qntf2);
-  buffer(Qntf3);
 
   DFlipFlop tf1(
     .d(Qntf1),

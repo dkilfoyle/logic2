@@ -160,7 +160,8 @@ class Listener extends vlgListener {
       moduleParameters: {},
       instantiations: [],
       netAssignments: [],
-      clock: []
+      clock: [],
+      display: []
     };
     console.group("enterModule: Main ");
   }
@@ -332,6 +333,18 @@ class Listener extends vlgListener {
       console.log("Statement: ", strip(newStatement));
     }
     console.groupEnd();
+  }
+
+  exitError_statement(ctx) {
+    const newStatement = {
+      type: "error_statement",
+      sourceStart: { column: ctx.start.column, line: ctx.start.line },
+      sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
+      text: ctx.string().getText()
+    };
+    this.statementBlockStack[
+      this.statementBlockStack.length - 1
+    ].statements.push(newStatement);
   }
 
   enterConditional_statement(ctx) {
@@ -646,6 +659,13 @@ class Listener extends vlgListener {
     }
   }
 
+  exitDisplay_assignment(ctx) {
+    this.curModule.display.push({
+      id: ctx.lhs.text,
+      type: ctx.rhs.text
+    });
+  }
+
   // gates ==================================================
 
   exitGate_instantiation(ctx) {
@@ -699,7 +719,10 @@ class Listener extends vlgListener {
 
   exitNet_assignment(ctx) {
     const lvalue = this.valueStack.pop();
-    if (!this.isWireOrRegOrOutput(lvalue.name)) {
+    if (
+      !this.isWireOrRegOrOutput(lvalue.name) &&
+      lvalue.type != "concatenation"
+    ) {
       this.addSemanticError(
         ctx.lvalue(),
         `${lvalue.name} is not a wire or reg or output`
@@ -732,8 +755,8 @@ class Listener extends vlgListener {
           return {
             port: { id: x.portID.text, token: x.portID },
             value: {
-              id: this.valueStack.pop(),
-              token: x.value.IDENTIFIER().getSymbol()
+              id: this.expressionStack.pop(),
+              token: x.value.children[0].start
             }
           };
         })
@@ -748,8 +771,8 @@ class Listener extends vlgListener {
           return {
             port: { index: a.length - i - 1 },
             value: {
-              id: this.valueStack.pop(),
-              token: x.IDENTIFIER().getSymbol()
+              id: this.expressionStack.pop(),
+              token: x.start
             }
           };
         })
