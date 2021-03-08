@@ -28,10 +28,6 @@ module Main (
 
   wire S1, Cout1, Cout2, Cout3;
   
-  buffer(S1);
-  buffer(Cout1);
-  buffer(Cout2);
-
   HalfAdder half1(
 		.a(a),
 		.b(b),

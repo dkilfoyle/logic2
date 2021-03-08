@@ -30,3 +30,4 @@
     3. Output of a child instance can connect without buffer to output of the parent instance
 19. Error markers in miniview
 20. Separate MemoryGate into RegGate and ArrayGate
+21. Renderers for concatenation (a WireGate with multiple inputs) and slice (a WireGate that is connected to multiple gates with different offsets)

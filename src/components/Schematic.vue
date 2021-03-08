@@ -22,6 +22,7 @@ import SevenSegRenderer from "./renderers/sevenseg.js";
 import NumberRenderer from "./renderers/number.js";
 import BufferRenderer from "./renderers/buffer.js";
 import LedBarRenderer from "./renderers/ledbar.js";
+import WireGateRenderer from "./renderers/wiregate.js";
 import { barData } from "./renderers/number.js";
 
 export default {
@@ -156,6 +157,7 @@ export default {
     this.g.nodeRenderers.registerCustomRenderer(new NumberRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new BufferRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new LedBarRenderer(this.g));
+    this.g.nodeRenderers.registerCustomRenderer(new WireGateRenderer(this.g));
 
     var zoom = d3.zoom();
     zoom.on("zoom", this.onZoom);
@@ -323,7 +325,7 @@ export default {
               gate.type == "portbuffer" ||
               gate.type == "response"
                 ? this.getLocalId(gate.id)
-                : gate.type.toUpperCase(),
+                : gate.getSchematicName(),
             isExternalPort: gate.type == "control" || gate.type == "response"
           },
           properties: {
@@ -336,11 +338,14 @@ export default {
         };
 
         // single output unless response
-        if (gate.type != "response") {
+        if (["response"].includes(gate.type) == false) {
           // console.log("gate: ", gate);
           gateNet.ports.push({
             id: gate.id,
-            hwMeta: { name: this.getLocalId(gate.id) },
+            hwMeta: {
+              name:
+                gate.type == "wiregate" ? `[15:0]` : this.getLocalId(gate.id)
+            },
             direction: "OUTPUT",
             properties: { side: "EAST", portIndex: 0 }
           });
@@ -349,7 +354,9 @@ export default {
         gate.inputs.forEach((input, i) => {
           gateNet.ports.push({
             id: gate.id + "_input_" + i,
-            hwMeta: { name: this.getLocalId(gate.id) },
+            hwMeta: {
+              name: this.getLocalId(gate.id)
+            },
             direction: "INPUT",
             properties: {
               side: "WEST",
@@ -514,6 +521,15 @@ body {
 }
 .node text {
   font-size: 8pt;
+}
+
+.WIREGATE .port text {
+  font-size: 6px;
+}
+
+.port text {
+  font-size: 8pt;
+  stroke: none;
 }
 
 .d3-hwschematic .link-wrap {

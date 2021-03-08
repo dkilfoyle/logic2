@@ -36,6 +36,9 @@ class BaseComponent {
   getLocalId() {
     return this.id.substr(this.id.lastIndexOf("_") + 1);
   }
+  getSchematicName() {
+    return this.type.toUpperCase();
+  }
 }
 
 export default BaseComponent;

@@ -657,6 +657,7 @@ class Listener extends vlgListener {
             );
         });
     }
+    newClock.assignments.reverse();
   }
 
   exitDisplay_assignment(ctx) {
