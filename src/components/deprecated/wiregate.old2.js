@@ -1,34 +1,34 @@
 /* eslint-disable no-debugger */
 // import { GenericNodeRenderer } from "d3-hwschematic";
 
-// var PORT_MARKERS = {
-//   WEST: {
-//     INPUT: "#westInPortMarker",
-//     OUTPUT: "#westOutPortMarker"
-//   },
-//   EAST: {
-//     INPUT: "#eastInPortMarker",
-//     OUTPUT: "#eastOutPortMarker"
-//   },
-//   NORTH: {
-//     INPUT: "#northInPortMarker",
-//     OUTPUT: "#northOutPortMarker"
-//   },
-//   SOUTH: {
-//     INPUT: "#southInPortMarker",
-//     OUTPUT: "#southOutPortMarker"
-//   }
-// };
+var PORT_MARKERS = {
+  WEST: {
+    INPUT: "#westInPortMarker",
+    OUTPUT: "#westOutPortMarker"
+  },
+  EAST: {
+    INPUT: "#eastInPortMarker",
+    OUTPUT: "#eastOutPortMarker"
+  },
+  NORTH: {
+    INPUT: "#northInPortMarker",
+    OUTPUT: "#northOutPortMarker"
+  },
+  SOUTH: {
+    INPUT: "#southInPortMarker",
+    OUTPUT: "#southOutPortMarker"
+  }
+};
 
-// function getIOMarker(d) {
-//   var side = d.properties.side;
-//   var portType = d.direction;
-//   var marker = PORT_MARKERS[side][portType];
-//   if (marker === undefined) {
-//     throw new Error("Wrong side, portType", side, portType);
-//   }
-//   return marker;
-// }
+function getIOMarker(d) {
+  var side = d.properties.side;
+  var portType = d.direction;
+  var marker = PORT_MARKERS[side][portType];
+  if (marker === undefined) {
+    throw new Error("Wrong side, portType", side, portType);
+  }
+  return marker;
+}
 
 function sizeOfText(text) {
   if (!window.d3) return;
@@ -101,7 +101,7 @@ export default class WireGateRenderer extends window.d3.GenericNodeRenderer {
     // var portW = max(west[1], east[1]);
 
     d.portLabelWidth = [west[1], east[1]];
-    d.width = east[1] + 7;
+    d.width = west[1] + east[1] + 10;
     d.height = max(
       max(west[0], east[0]) * schematic.PORT_HEIGHT,
       max(south[1], north[1]) * CHAR_WIDTH
@@ -122,7 +122,19 @@ export default class WireGateRenderer extends window.d3.GenericNodeRenderer {
       .attr("height", function(d) {
         return d.height;
       })
-      .attr("class", "wiregaterect");
+      .attr("class", "node")
+      .attr("rx", 5) // rounded corners
+      .attr("ry", 5);
+
+    // black thick line
+    nodeG
+      .append("rect")
+      .attr("x", d => d.portLabelWidth[0] + 2)
+      .attr("width", "2")
+      .attr("height", function(d) {
+        return d.height;
+      })
+      .attr("style", "fill:black;");
 
     // apply node positions
     nodeG.attr("transform", function(d) {
@@ -182,11 +194,11 @@ export default class WireGateRenderer extends window.d3.GenericNodeRenderer {
           if (side == "WEST") {
             return indent + d.hwMeta.name;
           } else if (side == "EAST") {
-            return ""; //d.hwMeta.name + indent;
+            return d.hwMeta.name + indent;
           } else {
             throw new Error(side);
           }
-        } else return d.properties.side == "EAST" ? d.hwMeta.name : "";
+        } else return d.hwMeta.name;
       })
       .attr("font-size", "6px")
       .attr("x", function(d) {
@@ -211,11 +223,6 @@ export default class WireGateRenderer extends window.d3.GenericNodeRenderer {
       .attr("y", PORT_HEIGHT * 0.65);
 
     // spot input/output marker
-    portG
-      .append("path")
-      .attr("d", "M0,0 L7,0")
-      .attr("transform", d => "translate(0, " + d.height / 2 + ")");
-    // .append("use")
-    // .attr("href", getIOMarker)
+    portG.append("use").attr("href", getIOMarker);
   }
 }

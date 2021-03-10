@@ -61,6 +61,13 @@ class Variable extends Operand {
       throw new Error(`Variable.id ${this.name} missing namespace`);
     return this.namespace + "_" + this.name;
   }
+  getOffsetString(gatesLookup, namespace = null) {
+    return this.offsetType == "index"
+      ? "[" + this.getRange(gatesLookup, namespace) + "]"
+      : this.offsetType == "range"
+      ? "[" + this.getRange(gatesLookup, namespace).join(":") + "]"
+      : "[0]";
+  }
   toString() {
     return (
       this.name +

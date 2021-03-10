@@ -1,6 +1,6 @@
 /* eslint-disable no-debugger */ /* eslint-disable no-debugger */ /*
 eslint-disable no-debugger */ /* eslint-disable no-debugger */ /* eslint-disable
-no-debugger */
+no-debugger */ /* eslint-disable no-debugger */
 <template>
   <div class="dk-flex-row dk-h-100 dk-align-center">
     <svg ref="svgSchematic" id="svgSchematic" />
@@ -270,30 +270,30 @@ export default {
                 node.style("filter", "url(#glow)");
               }
             });
-            node.on("mouseover", function(ev, d) {
-              const id = d.id.substr(0, d.id.indexOf("_gate"));
-              // setTimeout(() => that.g.tooltip.show(ev, id), 1000);
-              that.tooltip.style("opacity", 0);
+            // node.on("mouseover", function(ev, d) {
+            //   const id = d.id.substr(0, d.id.indexOf("_gate"));
+            //   // setTimeout(() => that.g.tooltip.show(ev, id), 1000);
+            //   that.tooltip.style("opacity", 0);
 
-              // Note that we are also using d3.event pageX and pageY properties
-              // to position the tooltip
+            //   // Note that we are also using d3.event pageX and pageY properties
+            //   // to position the tooltip
 
-              that.tooltip
-                .html(id)
-                .style("left", ev.pageX + "px")
-                .style("top", ev.pageY - 25 + "px");
+            //   that.tooltip
+            //     .html(id)
+            //     .style("left", ev.pageX + "px")
+            //     .style("top", ev.pageY - 25 + "px");
 
-              that.tooltip
-                .transition()
-                .delay(300)
-                .duration(500)
-                .style("opacity", 0.9);
-            });
-            node.on("mouseout", function() {
-              // that.g.tooltip.hide();
-              that.tooltip.interrupt().transition();
-              that.tooltip.style("opacity", 0);
-            });
+            //   that.tooltip
+            //     .transition()
+            //     .delay(300)
+            //     .duration(500)
+            //     .style("opacity", 0.9);
+            // });
+            // node.on("mouseout", function() {
+            // that.g.tooltip.hide();
+            //   that.tooltip.interrupt().transition();
+            //   that.tooltip.style("opacity", 0);
+            // });
           })
         );
       });
@@ -341,23 +341,52 @@ export default {
         if (["response"].includes(gate.type) == false) {
           // console.log("gate: ", gate);
           gateNet.ports.push({
+            direction: "OUTPUT",
             id: gate.id,
             hwMeta: {
-              name:
-                gate.type == "wiregate" ? `[15:0]` : this.getLocalId(gate.id)
+              name: this.getLocalId(gate.id)
             },
-            direction: "OUTPUT",
             properties: { side: "EAST", portIndex: 0 }
           });
         }
 
+        // if (gate.type == "wiregate") {
+        //   // find all the gates in currentInstance that have the wiregate as an input
+        //   // make an output port for the wiregate that is each unique offset
+        //   const wireGateOutputs = [];
+        //   this.getAllGates.forEach(testGate => {
+        //     testGate.inputs
+        //       .filter(input => input.id == gate.id)
+        //       .forEach(input =>
+        //         wireGateOutputs.push(
+        //           input.getOffsetString(
+        //             this.currentFile.compileResult.parameters,
+        //             currentInstance.id
+        //           )
+        //         )
+        //       );
+        //   });
+
+        //   // eslint-disable-next-line no-debugger
+        //   [...new Set(wireGateOutputs)].forEach(wgo =>
+        //     gateNet.ports.push({
+        //       direction: "OUTPUT",
+        //       id: gate.id + (wgo == "[0]" ? "" : wgo),
+        //       hwMeta: {
+        //         name: wgo
+        //       },
+        //       properties: { side: "EAST", portIndex: 0 }
+        //     })
+        //   );
+        // }
+
         gate.inputs.forEach((input, i) => {
           gateNet.ports.push({
+            direction: "INPUT",
             id: gate.id + "_input_" + i,
             hwMeta: {
               name: this.getLocalId(gate.id)
             },
-            direction: "INPUT",
             properties: {
               side: "WEST",
               portIndex: gate.inputs.length > 1 ? i + 1 : 0
@@ -376,7 +405,17 @@ export default {
             target: gate.id + "_gate",
             targetPort: gate.id + "_input_" + i,
             // hwMeta: { name: null, cssClass: gate.id + "_link" }
-            hwMeta: { name: null, cssClass: input.id + "_link" }
+            hwMeta: {
+              name:
+                input.id +
+                (input.offsetType != "none"
+                  ? input.getOffsetString(
+                      this.currentFile.compileResult.parameters,
+                      currentInstance.id
+                    )
+                  : ""),
+              cssClass: input.id + "_link"
+            }
           };
           currentNet.edges.push(gate2gate);
           // console.log("-- g2g: ", gate2gate.id, this.stripReactive(gate2gate));
@@ -414,7 +453,7 @@ export default {
           // eslint-disable-next-line no-debugger
           let port = {
             id: output, // output will be in form {this.getNamespace}_{port}-out
-            hwMeta: { name: this.getLocalId(output) },
+            hwMeta: { name: this.getLocalId(output).replace("-out", "") },
             direction: "OUTPUT",
             properties: { side: "EAST", portIndex: 0 }
           };
@@ -431,7 +470,14 @@ export default {
             target: this.getNamespace(output),
             targetPort: output,
             hwMeta: {
-              name: null,
+              name:
+                portGate.inputs[0].id +
+                (portGate.inputs[0].offsetType != "none"
+                  ? portGate.inputs[0].getOffsetString(
+                      this.currentFile.compileResult.parameters,
+                      currentInstance.id
+                    )
+                  : ""),
               cssClass: portGate.inputs[0].id + "_link"
             }
           };
@@ -456,7 +502,14 @@ export default {
             id: portGate.inputs[0].id + "-" + input,
             type: "parent2input",
             hwMeta: {
-              name: null,
+              name:
+                portGate.inputs[0].id +
+                (portGate.inputs[0].offsetType != "none"
+                  ? portGate.inputs[0].getOffsetString(
+                      this.currentFile.compileResult.parameters,
+                      currentInstance.id
+                    )
+                  : ""),
               cssClass: portGate.inputs[0].id + "_link"
             },
             source: currentInstance.inputs.includes(portGate.inputs[0].id) // is the input to the port gate itself a port of the parent instance rather than a local gate
@@ -523,18 +576,23 @@ body {
   font-size: 8pt;
 }
 
-.WIREGATE .port text {
+.port .wiregate text {
   font-size: 6px;
-}
-
-.port text {
-  font-size: 8pt;
   stroke: none;
 }
 
+.port text {
+  stroke: none;
+}
+
+.wiregaterect {
+  fill: #e6ffff;
+  stroke: darkgrey;
+}
+
 .d3-hwschematic .link-wrap {
-  opacity: 1;
-  stroke-width: 2;
+  opacity: 0.4;
+  stroke-width: 6;
 }
 
 .d3-hwschematic .node-external-port text {
@@ -572,5 +630,9 @@ body {
 
 .external-1 {
   fill: rgb(237, 137, 137, 1) !important;
+}
+
+.d3-hwschematic-tooltip {
+  font-size: 6pt;
 }
 </style>
