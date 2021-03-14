@@ -110,7 +110,13 @@ class Listener extends vlgListener {
 
   enterSource_text() {
     this.modules = [];
+    console.groupCollapsed("ParserListener");
   }
+
+  exitSource_text() {
+    console.groupEnd();
+  }
+
   enterModule(ctx) {
     this.curModule = {
       id: ctx.IDENTIFIER().getText(),
@@ -132,7 +138,7 @@ class Listener extends vlgListener {
       instantiations: [],
       netAssignments: []
     };
-    console.group("enterModule: ", ctx.IDENTIFIER().getText());
+    console.groupCollapsed("enterModule: ", ctx.IDENTIFIER().getText());
   }
   exitModule() {
     console.log("curModule: ", this.curModule);
@@ -163,7 +169,7 @@ class Listener extends vlgListener {
       clock: [],
       display: []
     };
-    console.group("enterModule: Main ");
+    console.groupCollapsed("enterModule: Main ");
   }
 
   exitModule_main() {
@@ -579,57 +585,22 @@ class Listener extends vlgListener {
       return;
     }
 
-    let sizeStr = x.substring(0, x.indexOf("'"));
-    let size = sizeStr != "" ? parseInt(sizeStr) : null;
-
-    const valueStart = Math.max(x.indexOf("D", x.indexOf("d")));
-    if (valueStart == -1) throw new Error("exitDecimal: shouldn't be here");
-
-    this.valueStack.push(
-      new Numeric(parseInt(x.substring(valueStart), 10), size, "decimal")
-    );
+    this.valueStack.push(new Numeric(x));
   }
 
   exitBinary(ctx) {
     const x = ctx.getText().replace(/_/g, "");
-
-    let sizeStr = x.substring(0, x.indexOf("'"));
-    let size = sizeStr != "" ? parseInt(sizeStr) : null;
-
-    const valueStart = Math.max(x.indexOf("B"), x.indexOf("b"));
-    if (valueStart == -1) throw new Error("exitBinary: shouldn't be here");
-
-    this.valueStack.push(
-      new Numeric(parseInt(x.substring(valueStart + 1), 2), size, "binary")
-    );
+    this.valueStack.push(new Numeric(x));
   }
 
   exitOctal(ctx) {
     const x = ctx.getText().replace(/_/g, "");
-
-    let sizeStr = x.substring(0, x.indexOf("'"));
-    let size = sizeStr != "" ? parseInt(sizeStr) : null;
-
-    const valueStart = Math.max(x.indexOf("O"), x.indexOf("o"));
-    if (valueStart == -1) throw new Error("exitOctal: shouldn't be here");
-
-    this.valueStack.push(
-      new Numeric(parseInt(x.substring(valueStart + 1), 8), size, "octal")
-    );
+    this.valueStack.push(new Numeric(x));
   }
 
   exitHex(ctx) {
     const x = ctx.getText().replace(/_/g, "");
-
-    let sizeStr = x.substring(0, x.indexOf("'"));
-    let size = sizeStr != "" ? parseInt(sizeStr) : null;
-
-    const valueStart = Math.max(x.indexOf("H"), x.indexOf("h"));
-    if (valueStart == -1) throw new Error("exitHex: shouldn't be here");
-
-    this.valueStack.push(
-      new Numeric(parseInt(x.substring(valueStart + 1), 16), size, "hex")
-    );
+    this.valueStack.push(new Numeric(x));
   }
 
   // test bench =============================================
@@ -747,16 +718,36 @@ class Listener extends vlgListener {
 
   // instances =========================================
 
+  convertConstantToGateVariable(numeric) {
+    const constid = "constant" + numeric.decimalValue;
+    if (!this.curModule.instantiations.find(x => x.id == constid))
+      this.curModule.instantiations.push({
+        type: "gate",
+        id: constid,
+        gateType: "constant",
+        defaultValue: numeric.decimalValue,
+        defaultSize: numeric.bitSize,
+        inputs: []
+      });
+    return new Variable(null, constid);
+  }
+
   exitNamed_module_connections_list(ctx) {
     this.valueStack.push(
       ctx
         .named_port_connection()
         .reverse() // reverse in order to pop the identifiers in the correct order
         .map(x => {
+          // if the port input is a numeric constant add a constant buffer gate to instantiations
+          const valueexpr = this.expressionStack.pop();
+          const valueid =
+            valueexpr instanceof Numeric
+              ? this.convertConstantToGateVariable(valueexpr)
+              : valueexpr;
           return {
             port: { id: x.portID.text, token: x.portID },
             value: {
-              id: this.expressionStack.pop(),
+              id: valueid,
               token: x.value.children[0].start
             }
           };
@@ -769,10 +760,15 @@ class Listener extends vlgListener {
       ctx.ids
         .reverse()
         .map((x, i, a) => {
+          const valueexpr = this.expressionStack.pop();
+          const valueid =
+            valueexpr instanceof Numeric
+              ? this.convertConstantToGateVariable(valueexpr)
+              : valueexpr;
           return {
             port: { index: a.length - i - 1 },
             value: {
-              id: this.expressionStack.pop(),
+              id: valueid,
               token: x.start
             }
           };

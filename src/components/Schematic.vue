@@ -1,6 +1,4 @@
-/* eslint-disable no-debugger */ /* eslint-disable no-debugger */ /*
-eslint-disable no-debugger */ /* eslint-disable no-debugger */ /* eslint-disable
-no-debugger */ /* eslint-disable no-debugger */
+/* eslint-disable no-debugger */
 <template>
   <div class="dk-flex-row dk-h-100 dk-align-center">
     <svg ref="svgSchematic" id="svgSchematic" />

@@ -50,7 +50,17 @@ class LogicGate extends BaseComponent {
         break;
       case "not":
         if (a.bitSize == 1) this.setValue(not(a));
-        else throw new Error("multibitwise ~ not implemented yet");
+        else {
+          this.setValue(
+            parseInt(
+              a
+                .toString(2)
+                .split("")
+                .map(x => (x == "1" ? 0 : 1))
+                .join("")
+            )
+          );
+        }
         break;
       default:
         throw new Error(

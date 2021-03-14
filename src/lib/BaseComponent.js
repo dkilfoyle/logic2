@@ -4,7 +4,7 @@ import Numeric from "./Numeric";
 // All components have an id, an array of inputs and a numeric state
 
 class BaseComponent {
-  constructor(namespace, name, type, bitSize) {
+  constructor(namespace, name, type, bitSize, defaultValue = 0) {
     this.name = name;
     this.namespace = namespace;
 
@@ -15,13 +15,15 @@ class BaseComponent {
     this.type = type;
     this.inputs = [];
     this.bitSize = bitSize;
-    this.clear();
+    this.defaultValue = defaultValue;
+    this.state = new Numeric(this.defaultValue, this.bitSize);
   }
   get id() {
     return this.namespace + "_" + this.name;
   }
   clear() {
-    this.state = new Numeric(0, this.bitSize);
+    this.state.decimalValue = this.defaultValue;
+    this.state.bitSize = this.bitSize;
   }
   update() {
     // update is called each clock and processes inputs to call this.setValue

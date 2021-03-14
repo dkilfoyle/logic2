@@ -78,9 +78,11 @@
               /></template>
               <template v-else>
                 {{
-                  $store.getters
-                    .getGateStateAtSelectedTime(props.row.id)
-                    .toString(stateFormatBase[$store.state.stateFormat])
+                  formatState(
+                    $store.getters.getGateStateAtSelectedTime(props.row.id),
+                    $store.state.stateFormat,
+                    props.row.displayType
+                  )
                 }}</template
               ></template
             >
@@ -146,6 +148,7 @@
 import UtilsMixin from "../mixins/utils";
 import SelectionsMixin from "../mixins/selections";
 import InstanceCrumbs from "./InstanceCrumbs";
+import Numeric from "../lib/Numeric";
 
 export default {
   data() {
@@ -167,6 +170,10 @@ export default {
     }
   },
   methods: {
+    formatState(value, numFormat, specialFormat) {
+      const x = new Numeric(value, specialFormat == "instruction" ? 32 : null);
+      return x.toString(numFormat, specialFormat);
+    },
     toggleDetail(row) {
       this.$refs.table.toggleDetails(row);
     },

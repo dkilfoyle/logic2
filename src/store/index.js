@@ -124,7 +124,8 @@ export default new Vuex.Store({
       return getters.currentFile.simulateResult.gates[gateid][time];
     },
     getGateStateAtSelectedTime: (state, getters) => gateid => {
-      if (!getters.isSimulated) return 0;
+      if (!getters.isSimulated)
+        return getters.getGate(gateid).state.decimalValue;
       return getters.getGateStateAtTime(
         gateid,
         getters.currentFile.selectedTime
@@ -165,7 +166,7 @@ export default new Vuex.Store({
       state.stateFormat = payload;
     },
     toggleStateFormat(state) {
-      const formats = ["logic", "decimal", "binary"];
+      const formats = ["logic", "binary", "decimal", "hex"];
       let cur = formats.indexOf(state.stateFormat);
       cur = (cur + 1) % formats.length;
       state.stateFormat = formats[cur];

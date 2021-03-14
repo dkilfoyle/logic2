@@ -2,8 +2,10 @@
 import BaseComponent from "./BaseComponent";
 
 class BufferGate extends BaseComponent {
-  constructor(namespace, name, type, bitSize = 1) {
-    super(namespace, name, type, bitSize);
+  constructor(namespace, name, type, bitSize = 1, defaultValue = 0) {
+    super(namespace, name, type, bitSize, defaultValue);
+    if (name == "{regwrite,regdst,alusrc,branch,memwrite,memtoreg,jump,aluop}")
+      debugger;
     if (
       ![
         "buffer",
@@ -13,7 +15,8 @@ class BufferGate extends BaseComponent {
         "number",
         "ledbar",
         "sevenseg",
-        "reg"
+        "reg",
+        "constant"
       ].includes(type)
     )
       throw new Error(

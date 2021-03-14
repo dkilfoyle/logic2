@@ -192,7 +192,7 @@ export default {
     //   code: ""
     // });
     this.addFileTab("Scratch");
-    this.addFileTab("FullAdder");
+    this.addFileTab("LW");
   },
   mounted() {
     setTimeout(() => this.about(), 3000);

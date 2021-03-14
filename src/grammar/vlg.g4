@@ -177,7 +177,8 @@ multiple_concatenation:
 		',' comp += expression
 	)* '}' '}';
 
-/* 8.3 Expressions ============================================== */ expression: // behavioural
+/* 8.3 Expressions ============================================== */
+expression: // behavioural
 	number																	# atomExpression
 	| identifier															# atomExpression
 	| concatenation															# atomExpression

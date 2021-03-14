@@ -15,7 +15,7 @@ const extractBits = (num, bitsize, k, p) => {
   return parseInt(
     num
       .toString(2)
-      .padStart(bitsize)
+      .padStart(bitsize, "0")
       .slice(-p - 1, k > p ? undefined : -p - 1 + k),
     2
   );
@@ -38,7 +38,7 @@ class Variable extends Operand {
           throw new Error(
             `Variable: offset array must be length 2 not ${offset.length}`
           );
-        if (!(offset[0] instanceof Operand) && offset[1] instanceof Operand)
+        if (!(offset[0] instanceof Operand && offset[1] instanceof Operand))
           throw new Error(`Variable: offset range must be array of operands`);
         this.offsetType = "range";
       } else {
@@ -140,7 +140,7 @@ class Variable extends Operand {
 
     if (range == null) return gate.getValue();
     else if (Array.isArray(range))
-      return getBitRange(gate.getValue(), this.bitSize, range);
+      return getBitRange(gate.getValue(), gate.bitSize, range);
     else if (Number.isInteger(range)) return getBit(gate.getValue(), range);
     else throw new Error("Invalid range");
   }

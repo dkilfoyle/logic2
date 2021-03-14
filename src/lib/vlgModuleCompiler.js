@@ -1,5 +1,6 @@
 /* eslint-disable no-debugger */
 import Variable from "./Variable";
+import Numeric from "./Numeric";
 import Operation from "./Operation";
 import LogicGate from "./LogicGate";
 import BufferGate from "./BufferGate";
@@ -7,6 +8,7 @@ import WireGate from "./WireGate";
 import ArrayGate from "./ArrayGate";
 import RegGate from "./RegGate";
 import ParameterGate from "./ParameterGate";
+import Concatenation from "./Concatenation";
 
 var modules, instances, gates, parameters;
 
@@ -22,11 +24,12 @@ const isBuffer = x =>
     "number",
     "ledbar",
     "sevenseg",
-    "reg"
+    "reg",
+    "constant"
   ].includes(x);
 
 const createInstance = (parentNamespace, instanceDeclaration) => {
-  console.group(
+  console.groupCollapsed(
     "createInstance: ",
     parentNamespace,
     instanceDeclaration.module
@@ -45,7 +48,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     outputs: [], // output port gate ids
     instances: [], // child instance ids
     gates: [], // non port gate ids
-    parameters: []
+    parameters: [],
+    constants: []
   };
   instances.push(newInstance);
 
@@ -112,7 +116,9 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
             gateDef.gateType,
             gateBitSizesType[gateDef.gateType] ||
               gateBitSizesID[gateDef.id] ||
-              null
+              gateDef.defaultSize ||
+              null,
+            gateDef.defaultValue || 0
           )
         : isBuffer(gateDef.gateType)
         ? new BufferGate(
@@ -121,7 +127,9 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
             gateDef.gateType,
             gateBitSizesType[gateDef.gateType] ||
               gateBitSizesID[gateDef.id] ||
-              null
+              gateDef.defaultSize ||
+              null,
+            gateDef.defaultValue || 0
           )
         : null;
       if (!newGate)
@@ -146,6 +154,10 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
     if (op instanceof Variable) {
       return op;
+    }
+
+    if (id instanceof Concatenation) {
+      return; // concatenations are handled later
     }
 
     const newGate =
@@ -176,7 +188,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   };
 
   instanceModule.netAssignments.forEach(net => {
-    console.group("netAsssigment: ", net.id.name);
+    console.groupCollapsed("netAsssigment: ", net.id.name);
     counter = 0;
     let netBitSize = gateBitSizesID[net.id.name]; // intermediary gates will be same bitsize as the assign lhs
     if (net.operationTree instanceof Variable)
@@ -244,6 +256,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       return;
     }
 
+    // if (namespace == "main_mips_dp_pcadd" && port.id == "b") debugger;
+
     const portGate = new BufferGate(
       namespace,
       port.id + (port.direction == "output" ? "-out" : ""),
@@ -265,6 +279,9 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       if (connection) {
         // if the input port is connected
         // portGate.inputs.push(`${parentNamespace}_${connection.value.id}`);
+
+        if (connection.value.id instanceof Numeric) debugger;
+
         let newInput = new Variable(
           parentNamespace,
           connection.value.id.name,
@@ -333,7 +350,6 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       newInstance.gates.some(gid => gid == `${namespace}_${wire.id}`) == false
     ) {
       // wire has not been declared as a gate
-      console.log("WireGate: ");
       const newWireGate = new WireGate(
         namespace,
         wire.id,
@@ -343,6 +359,36 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       // inputs will be set in child instance
       gates.push(newWireGate);
       newInstance.gates.push(newWireGate.id);
+    }
+  });
+
+  // look for any concatenation assigns: assign {wirea, wireb, wirec} = multibitgate
+  instanceModule.netAssignments.forEach(net => {
+    if (net.id instanceof Concatenation) {
+      if (!(net.operationTree instanceof Variable))
+        throw new Error("concatenation assign rhs must be variable");
+
+      // net.id = concatenation
+      // net.operationTree = variable to multibitgate
+
+      let startBit = 0;
+
+      net.id.components.reverse().forEach(component => {
+        const componentGate = gates.find(
+          g => g.namespace == namespace && g.name == component.name
+        );
+        if (!componentGate) throw new Error("unable to build concatenation");
+        componentGate.inputs.push(
+          new Variable(namespace, net.operationTree.name, [
+            new Numeric(startBit + componentGate.bitSize - 1),
+            new Numeric(startBit)
+          ])
+        );
+        startBit += componentGate.bitSize;
+        if (componentGate.inputs > 1)
+          throw new Error("Invalid number of inputs");
+      });
+      return;
     }
   });
 
@@ -387,6 +433,8 @@ const compile = moduleArray => {
     connections: [] // instead of instance connections directly convert inputs to control, outputs to response gates
   };
 
+  console.group("ModuleCompiler");
+
   createInstance("", mainInstantiation);
 
   modules["Main"].display.forEach(d => {
@@ -396,6 +444,8 @@ const compile = moduleArray => {
   console.group("Compilation result:");
   console.log("Instances: ", stripReactive(instances));
   console.log("Gates: ", stripReactive(gates));
+  console.groupEnd();
+
   console.groupEnd();
 
   return { instances, gates, parameters, timestamp: Date.now() };

@@ -169,14 +169,10 @@ module Datapath (
 
   output reg [31:0] pc,
   output reg [31:0] aluout,
-  output reg [31:0] writedata,
-  output reg [31:0] readdata
+  output reg [31:0] writedata
 );
 
   wire [31:0] srca, signimm, pcplus4;
-  buffer(srca);
-  buffer(signimm);
-  buffer(pcplus4);
 
   // signimm = sign extended i.imm
   SignExtend se(instr[15:0], signimm);
@@ -220,7 +216,7 @@ module Maindec(
       6'b000100: controls = 9'b000100001; //BEQ
       6'b001000: controls = 9'b101000000; //ADDI
       6'b000010: controls = 9'b000000100; //J
-      default: $error("Maindec invalid op code"); // controls = 9'bxxxxxxxxx; //???
+      default: controls = 9'bxxxxxxxxx; //???
     endcase
 endmodule
 
@@ -239,14 +235,14 @@ module Aludec (
         6'b100100: alucontrol = 3'b000; // AND
         6'b100101: alucontrol = 3'b001; // OR
         6'b101010: alucontrol = 3'b111; // SLT
-        default: $error("Aludec: invalid funct code"); // alucontrol = 3'bxxx; // ???
+        default: alucontrol = 3'bxxx; // ???
       endcase
     endcase
 endmodule
 
 module Controller (
   input [5:0] op, funct,
-  input zero,
+  // input zero,
   output memtoreg, memwrite,
   output pcsrc, alusrc,
   output regdst, regwrite,
@@ -261,7 +257,7 @@ module Controller (
     // outputs
     memtoreg, memwrite, branch, alusrc, regdst, regwrite, jump, aluop);
   Aludec ad (funct, aluop, alucontrol);
-  assign pcsrc = branch & zero;
+  // assign pcsrc = branch & zero;
 endmodule
 
 module Mips (
@@ -279,7 +275,7 @@ module Mips (
     // inputs
     .op(instr[31:26]),     // 0 for r type, else lw, sw, beq 
     // .zero(zero), 
-    // .funct(instr[5:0]),   // add, sub, and, or, sll, srl etc
+    .funct(instr[5:0]),   // add, sub, and, or, sll, srl etc
 
     // outputs
     .memwrite(memwrite),  // write the contents of WD into memory at address A
@@ -329,6 +325,7 @@ module Main (
 
   Mips mips(
     .clk(clk),
+    .reset(reset),
     .instr(instr),
     .readdata(readdata),
     // outputs
@@ -350,6 +347,7 @@ module Main (
 
   $display begin
     main_imem_RAM = instruction;
+    main_mips_instr = instruction;
   end
 
 endmodule
