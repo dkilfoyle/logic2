@@ -63,7 +63,7 @@ class Numeric extends Operand {
           throw new Error(
             `Numeric(value=${value},bitSize=${bitSize}): only binary value strings can have 'x' bits`
           );
-        this.setBits(valueString.sep(""));
+        this.setBits(valueString.split(""), [valueString.length - 1, 0]);
       } else {
         this.setValue(parseInt(valueString, radixLookup[this.format]));
       }
@@ -75,42 +75,41 @@ class Numeric extends Operand {
   checkBitRange(bitRange, msg) {
     if (!Array.isArray(bitRange))
       throw new Error(`${msg}: bitRange must be an array`);
-    if (bitRange.length < 1 || bitRange.length > 2)
-      throw new Error(`${msg}: bitRange must be an array of length 1 or 2`);
-    if (bitRange.length == 2 && bitRange[0] < bitRange[1])
+    if (bitRange.length != 2)
+      throw new Error(`${msg}: bitRange must be an array of length 2`);
+    if (bitRange[0] < bitRange[1])
       throw new Error(`${msg}: bitRange[0] must be >= bitRange[1] eg [3:0]`);
-    if (bitRange[bitRange.length - 1] < 0)
-      throw new Error(`${msg}: bitRange extends below 0`);
+    if (bitRange[1] < 0) throw new Error(`${msg}: bitRange extends below 0`);
     if (bitRange[0] > this.bitSize - 1)
       throw new Error(
         `${msg}: bitRange extends above bitSize(${this.bitSize})`
       );
   }
 
-  setBit(n, bit) {
+  setBit(bit, n) {
     // set bit n (counting from right) to x
-    if ((n < 0) | (n > this.bits.length - 1))
+    if ((n < 0) | (n > this.bitArray.length - 1))
       throw new Error(
-        `Numeric.setBit(n=${n},bit=${bit}): n is out of range of bitsize ${this.bitArray.length}`
+        `Numeric.setBit(bit=${bit},n=${n}): n is out of range of bitsize ${this.bitArray.length}`
       );
     if (!(bit == 0 || bit == 1 || bit == "x"))
       throw new Error(
-        `Numeric.setBit(n=${n},bit=${bit}): bit must be one of 0,1,x`
+        `Numeric.setBit(bit=${bit},n=${n}): bit must be one of 0,1,x`
       );
     this.bitArray[this.bitArray.length - n - 1] = bit;
   }
 
-  setBits(bitRange, bits) {
+  setBits(bits, bitRange) {
     // check for valid bits
     if (!Array.isArray(bits))
       throw new Error(
-        `Numeric.setBits(bitRange=${bitRange},bits=${bits}): bits must be an array`
+        `Numeric.setBits(bits=${bits},bitRange=${bitRange}): bits must be an array`
       );
 
     // check for valid bitRange
     this.checkBitRange(
       bitRange,
-      `Numeric.setBits(bitRange=${bitRange},bits=${bits})`
+      `Numeric.setBits(bits=${bits}, bitRange=${bitRange})`
     );
 
     const destSize = Math.abs(bitRange[0] - bitRange[bitRange.length - 1]) + 1;
@@ -119,32 +118,33 @@ class Numeric extends Operand {
     // check that newDecimalValue will fit within bitRange
     if (destSize > this.bitSize)
       throw new Error(
-        `Numeric.setBits(bitRange=${bitRange},bits=${bits}): destSize(${destSize}) exceeds numeric bitsize(${this.bitSize})`
+        `Numeric.setBits(bits=${bits},bitRange=${bitRange}}): destSize(${destSize}) exceeds numeric bitsize(${this.bitSize})`
       );
     if (newSize > destSize)
       throw new Error(
-        `Numeric.setBits(bitRange=${bitRange},bits=${bits}): newSize(${newSize}) exceeds destSize(${destSize})`
+        `Numeric.setBits(bits=${bits},bitRange=${bitRange}): newSize(${newSize}) exceeds destSize(${destSize})`
       );
 
-    bits.forEach((x, i) => this.setBit(bitRange[0] - i, x));
+    bits.forEach((x, i) => this.setBit(x, bitRange[0] - i));
   }
 
-  setValue(value, bitRange = [this.bitSize - 1, 0]) {
+  setValue(value, bitRange) {
     // check for valid newDecimalValue
     if (!Number.isInteger(value))
       throw new Error(
         `Numeric.setValue(value=${value}, bitRange=${bitRange}): value must be an Integer`
       );
 
-    const destSize = Math.abs(bitRange[0] - bitRange[bitRange.length - 1]) + 1;
+    const br = this.makeRange(bitRange);
+    const destSize = Math.abs(br[0] - br[1]) + 1;
 
     this.setBits(
-      bitRange,
       value
         .toString(2)
         .padStart(destSize, "0")
         .split("")
-        .map(x => +x)
+        .map(x => +x),
+      br
     );
 
     // if (bitRange == null || bitRange == 0) this.decimalValue = newDecimalValue;
@@ -176,12 +176,17 @@ class Numeric extends Operand {
   getBits(bitRange) {
     this.checkBitRange(bitRange, `Numeric.getBits(bitRange=${bitRange})`);
     return this.bitArray.slice(
-      -bitRange[0] - 1,
-      -bitRange[bitRange.length - 1] - 1
+      this.bitArray.length - 1 - bitRange[0],
+      this.bitArray.length - bitRange[1]
     );
   }
   getValue() {
-    const bitArrayString = this.bitArray.join("");
+    // getValue(gatesLookup, namespace) - gatesLookup and namespace are ignored
+    return this._getValue();
+  }
+  _getValue(bitRange) {
+    const br = this.makeRange(bitRange);
+    const bitArrayString = this.getBits(br).join("");
     if (bitArrayString.includes("x") || bitArrayString.includes("X")) {
       return "x";
     } else return parseInt(bitArrayString, 2);
@@ -294,10 +299,17 @@ class Numeric extends Operand {
     throw new Error(`Numeric.decimalValue(${x}) no longer supported`);
   }
   get bitSize() {
-    return this.bits.length;
+    return this.bitArray.length;
   }
   set bitSize(x) {
     throw new Error("Cannot set bitsize " + x);
+  }
+  makeRange(bitRange) {
+    return bitRange
+      ? Number.isInteger(bitRange)
+        ? [bitRange, bitRange]
+        : bitRange
+      : [this.bitSize - 1, 0];
   }
 }
 

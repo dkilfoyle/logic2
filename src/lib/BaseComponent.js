@@ -14,22 +14,20 @@ class BaseComponent {
       );
     this.type = type;
     this.inputs = [];
-    this.bitSize = bitSize;
     this.defaultValue = defaultValue;
-    this.state = new Numeric(this.defaultValue, this.bitSize);
+    this.state = new Numeric(this.defaultValue, bitSize);
   }
   get id() {
     return this.namespace + "_" + this.name;
   }
   clear() {
-    this.state.decimalValue = this.defaultValue;
-    this.state.bitSize = this.bitSize;
+    this.state.setValue(this.defaultValue);
   }
   update() {
     // update is called each clock and processes inputs to call this.setValue
     throw new Error("BaseComponent.update() should be implemented in child");
   }
-  setValue(x, range = 0) {
+  setValue(x, range) {
     this.state.setValue(x, range);
   }
   getValue() {
@@ -40,6 +38,9 @@ class BaseComponent {
   }
   getSchematicName() {
     return this.type.toUpperCase();
+  }
+  get bitSize() {
+    return this.state.bitSize;
   }
 }
 

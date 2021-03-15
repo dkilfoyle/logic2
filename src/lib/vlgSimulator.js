@@ -140,7 +140,7 @@ const simulate = (
     // store tick or tock
     if (gatesLookup["main_clock"])
       gatesLookup["main_clock"].state.setValue(
-        ~gatesLookup["main_clock"].state.decimalValue & 1
+        ~gatesLookup["main_clock"].state.getValue() & 1
       );
 
     newSimulation.time.push(clock);
@@ -235,7 +235,7 @@ const simulate = (
           shortJoin(
             instancesLookup.main.gates
               .filter(gateId => gatesLookup[gateId].type == "response")
-              .map(o => getLocalId(o) + "=" + gatesLookup[o].state.decimalValue)
+              .map(o => getLocalId(o) + "=" + gatesLookup[o].state.getValue())
           )
       );
     });

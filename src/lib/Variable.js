@@ -1,25 +1,25 @@
 /* eslint-disable no-debugger */
 import Operand from "./Operand";
 
-const getBit = (num, bit) => {
-  return (num >> bit) % 2;
-};
+// const getBit = (num, bit) => {
+//   return (num >> bit) % 2;
+// };
 
-const getBitRange = (num, bitsize, range) => {
-  let k = Math.abs(range[0] - range[1]) + 1;
-  let p = Math.max(range[0], range[1]);
-  return extractBits(num, bitsize, k, p);
-};
+// const getBitRange = (num, bitsize, range) => {
+//   let k = Math.abs(range[0] - range[1]) + 1;
+//   let p = Math.max(range[0], range[1]);
+//   return extractBits(num, bitsize, k, p);
+// };
 
-const extractBits = (num, bitsize, k, p) => {
-  return parseInt(
-    num
-      .toString(2)
-      .padStart(bitsize, "0")
-      .slice(-p - 1, k > p ? undefined : -p - 1 + k),
-    2
-  );
-};
+// const extractBits = (num, bitsize, k, p) => {
+//   return parseInt(
+//     num
+//       .toString(2)
+//       .padStart(bitsize, "0")
+//       .slice(-p - 1, k > p ? undefined : -p - 1 + k),
+//     2
+//   );
+// };
 
 // Variable is a key into the gatesLookup object (which acts as 'memory')
 // namespace_name will be the id of a gate
@@ -138,11 +138,12 @@ class Variable extends Operand {
       else return gate.getValue(range);
     }
 
-    if (range == null) return gate.getValue();
-    else if (Array.isArray(range))
-      return getBitRange(gate.getValue(), gate.bitSize, range);
-    else if (Number.isInteger(range)) return getBit(gate.getValue(), range);
-    else throw new Error("Invalid range");
+    return gate.state._getValue(range);
+    // if (range == null) return gate.getValue();
+    // else if (Array.isArray(range))
+    //   return getBitRange(gate.getValue(), gate.bitSize, range);
+    // else if (Number.isInteger(range)) return getBit(gate.getValue(), range);
+    // else throw new Error("Invalid range");
   }
   getRange(gatesLookup, namespace = null) {
     switch (this.offsetType) {

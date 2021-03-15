@@ -14,73 +14,6 @@ console.group = jest.fn();
 console.groupEnd = jest.fn();
 console.groupCollapsed = jest.fn();
 
-// describe.each([
-//   // sourceName, numInstances, numGates, testGate, testOutput
-//   ["Scratch", 2, 10, "main_sum", [0, 0, 1, 1, 1, 1, 0, 0, 0]],
-//   ["theory/Simplify", 3, 20, "main_Qus", [0, 0, 0, 1, 0, 0, 1, 1, 1]],
-//   ["theory/SumProducts", 1, 8, "main_F", [0, 0, 1, 1, 1, 1, 0, 0, 0]],
-//   ["combination/Mux", 2, 12, "main_F", [0, 0, 0, 1, 1, 0, 1, 0, 1, 1]],
-//   [
-//     "combination/DeMux",
-//     2,
-//     11,
-//     "main_Z",
-//     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
-//   ],
-//   ["combination/OneHotDecoder", 2, 20, "main_F3", [0, 0, 0, 0, 0, 0, 1, 1, 1]],
-//   [
-//     "combination/SevenSeg",
-//     3,
-//     81,
-//     "main_Fa",
-//     [1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1]
-//   ],
-//   ["combination/RippleAdder", 14, 128, "main_S0", [0, 1, 1, 1, 1]],
-//   [
-//     "sequential/DFlipFlop",
-//     4,
-//     30,
-//     "main_Qm",
-//     [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1]
-//   ],
-//   [
-//     "sequential/RippleCounter",
-//     10,
-//     89,
-//     "main_Count0",
-//     [1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1]
-//   ],
-//   [
-//     "sequential/ShiftRegister",
-//     13,
-//     114,
-//     "main_Out2",
-//     [1, 1, 1, 1, 1, 0, 0, 0, 0]
-//   ],
-//   [
-//     "sequential/BinaryUp",
-//     8,
-//     70,
-//     "main_Q1cur",
-//     [1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0]
-//   ],
-//   [
-//     "behavioural/DFlipFlopB",
-//     2,
-//     9,
-//     "main_Qm",
-//     [1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0]
-//   ],
-//   ["behavioural/Alu", 5, 36, "main_y", [2, 3, 5, 0, 2, 3, 1, 1]],
-//   ["behavioural/NBitAdder", 2, 12, "main_SUM", [0, 9, 10, 11, 12, 0, 0]][
-//     ("behavioural/SignExtend",
-//     2,
-//     10,
-//     "main_y",
-//     [4294945450, 21845, 4294934528, 4294934528])
-//   ]
-// ])
-
 describe.each([
   // sourceName, numInstances, numGates, testGate, testOutput
   ["Scratch", 2, 10, "main_sum", [0, 0, 1, 1, 1, 1, 0, 0, 0]],
@@ -144,7 +77,7 @@ describe.each([
     "main_Qm",
     [1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0]
   ],
-  ["behavioural/Alu", 5, 36, "main_y", [2, 3, 5, 0, 2, 3, 1, 1]],
+  ["behavioural/Alu", 5, 36, "main_y", [2, 3, 5, 0, 254, 255, 1, 1]],
   ["behavioural/NBitAdder", 2, 12, "main_SUM", [0, 9, 10, 11, 12, 0, 0]],
   [
     "behavioural/SignExtend",

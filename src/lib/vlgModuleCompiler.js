@@ -78,7 +78,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
   const gateBitSizesType = {
     number: 10,
-    sevenseg: 4
+    sevenseg: 7
   };
 
   // calculate bitsize for wires and ports and regs which may include calculated parameters constants

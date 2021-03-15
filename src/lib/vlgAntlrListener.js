@@ -719,13 +719,13 @@ class Listener extends vlgListener {
   // instances =========================================
 
   convertConstantToGateVariable(numeric) {
-    const constid = "constant" + numeric.decimalValue;
+    const constid = "constant" + numeric.getValue();
     if (!this.curModule.instantiations.find(x => x.id == constid))
       this.curModule.instantiations.push({
         type: "gate",
         id: constid,
         gateType: "constant",
-        defaultValue: numeric.decimalValue,
+        defaultValue: numeric.getValue(),
         defaultSize: numeric.bitSize,
         inputs: []
       });

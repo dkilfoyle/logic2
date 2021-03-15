@@ -124,8 +124,7 @@ export default new Vuex.Store({
       return getters.currentFile.simulateResult.gates[gateid][time];
     },
     getGateStateAtSelectedTime: (state, getters) => gateid => {
-      if (!getters.isSimulated)
-        return getters.getGate(gateid).state.decimalValue;
+      if (!getters.isSimulated) return getters.getGate(gateid).state.getValue();
       return getters.getGateStateAtTime(
         gateid,
         getters.currentFile.selectedTime
