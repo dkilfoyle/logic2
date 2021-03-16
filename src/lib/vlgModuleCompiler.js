@@ -213,6 +213,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         namespace,
         reg.id,
         gateBitSizesID[reg.id],
+        0,
         Math.abs(arrayDim[1] - arrayDim[0]) + 1
       );
     } else {

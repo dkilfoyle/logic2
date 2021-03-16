@@ -42,6 +42,35 @@ const formatLookup = {
   D: "decimal"
 };
 
+const parseVerilogNumber = x => {
+  const bitSize = parseInt(x.substring(0, x.indexOf("'")));
+  const format = formatLookup[x.substr(x.indexOf("'") + 1, 1)];
+  const valueString = x.substring(x.indexOf("'") + 2);
+  let value, binaryString;
+  let hasX = false;
+
+  if (valueString.includes("x") | valueString.includes("X")) {
+    if (format != "binary")
+      throw new Error(
+        `parseVerilogNumber(${x}): only binary value strings can have 'x' bits`
+      );
+    hasX = true;
+    value = valueString;
+    binaryString = valueString;
+    //this.setBits(valueString.split(""), [valueString.length - 1, 0]);
+  } else {
+    value = parseInt(valueString, radixLookup[format]);
+    binaryString = value.toString(2);
+  }
+  return {
+    value,
+    bitSize,
+    format,
+    hasX,
+    binaryString
+  };
+};
+
 class Numeric extends Operand {
   constructor(value, bitSize = null) {
     super("numeric");
@@ -49,24 +78,16 @@ class Numeric extends Operand {
       this.bitArray = new Array(bitSize || getBitSize(value)).fill(0);
       this.format = "decimal";
       this.setValue(value);
+    } else if (value == "x") {
+      this.bitArray = new Array(bitSize || 1).fill("x");
+      this.format = "binary";
     } else if (typeof value == "string") {
       // eg 4'b1100
       // eg 8'hff
-      this.bitArray = new Array(
-        parseInt(value.substring(0, value.indexOf("'")))
-      );
-      this.format = formatLookup[value.substr(value.indexOf("'") + 1, 1)];
-      const valueString = value.substring(value.indexOf("'") + 2);
-
-      if (valueString.includes("x") | valueString.includes("X")) {
-        if (!this.format == "binary")
-          throw new Error(
-            `Numeric(value=${value},bitSize=${bitSize}): only binary value strings can have 'x' bits`
-          );
-        this.setBits(valueString.split(""), [valueString.length - 1, 0]);
-      } else {
-        this.setValue(parseInt(valueString, radixLookup[this.format]));
-      }
+      const verilog = parseVerilogNumber(value);
+      this.bitArray = new Array(verilog.bitSize);
+      this.format = verilog.format;
+      this.setValue(value);
     } else {
       throw new Error(`Numeric constructor invalid value: ${value}`);
     }
@@ -130,20 +151,30 @@ class Numeric extends Operand {
 
   setValue(value, bitRange) {
     // check for valid newDecimalValue
-    if (!Number.isInteger(value))
+    if (!(Number.isInteger(value) | (typeof value == "string")))
       throw new Error(
-        `Numeric.setValue(value=${value}, bitRange=${bitRange}): value must be an Integer`
+        `Numeric.setValue(value=${value}, bitRange=${bitRange}): value must be an integer or verilog number string`
       );
 
     const br = this.makeRange(bitRange);
     const destSize = Math.abs(br[0] - br[1]) + 1;
 
+    const valueString =
+      typeof value == "string"
+        ? parseVerilogNumber(value).binaryString
+        : value.toString(2);
+
     this.setBits(
-      value
-        .toString(2)
+      valueString
         .padStart(destSize, "0")
         .split("")
-        .map(x => +x),
+        .map(x => {
+          if (x == "0" || x == "1") return +x;
+          if (x == "x") return x;
+          throw new Error(
+            `Numeric.setValue(${value}): valueString ${valueString} must contain only 0, 1, x`
+          );
+        }),
       br
     );
 
@@ -188,7 +219,7 @@ class Numeric extends Operand {
     const br = this.makeRange(bitRange);
     const bitArrayString = this.getBits(br).join("");
     if (bitArrayString.includes("x") || bitArrayString.includes("X")) {
-      return "x";
+      return `${bitArrayString.length}'b${bitArrayString}`;
     } else return parseInt(bitArrayString, 2);
   }
 
@@ -305,6 +336,9 @@ class Numeric extends Operand {
     throw new Error("Cannot set bitsize " + x);
   }
   makeRange(bitRange) {
+    // if bitRange is undefined return full bit range [bitSize-1,0]
+    // if bitRange is an integer expand to a index range [i,i]
+    // else return bitRange unchanged assuming is is a range [a,b]
     return bitRange
       ? Number.isInteger(bitRange)
         ? [bitRange, bitRange]

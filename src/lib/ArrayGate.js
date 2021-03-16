@@ -3,14 +3,15 @@ import BaseComponent from "./BaseComponent";
 import Numeric from "./Numeric";
 
 class ArrayGate extends BaseComponent {
-  constructor(namespace, name, bitSize = 1, arraySize = 1) {
-    super(namespace, name, "array", bitSize);
+  constructor(namespace, name, bitSize = 1, defaultValue = 0, arraySize = 1) {
+    super(namespace, name, "array", bitSize, defaultValue);
     this.arraySize = arraySize;
-  }
-  clear() {
     this.state = new Array(this.arraySize)
       .fill()
-      .map(() => new Numeric(0, this.bitSize));
+      .map(() => new Numeric(this.defaultValue, this.bitSize));
+  }
+  clear() {
+    this.state.forEach(x => x.setValue(this.defaultValue));
   }
   update() {
     // update is called each clock and processes inputs to call this.setValue
