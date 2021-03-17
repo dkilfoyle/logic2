@@ -22,7 +22,7 @@ describe("Numeric constructor with valid input", () => {
 
   test("Construct from binary Verilog string with don't cares", () => {
     const x = new Numeric("8'b11xxxx11");
-    expect(x._getValue()).toEqual("x");
+    expect(x._getValue()).toEqual("8'b11xxxx11");
     expect(x.bitSize).toEqual(8);
     expect(x.format).toEqual("binary");
   });

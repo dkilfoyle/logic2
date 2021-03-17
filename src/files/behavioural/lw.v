@@ -167,9 +167,9 @@ module Datapath (
   input regwrite,
   input [2:0] alucontrol,
 
-  output reg [31:0] pc,
-  output reg [31:0] aluout,
-  output reg [31:0] writedata
+  output [31:0] pc,
+  output [31:0] aluout,
+  output [31:0] writedata
 );
 
   wire [31:0] srca, signimm, pcplus4;

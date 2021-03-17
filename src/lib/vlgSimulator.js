@@ -186,18 +186,29 @@ const simulate = (
         logger(chalk.red(e));
         return false;
       }
+    }
 
-      // run each always section for each instance
-      let alwaysRes = instances.every(instance => {
-        return instance.always.reduce(
-          (acc, curAlways) =>
-            acc && evaluateSensitivities(curAlways.sensitivities, instance.id)
-              ? evaluateStatementTree(curAlways.statementTree, instance.id)
-              : true,
-          true
-        );
-      });
-      if (!alwaysRes) return false;
+    // run each always section for each instance
+    // need to process gates before (to set always inputs) and after (to propogate always effects)
+    let alwaysRes = instances.every(instance => {
+      return instance.always.reduce(
+        (acc, curAlways) =>
+          acc && evaluateSensitivities(curAlways.sensitivities, instance.id)
+            ? evaluateStatementTree(curAlways.statementTree, instance.id)
+            : true,
+        true
+      );
+    });
+    if (!alwaysRes) return false;
+
+    // run gate evaluation and instance always for this time step (not t=0)
+    for (let i = 0; i < EVALS_PER_STEP; i++) {
+      try {
+        gates.forEach(gate => gate.update(gatesLookup));
+      } catch (e) {
+        logger(chalk.red(e));
+        return false;
+      }
     }
 
     // and store gate results in newSimulation
