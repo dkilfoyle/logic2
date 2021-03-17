@@ -8,6 +8,13 @@
 // rf[19] = { 35, 20, 19, 4 }
 // 100011 10100 10011 0000000000000100
 
+// instruction is read from instruction memory at [pc]
+// controller(instr.op)
+//   maindec(instr.op):          => regwrite = 1, aluop = 10
+//   aludec(instr.funct, aluop): => alucontrol = 10
+// datapath(instr, alucontrol, regwrite)
+//   regfile(regwire->we, )
+
 module Flopr #(parameter WIDTH=32) (
   input clk, reset,
   input [WIDTH-1:0] d,
