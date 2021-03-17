@@ -38,13 +38,13 @@ class Concatenation extends Operand {
     });
   }
   getValue(gatesLookup, namespace = null) {
-    // debugger;
     const concatstr = this.components.reduce((acc, x) => {
       return (
+        acc +
         x
           .getValue(gatesLookup, namespace)
           .toString(2)
-          .padStart(x.getBitSize(gatesLookup, namespace), "0") + acc
+          .padStart(x.getBitSize(gatesLookup, namespace), "0")
       );
     }, "");
     return parseInt(

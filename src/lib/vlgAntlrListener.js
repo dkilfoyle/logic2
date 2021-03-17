@@ -524,18 +524,16 @@ class Listener extends vlgListener {
   // multiple concatenation wraps concatenation
 
   exitConcatenation(ctx) {
-    const components = ctx
-      .expression()
-      .map((x, i) => {
-        const comp = this.expressionStack.pop();
-        if (comp.type == "variable" && !this.isWireOrPortOrReg(comp.name))
-          this.addSemanticError(
-            ctx.expression(ctx.expression().length - 1 - i),
-            `Concatenation component ${comp.name} is not declared as type port or wire or reg`
-          );
-        return comp;
-      })
-      .reverse();
+    const components = ctx.expression().map((x, i) => {
+      const comp = this.expressionStack.pop();
+      if (comp.type == "variable" && !this.isWireOrPortOrReg(comp.name))
+        this.addSemanticError(
+          ctx.expression(ctx.expression().length - 1 - i),
+          `Concatenation component ${comp.name} is not declared as type port or wire or reg`
+        );
+      return comp;
+    });
+    // .reverse();
     this.valueStack.push(new Concatenation(null, components));
   }
 
