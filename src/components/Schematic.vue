@@ -1,4 +1,4 @@
-/* eslint-disable no-debugger */
+/* eslint-disable no-debugger */ /* eslint-disable no-debugger */
 <template>
   <div class="dk-flex-row dk-h-100 dk-align-center">
     <svg ref="svgSchematic" id="svgSchematic" />
@@ -22,6 +22,29 @@ import BufferRenderer from "./renderers/buffer.js";
 import LedBarRenderer from "./renderers/ledbar.js";
 import WireGateRenderer from "./renderers/wiregate.js";
 import { barData } from "./renderers/number.js";
+
+class Tooltip {
+  constructor(root, getTextFn) {
+    var t = (this.tooltip = document.createElement("div"));
+    t.className = "d3-hwschematic-tooltip";
+    t.style.display = "none";
+    t.style.position = "absolute";
+    root.appendChild(t);
+    this.getTextFn = getTextFn;
+  }
+
+  show(evt, text) {
+    var t = this.tooltip;
+    t.style.display = "block";
+    t.innerHTML = this.getTextFn(text);
+    t.style.left = evt.pageX + 10 + "px";
+    t.style.top = evt.pageY + 10 + "px";
+  }
+
+  hide() {
+    this.tooltip.style.display = "none";
+  }
+}
 
 export default {
   // name: 'ComponentName',
@@ -161,6 +184,12 @@ export default {
     zoom.on("zoom", this.onZoom);
     this.svg.call(zoom).on("dblclick.zoom", null);
 
+    // replace d3hwschematic default tooltip
+    this.g.tooltip = new Tooltip(
+      document.getElementsByTagName("body")[0],
+      this.getEdgeTooltip
+    );
+
     this.tooltip = d3
       .select("body")
       .append("div")
@@ -168,6 +197,13 @@ export default {
       .style("opacity", 0);
   },
   methods: {
+    getEdgeTooltip(id) {
+      // eslint-disable-next-line no-debugger
+      return (
+        id +
+        (this.isSimulated ? " = " + this.getGatesStateAtSelectedTime[id] : "")
+      );
+    },
     onZoom(ev) {
       this.g.root.attr("transform", ev.transform);
     },
