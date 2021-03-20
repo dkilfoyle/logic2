@@ -22,6 +22,7 @@ import BufferRenderer from "./renderers/buffer.js";
 import LedBarRenderer from "./renderers/ledbar.js";
 import WireGateRenderer from "./renderers/wiregate.js";
 import { barData } from "./renderers/number.js";
+import Numeric from "../lib/Numeric";
 
 class Tooltip {
   constructor(root, getTextFn) {
@@ -198,11 +199,27 @@ export default {
   },
   methods: {
     getEdgeTooltip(id) {
-      // eslint-disable-next-line no-debugger
-      return (
-        id +
-        (this.isSimulated ? " = " + this.getGatesStateAtSelectedTime[id] : "")
-      );
+      // id will be in form of name or name[range] where range might be [a], [a:b]
+
+      const hasRange = id.includes("[");
+      const name = hasRange ? id.substr(0, id.indexOf("[")) : id;
+      const range = hasRange
+        ? id
+            .substring(id.indexOf("[") + 1, id.indexOf("]"))
+            .split(":")
+            .map(x => +x)
+        : null;
+      let num;
+      if (this.isSimulated) {
+        const value = this.getGatesStateAtSelectedTime[name];
+        const bitsize = this.getGate(name).state.bitSize;
+        num = new Numeric(value, bitsize);
+        // eslint-disable-next-line no-debugger
+        // debugger;
+      }
+      if (hasRange && range.length == 1) range.push(range[0]);
+
+      return id + (this.isSimulated ? " = " + num._getValue(range) : "");
     },
     onZoom(ev) {
       this.g.root.attr("transform", ev.transform);
@@ -304,30 +321,6 @@ export default {
                 node.style("filter", "url(#glow)");
               }
             });
-            // node.on("mouseover", function(ev, d) {
-            //   const id = d.id.substr(0, d.id.indexOf("_gate"));
-            //   // setTimeout(() => that.g.tooltip.show(ev, id), 1000);
-            //   that.tooltip.style("opacity", 0);
-
-            //   // Note that we are also using d3.event pageX and pageY properties
-            //   // to position the tooltip
-
-            //   that.tooltip
-            //     .html(id)
-            //     .style("left", ev.pageX + "px")
-            //     .style("top", ev.pageY - 25 + "px");
-
-            //   that.tooltip
-            //     .transition()
-            //     .delay(300)
-            //     .duration(500)
-            //     .style("opacity", 0.9);
-            // });
-            // node.on("mouseout", function() {
-            // that.g.tooltip.hide();
-            //   that.tooltip.interrupt().transition();
-            //   that.tooltip.style("opacity", 0);
-            // });
           })
         );
       });
@@ -384,36 +377,6 @@ export default {
           });
         }
 
-        // if (gate.type == "wiregate") {
-        //   // find all the gates in currentInstance that have the wiregate as an input
-        //   // make an output port for the wiregate that is each unique offset
-        //   const wireGateOutputs = [];
-        //   this.getAllGates.forEach(testGate => {
-        //     testGate.inputs
-        //       .filter(input => input.id == gate.id)
-        //       .forEach(input =>
-        //         wireGateOutputs.push(
-        //           input.getOffsetString(
-        //             this.currentFile.compileResult.parameters,
-        //             currentInstance.id
-        //           )
-        //         )
-        //       );
-        //   });
-
-        //   // eslint-disable-next-line no-debugger
-        //   [...new Set(wireGateOutputs)].forEach(wgo =>
-        //     gateNet.ports.push({
-        //       direction: "OUTPUT",
-        //       id: gate.id + (wgo == "[0]" ? "" : wgo),
-        //       hwMeta: {
-        //         name: wgo
-        //       },
-        //       properties: { side: "EAST", portIndex: 0 }
-        //     })
-        //   );
-        // }
-
         gate.inputs.forEach((input, i) => {
           gateNet.ports.push({
             direction: "INPUT",
@@ -442,12 +405,10 @@ export default {
             hwMeta: {
               name:
                 input.id +
-                (input.offsetType != "none"
-                  ? input.getOffsetString(
-                      this.currentFile.compileResult.parameters,
-                      currentInstance.id
-                    )
-                  : ""),
+                input.getOffsetString(
+                  this.currentFile.compileResult.parameters,
+                  currentInstance.id
+                ),
               cssClass: input.id + "_link"
             }
           };
@@ -506,12 +467,10 @@ export default {
             hwMeta: {
               name:
                 portGate.inputs[0].id +
-                (portGate.inputs[0].offsetType != "none"
-                  ? portGate.inputs[0].getOffsetString(
-                      this.currentFile.compileResult.parameters,
-                      currentInstance.id
-                    )
-                  : ""),
+                portGate.inputs[0].getOffsetString(
+                  this.currentFile.compileResult.parameters,
+                  currentInstance.id
+                ),
               cssClass: portGate.inputs[0].id + "_link"
             }
           };
@@ -538,12 +497,10 @@ export default {
             hwMeta: {
               name:
                 portGate.inputs[0].id +
-                (portGate.inputs[0].offsetType != "none"
-                  ? portGate.inputs[0].getOffsetString(
-                      this.currentFile.compileResult.parameters,
-                      currentInstance.id
-                    )
-                  : ""),
+                portGate.inputs[0].getOffsetString(
+                  this.currentFile.compileResult.parameters,
+                  currentInstance.id
+                ),
               cssClass: portGate.inputs[0].id + "_link"
             },
             source: currentInstance.inputs.includes(portGate.inputs[0].id) // is the input to the port gate itself a port of the parent instance rather than a local gate

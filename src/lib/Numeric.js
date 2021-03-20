@@ -339,7 +339,7 @@ class Numeric extends Operand {
     // if bitRange is undefined return full bit range [bitSize-1,0]
     // if bitRange is an integer expand to a index range [i,i]
     // else return bitRange unchanged assuming is is a range [a,b]
-    return bitRange
+    return bitRange != undefined
       ? Number.isInteger(bitRange)
         ? [bitRange, bitRange]
         : bitRange

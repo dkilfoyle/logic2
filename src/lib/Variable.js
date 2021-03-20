@@ -66,7 +66,7 @@ class Variable extends Operand {
       ? "[" + this.getRange(gatesLookup, namespace) + "]"
       : this.offsetType == "range"
       ? "[" + this.getRange(gatesLookup, namespace).join(":") + "]"
-      : "[0]";
+      : "";
   }
   toString() {
     return (
