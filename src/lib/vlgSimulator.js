@@ -31,6 +31,7 @@ const evaluateSensitivities = (sensitivities, namespace) => {
         : sens.last == 1 && current == 0
         ? "negedge"
         : "same";
+    sens.last = current;
     return sens.type == edge || (sens.type == "changed" && edge != "same");
   });
 };
@@ -76,14 +77,19 @@ const evaluateStatementTree = (s, namespace) => {
     }
   } else if (s.type == "case_statement") {
     const caseVal = s.casevar.getValue(gatesLookup, namespace); // todo: caseval could be expression rather than just variable
-    const matchingClause = s.caseclauses.find(
-      clause => clause.clauseval.getValue(gatesLookup, namespace) == caseVal
-    );
+    const matchingClause = s.caseclauses.find(clause => {
+      const matchVal = clause.clauseval.getValue(gatesLookup, namespace);
+      // if (s.casevar.name == "aluop" && namespace == "main_mips_c_ad") {
+      //   console.log(s.casevar.name, caseVal, matchVal, caseVal == matchVal);
+      // }
+      return matchVal == caseVal;
+    });
     if (matchingClause) {
       return evaluateStatementTree(matchingClause.statements, namespace);
     } else {
-      if (s.casedefault) return evaluateStatementTree(s.casedefault, namespace);
-      else return true;
+      if (s.casedefault) {
+        return evaluateStatementTree(s.casedefault, namespace);
+      } else return true;
     }
   } else if (s.type == "error_statement") {
     throw new Error(s.text);
@@ -137,6 +143,7 @@ const simulate = (
 
   // run the clock
   for (let clock = 0; clock <= maxClock; clock++) {
+    console.log("clock = ", clock);
     // store tick or tock
     if (gatesLookup["main_clock"])
       gatesLookup["main_clock"].state.setValue(
@@ -178,38 +185,62 @@ const simulate = (
       return false;
     }
 
-    // run gate evaluation and instance always for this time step (not t=0)
-    for (let i = 0; i < EVALS_PER_STEP; i++) {
-      try {
-        gates.forEach(gate => gate.update(gatesLookup));
-      } catch (e) {
-        logger(chalk.red(e));
-        return false;
-      }
-    }
+    // todo: sequence of runs should be:
+    // 1. One pass through only positive clock edge always using inputs based on state at end of the previous cycle
+    // 2. Multiple runs through all gates and all always(*)
 
     // run each always section for each instance
     // need to process gates before (to set always inputs) and after (to propogate always effects)
-    let alwaysRes = instances.every(instance => {
-      return instance.always.reduce(
-        (acc, curAlways) =>
-          acc && evaluateSensitivities(curAlways.sensitivities, instance.id)
-            ? evaluateStatementTree(curAlways.statementTree, instance.id)
-            : true,
-        true
-      );
-    });
-    if (!alwaysRes) return false;
-
-    // run gate evaluation and instance always for this time step (not t=0)
     for (let i = 0; i < EVALS_PER_STEP; i++) {
+      let alwaysRes = instances.every(instance => {
+        return instance.always.reduce(
+          (acc, curAlways) =>
+            acc && evaluateSensitivities(curAlways.sensitivities, instance.id)
+              ? evaluateStatementTree(curAlways.statementTree, instance.id)
+              : true,
+          true
+        );
+      });
+      if (!alwaysRes) return false;
+
+      // run gate evaluation and instance always for this time step (not t=0)
       try {
         gates.forEach(gate => gate.update(gatesLookup));
       } catch (e) {
         logger(chalk.red(e));
         return false;
       }
+
+      // let alwaysRes2 = instances.every(instance => {
+      //   return instance.always.reduce(
+      //     (acc, curAlways) =>
+      //       acc && evaluateSensitivities(curAlways.sensitivities, instance.id)
+      //         ? evaluateStatementTree(curAlways.statementTree, instance.id)
+      //         : true,
+      //     true
+      //   );
+      // });
+      // if (!alwaysRes2) return false;
     }
+
+    // for (let i = 0; i < EVALS_PER_STEP; i++) {
+    //   try {
+    //     gates.forEach(gate => gate.update(gatesLookup));
+    //   } catch (e) {
+    //     logger(chalk.red(e));
+    //     return false;
+    //   }
+    // }
+
+    // run gate evaluation and instance always for this time step (not t=0)
+    // for (let i = 0; i < EVALS_PER_STEP; i++) {
+    //   try {
+    //     gates.forEach(gate => gate.update(gatesLookup));
+    //   } catch (e) {
+    //     logger(chalk.red(e));
+    //     return false;
+    //   }
+    // }
 
     // and store gate results in newSimulation
     gates.forEach(g => {
@@ -218,17 +249,17 @@ const simulate = (
     newSimulation.clock.push(clock % 2);
 
     // update always last
-    instances.forEach(instance => {
-      instance.always.forEach(curAlways =>
-        curAlways.sensitivities.forEach(sensitivity => {
-          if (sensitivity.type != "everytime")
-            sensitivity.last = sensitivity.id.getValue(
-              gatesLookup,
-              instance.id
-            );
-        })
-      );
-    });
+    // instances.forEach(instance => {
+    //   instance.always.forEach(curAlways =>
+    //     curAlways.sensitivities.forEach(sensitivity => {
+    //       if (sensitivity.type != "everytime")
+    //         sensitivity.last = sensitivity.id.getValue(
+    //           gatesLookup,
+    //           instance.id
+    //         );
+    //     })
+    //   );
+    // });
 
     modulesLookup.Main.clock.forEach((x, index, all) => {
       if (x.time != clock) return;

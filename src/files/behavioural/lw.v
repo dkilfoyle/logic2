@@ -101,7 +101,7 @@ module InstructionMemory(
   reg [31:0] RAM[63:0];
   initial
     begin
-      RAM[0] = 32'b100011_10100_10011_0000000000000100; 
+      RAM[1] = 32'b100011_10100_10011_0000000000000100; 
       // lw $s3, 4($s4)
       // lw(35) rs(20) rt(19) offset(4)
       // lw reg19, reg20+4
@@ -320,7 +320,7 @@ module Mips (
 endmodule
 
 module Main (
-  input clk,
+  input clock,
   input reset,
   output [31:0] pc,
   output [31:0] instr,
@@ -331,7 +331,7 @@ module Main (
 );
 
   Mips mips(
-    .clk(clk),
+    .clk(clock),
     .reset(reset),
     .instr(instr),
     .readdata(readdata),
@@ -343,13 +343,11 @@ module Main (
   );
 
   InstructionMemory imem(pc[7:2], instr);
-  DataMemory dmem(.clk(clk), .we(memwrite), .a(aluout), .wd(writedata), .rd(readdata));
+  DataMemory dmem(.clk(clock), .we(memwrite), .a(aluout), .wd(writedata), .rd(readdata));
 
   test begin
-    #0  { reset=0, clk=0 }; 
-    #1  { clk=1 }; 
-    // #2  { clk=0, pc=1 }; 
-    #3;
+    #0  { reset=0 }; 
+    #4;
   end
 
   $display begin
