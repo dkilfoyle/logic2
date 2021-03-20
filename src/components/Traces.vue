@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 <template>
   <div class="dk-h-100">
     <div class="dk-flex-col" v-show="isSimulated">
@@ -127,11 +128,13 @@ export default {
       };
       let gates = this.filteredInstanceGates.map(id => ({
         id,
-        values: this.$store.getters.currentFile.simulateResult.gates[id],
+        values: this.$store.getters.currentFile.simulateResult.gates[id].map(
+          val => +val
+        ),
         options: { xAxis: false }
       }));
       gates.forEach(gate => {
-        const maxVal = Math.max(...gate.values);
+        const maxVal = Math.max(...gate.values.filter(val => !isNaN(val)));
         if (maxVal > 1) gate.values = gate.values.map(y => y / maxVal);
       });
       gates[gates.length - 1].options.xAxis = true;
@@ -164,91 +167,35 @@ export default {
       var area = (x, y) =>
         d3
           .area()
+          .defined(d => !isNaN(d))
           .x((d, i) => x(i))
           .y0(traceHeight)
           .y1(d => y(d))
           .curve(d3.curveStepAfter);
-      // .curve(curveTrace);
+
+      // var line2 = (x, y) =>
+      //   d3
+      //     .line()
+      //     .defined(d => isNaN(d.y))
+      //     .x(d => x(d.x))
+      //     .y(() => y(0))
+      //     .curve(d3.curveStepAfter);
 
       var line = (x, y) =>
         d3
           .line()
+          .defined(d => !isNaN(d))
           .x((d, i) => x(i))
           .y(d => y(d))
           .curve(d3.curveStepAfter);
-      // .curve(curveTrace);
-
-      // function Step(context, t) {
-      //   this._context = context;
-      //   this._t = t;
-      // }
-
-      // Step.prototype = {
-      //   areaStart: function() {
-      //     this._line = 0;
-      //     console.log("areaStart: _line = 0");
-      //   },
-      //   areaEnd: function() {
-      //     console.log("areaEnd: _line = ", this._line);
-      //     this._line = NaN;
-      //   },
-      //   lineStart: function() {
-      //     this._x = this._y = NaN;
-      //     this._point = 0;
-      //     console.log("lineStart: ", this._line, this._point, this._t);
-      //   },
-      //   lineEnd: function() {
-      //     if (this._line || (this._line !== 0 && this._point === 1))
-      //       this._context.closePath();
-      //     if (this._line >= 0)
-      //       (this._t = 1 - this._t), (this._line = 1 - this._line);
-      //     console.log(
-      //       "lineEnd: ",
-      //       this._x,
-      //       this._y,
-      //       this._line,
-      //       this._point,
-      //       this._t
-      //     );
-      //   },
-      //   point: function(x, y) {
-      //     (x = +x), (y = +y);
-      //     console.log("point: ", x, y, this._point, this._line);
-      //     switch (this._point) {
-      //       case 0:
-      //         this._point = 1;
-      //         this._line
-      //           ? this._context.lineTo(x, y)
-      //           : this._context.moveTo(x, y);
-      //         break;
-      //       case 1:
-      //         this._point = 2; // proceed
-      //       // eslint-disable-next-line no-fallthrough
-      //       default: {
-      //         if (this._t <= 0) {
-      //           this._context.lineTo(this._x, y);
-      //           this._context.lineTo(x, y);
-      //         } else {
-      //           // var x1 = this._x * (1 - this._t) + x * this._t;
-      //           // var x1 = this._x * (1 - this._t) + x * this._t;
-      //           this._context.lineTo(x - 5, this._y);
-      //           this._context.lineTo(x, y);
-      //         }
-      //         break;
-      //       }
-      //     }
-      //     (this._x = x), (this._y = y);
-      //   }
-      // };
-
-      // function curveTrace(context) {
-      //   return new Step(context, 1);
-      // }
 
       function enterFilledPlot() {
         d3.select(this)
           .append("path")
           .attr("class", "area");
+        d3.select(this)
+          .append("path")
+          .attr("class", "nanline");
         d3.select(this)
           .append("path")
           .attr("class", "line");
@@ -274,9 +221,17 @@ export default {
           .attr("fill", d => that.traceColor(d.id, true))
           .datum(d => d.values)
           .attr("d", area(x, y));
+        // d3.select(this)
+        //   .select(".nanline")
+        //   .datum(d =>
+        //     d.values.map((y, i) => ({ x: i, y })).filter(v => !isNaN(v.y))
+        //   )
+        //   .attr("stroke", "#ccc")
+        //   .attr("d", line2(x, y));
         d3.select(this)
           .select(".line")
           .attr("stroke", d => that.traceColor(d.id, false))
+          .attr("stroke-width", 1.5)
           .datum(d => d.values)
           .attr("d", line(x, y));
         d3.select(this)
@@ -440,7 +395,7 @@ export default {
         return outline ? "#9ad0f588" : "#36a2eb";
       }
 
-      return "darkgrey";
+      return outline ? "lightgrey" : "darkgrey";
     },
     onBreadcrumbEllipsis() {},
     selectBreadcrumb(node) {
@@ -480,6 +435,13 @@ export default {
   fill: none;
   stroke-width: 1.4;
   clip-path: url(#clip);
+}
+
+.nanline {
+  fill: none;
+  stroke-width: 1.4;
+  clip-path: url(#clip);
+  stroke-dasharray: 3, 3;
 }
 
 .area {
