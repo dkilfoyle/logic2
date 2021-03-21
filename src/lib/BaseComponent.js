@@ -15,6 +15,7 @@ class BaseComponent {
     this.type = type;
     this.inputs = [];
     this.subscribers = [];
+    this.subscriptions = [];
     this.defaultValue = defaultValue;
     this.state = new Numeric(this.defaultValue, bitSize);
   }

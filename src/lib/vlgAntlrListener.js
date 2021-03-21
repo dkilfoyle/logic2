@@ -324,20 +324,20 @@ class Listener extends vlgListener {
       rhs: this.expressionStack.pop(),
       lhs: this.valueStack.pop() // pop the ids in expressions first
     };
-    if (
-      newStatement.lhs.type == "variable" &&
-      !this.isReg(newStatement.lhs.name)
-    )
-      this.addSemanticError(
-        ctx.lhs,
-        `${newStatement.lhs.name} is not declared as type reg`
-      );
-    else {
-      this.statementBlockStack[
-        this.statementBlockStack.length - 1
-      ].statements.push(newStatement);
-      console.log("Statement: ", strip(newStatement));
-    }
+    // if (
+    //   newStatement.lhs.type == "variable" &&
+    //   !this.isReg(newStatement.lhs.name)
+    // )
+    //   this.addSemanticError(
+    //     ctx.lhs,
+    //     `${newStatement.lhs.name} is not declared as type reg`
+    //   );
+    // else {
+    this.statementBlockStack[
+      this.statementBlockStack.length - 1
+    ].statements.push(newStatement);
+    console.log("Statement: ", strip(newStatement));
+    // }
     console.groupEnd();
   }
 

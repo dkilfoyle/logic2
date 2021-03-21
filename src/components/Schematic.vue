@@ -132,7 +132,9 @@ export default {
         elements.forEach(element =>
           element.setAttribute(
             "class",
-            `${gateid}_link link-${gatevalue == 0 ? 0 : 1}`
+            `${gateid}_link link-${
+              gatevalue == 0 ? 0 : typeof gatevalue == "string" ? "x" : 1
+            }`
           )
         );
         let gate = this.getGate(gateid);
@@ -610,6 +612,13 @@ body {
 
 .link-1 {
   stroke: rgb(237, 137, 137, 1) !important;
+  stroke-opacity: 1;
+  stroke-width: 3;
+  fill: none;
+}
+
+.link-x {
+  stroke: rgb(182, 176, 176) !important;
   stroke-opacity: 1;
   stroke-width: 3;
   fill: none;

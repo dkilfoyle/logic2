@@ -193,7 +193,8 @@ export default {
     // });
     // this.addFileTab("Scratch");
     // this.addFileTab("LW");
-    this.addFileTab("Mux2_1");
+    // this.addFileTab("Mux2_1");
+    this.addFileTab("DFlipFlop");
   },
   mounted() {
     setTimeout(() => this.about(), 3000);

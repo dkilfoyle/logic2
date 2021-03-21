@@ -35,25 +35,54 @@ const getGate = id => {
   return foundGate;
 };
 
-const findSelfInInputChain = (inputChain, chainGate) => {
-  return chainGate.inputs.some(input => {
-    if (inputChain.some((icg, i) => icg == inputChain[0] && i != 0))
-      return true;
-    else {
-      inputChain.push(input.id);
-      return findSelfInInputChain(inputChain, getGate(input.id));
-    }
-  });
-};
+// const findSelfInInputChain = (inputChain, chainGate, depth) => {
+//   if (inputChain.length > 100) debugger;
+//   return chainGate.inputs.some(input => {
+//     console.log(inputChain);
+//     if (inputChain.some((icg, i) => icg == inputChain[0] && i != 0))
+//       return true;
+//     else {
+//       inputChain.push(input.id);
+//       return findSelfInInputChain(inputChain, getGate(input.id), depth + 1);
+//     }
+//   });
+// };
 
-const subscribeToInputs = gate => {
-  gate.inputs.forEach(input => {
-    // to avoid circular dependencies trace the inputs back as far as possible making sure gate is not an input somewhere in the chain
-    const inputChain = [gate.id];
-    if (!findSelfInInputChain(inputChain, gate))
-      getGate(input.id).subscribers.push(gate.id);
-    console.log("InputChain: ", inputChain);
-  });
+// const subscribeToInputs = gate => {
+//   const inputChain = [gate.id];
+//   gate.inputs.forEach(input => {
+//     // to avoid circular dependencies trace the inputs back as far as possible making sure gate is not an input somewhere in the chain
+//     if (!findSelfInInputChain(inputChain, gate, 0))
+//       getGate(input.id).subscribers.push(gate.id);
+//     console.log("InputChain: ", inputChain);
+//   });
+// };
+
+const findSubscribers = gate => {
+  // find all gates that have gate.id as an input
+  // if (gate.id == "main_dff_master_Q") debugger;
+  const subscribers = gates.filter(g => g.inputs.some(gi => gi.id == gate.id));
+
+  // record gate as a subscription for each subscriber
+  subscribers.forEach(subscriberGate =>
+    subscriberGate.subscriptions.push(...[gate.id, ...gate.subscriptions])
+  );
+
+  // subscribe to gate if not already in subscription list
+  todo if gate already in subscription list add as a count limited subscription
+  const nonCircularSubscribers = subscribers.filter(
+    subscriberGate =>
+      !subscriberGate.subscriptions.some(
+        subscription => subscription == subscriberGate.id
+      )
+  );
+
+  gate.subscribers = nonCircularSubscribers.map(
+    subscriberGate => subscriberGate.id
+  );
+
+  // now find subscribers of these subscribers
+  nonCircularSubscribers.forEach(subscriber => findSubscribers(subscriber));
 };
 
 const createInstance = (parentNamespace, instanceDeclaration) => {
@@ -472,7 +501,11 @@ const compile = moduleArray => {
 
   // subscribe each gate to all of its inputs
   // todo: subscribe registers to all of the gates referenced in always and initial
-  gates.forEach(gate => subscribeToInputs(gate));
+  // gates.forEach(gate => subscribeToInputs(gate));
+  modules["Main"].ports
+    .filter(port => port.direction == "input")
+    .map(inputPort => getGate("main_" + inputPort.id))
+    .forEach(gate => findSubscribers(gate));
 
   console.group("Compilation result:");
   console.log("Instances: ", stripReactive(instances));
