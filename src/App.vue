@@ -191,8 +191,9 @@ export default {
     //   newSourceName: "TruthTable",
     //   code: ""
     // });
-    this.addFileTab("Scratch");
-    this.addFileTab("LW");
+    // this.addFileTab("Scratch");
+    // this.addFileTab("LW");
+    this.addFileTab("Mux2_1");
   },
   mounted() {
     setTimeout(() => this.about(), 3000);

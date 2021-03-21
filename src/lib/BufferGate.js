@@ -2,7 +2,8 @@
 import BaseComponent from "./BaseComponent";
 
 class BufferGate extends BaseComponent {
-  constructor(namespace, name, type, bitSize = 1, defaultValue = 0) {
+  constructor(namespace, name, type, bitSize = 1, defaultValue = "x") {
+    if (defaultValue != "x") debugger;
     super(namespace, name, type, bitSize, defaultValue);
     if (
       ![
@@ -24,7 +25,10 @@ class BufferGate extends BaseComponent {
   }
   update(gatesLookup) {
     // update is called each clock and processes inputs to call this.setValue
-    if (this.inputs.length == 0) return; // nothing to process
+    if (this.inputs.length == 0) {
+      this.propogateChange(gatesLookup);
+      return; // nothing to process
+    }
 
     let inputValues = this.inputs.map(input =>
       input.getValue(gatesLookup, input.namespace)
@@ -48,6 +52,7 @@ class BufferGate extends BaseComponent {
         `Buffer.update() for ${this.id} inputMasks not implemented yet`
       );
     }
+    this.propogateChange(gatesLookup);
   }
 }
 

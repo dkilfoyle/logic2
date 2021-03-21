@@ -28,6 +28,34 @@ const isBuffer = x =>
     "constant"
   ].includes(x);
 
+const getGate = id => {
+  const foundGate = gates.find(g => g.id == id);
+  if (!foundGate)
+    throw new Error("ModuleCompiler.getGate couldnt find gate with id " + id);
+  return foundGate;
+};
+
+const findSelfInInputChain = (inputChain, chainGate) => {
+  return chainGate.inputs.some(input => {
+    if (inputChain.some((icg, i) => icg == inputChain[0] && i != 0))
+      return true;
+    else {
+      inputChain.push(input.id);
+      return findSelfInInputChain(inputChain, getGate(input.id));
+    }
+  });
+};
+
+const subscribeToInputs = gate => {
+  gate.inputs.forEach(input => {
+    // to avoid circular dependencies trace the inputs back as far as possible making sure gate is not an input somewhere in the chain
+    const inputChain = [gate.id];
+    if (!findSelfInInputChain(inputChain, gate))
+      getGate(input.id).subscribers.push(gate.id);
+    console.log("InputChain: ", inputChain);
+  });
+};
+
 const createInstance = (parentNamespace, instanceDeclaration) => {
   console.groupCollapsed(
     "createInstance: ",
@@ -118,7 +146,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
               gateBitSizesID[gateDef.id] ||
               gateDef.defaultSize ||
               null,
-            gateDef.defaultValue || 0
+            gateDef.defaultValue || "x"
           )
         : isBuffer(gateDef.gateType)
         ? new BufferGate(
@@ -129,7 +157,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
               gateBitSizesID[gateDef.id] ||
               gateDef.defaultSize ||
               null,
-            gateDef.defaultValue || 0
+            gateDef.defaultValue || "x"
           )
         : null;
       if (!newGate)
@@ -441,6 +469,10 @@ const compile = moduleArray => {
   modules["Main"].display.forEach(d => {
     gates.find(g => g.id == d.id).displayType = d.type;
   });
+
+  // subscribe each gate to all of its inputs
+  // todo: subscribe registers to all of the gates referenced in always and initial
+  gates.forEach(gate => subscribeToInputs(gate));
 
   console.group("Compilation result:");
   console.log("Instances: ", stripReactive(instances));

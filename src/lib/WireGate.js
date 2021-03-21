@@ -2,8 +2,8 @@
 import BaseComponent from "./BaseComponent";
 
 class WireGate extends BaseComponent {
-  constructor(namespace, name, bitSize = 1) {
-    super(namespace, name, "wiregate", bitSize);
+  constructor(namespace, name, bitSize = 1, defaultValue = "x") {
+    super(namespace, name, "wiregate", bitSize, defaultValue);
     this.inputMasks = [];
   }
   update(gatesLookup) {
@@ -30,6 +30,7 @@ class WireGate extends BaseComponent {
         `Buffer.update() for ${this.id} inputMasks not implemented yet`
       );
     }
+    this.propogateChange(gatesLookup);
   }
 }
 

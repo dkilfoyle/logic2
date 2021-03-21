@@ -7,7 +7,12 @@ class ParameterGate extends BaseComponent {
     super(namespace, name, "parameter");
     this.state = new Numeric(value);
   }
-  update() {}
+  update() {
+    throw new Error("ParamaterGate.update should never be called");
+  }
+  propogateChange() {
+    throw new Error("ParamaterGate.propgateChange should never be called");
+  }
   setValue() {
     throw new Error("ParamaterGate.setValue should never be called");
   }

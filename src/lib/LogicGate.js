@@ -16,8 +16,9 @@ const not = (a, bitSize) => {
 };
 
 class LogicGate extends BaseComponent {
-  constructor(namespace, name, type, bitSize = 1) {
-    super(namespace, name, type, bitSize);
+  constructor(namespace, name, type, bitSize = 1, defaultValue = "x") {
+    if (defaultValue != "x") debugger;
+    super(namespace, name, type, bitSize, defaultValue);
     if (
       !["and", "nand", "or", "xor", "xnor", "nor", "inv", "not"].includes(type)
     )
@@ -68,6 +69,7 @@ class LogicGate extends BaseComponent {
           `Logic gate ${this.id} has invalid logicfn (${this.type})`
         );
     }
+    this.propogateChange(gatesLookup);
   }
 }
 

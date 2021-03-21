@@ -26,7 +26,7 @@ class Concatenation extends Operand {
     // nextBit = nextBit = b.size
     // a = 0110 = val[a.size-1+nextBit:nextBit]
     let nextStart = 0;
-    this.components.forEach(curVar => {
+    [...this.components].reverse().forEach(curVar => {
       const curVarBitSize = curVar.getBitSize(gatesLookup, namespace);
       curVar.setValue(
         gatesLookup,
