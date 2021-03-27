@@ -9,6 +9,10 @@ module SRLatch (
   output Q );
 
   wire Qn;
+
+  initial
+    Q=0;
+    
   assign Q = r ~| Qn;
   assign Qn = Q ~| s;
   

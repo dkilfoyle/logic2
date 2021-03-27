@@ -4,6 +4,10 @@ module DFlipFlop (
   input d, c, clear, preset,
   output Q, Qn);
 
+  initial Q=0;
+  initial Qn=0;
+  initial u5=0;
+
   wire notd, notc;
   not(notd, d);
   not(notc, c);

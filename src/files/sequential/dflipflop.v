@@ -4,8 +4,11 @@ module DLatch (
   input d, c,
   output Q, Qn);
 
-  initial Q = 0;
-  initial Qn = 1;
+  initial
+    begin
+      Q = 0;
+      Qn = 1;
+    end
 
   wire u3, u4;
   assign u3 = d ~& c;
@@ -24,10 +27,6 @@ module DFlipFlop (
   not(cnn, cn);
 
   wire Qmaster;
-  buffer(Qmaster);
-
-  buffer(Q);
-  buffer(Qn);
 
   DLatch master(.d(d), .c(cn), .Q(Qmaster));
   DLatch slave(.d(Qmaster), .c(cnn), .Q(Q), .Qn(Qn));
@@ -46,7 +45,6 @@ module Main(
   );
 
   test begin
-    #0  { d=0, c=0 };
     #1  { d=0, c=0 };
     #2  { d=0, c=1 };
     #3  { d=1, c=1 };

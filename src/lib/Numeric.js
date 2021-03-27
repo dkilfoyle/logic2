@@ -91,6 +91,16 @@ class Numeric extends Operand {
     } else {
       throw new Error(`Numeric constructor invalid value: ${value}`);
     }
+    this.lastBitArray = new Array(bitSize || 1).fill("y");
+  }
+
+  clear(defaultValue) {
+    this.setValue(defaultValue);
+    this.lastBitArray = [...this.bitArray];
+  }
+
+  hasChanged() {
+    return this.bitArray.some((bit, i) => bit != this.lastBitArray[i]);
   }
 
   checkBitRange(bitRange, msg) {
@@ -151,10 +161,18 @@ class Numeric extends Operand {
 
   setValue(value, bitRange) {
     // check for valid newDecimalValue
-    if (!(Number.isInteger(value) | (typeof value == "string")))
+    if (
+      !(Number.isInteger(value) | (typeof value == "string") | (value == "x"))
+    )
       throw new Error(
-        `Numeric.setValue(value=${value}, bitRange=${bitRange}): value must be an integer or verilog number string`
+        `Numeric.setValue(value=${value}, bitRange=${bitRange}): value must be an integer or verilog number string or 'x'`
       );
+    this.lastBitArray = [...this.bitArray];
+
+    if (value == "x") {
+      this.bitArray.fill("x");
+      return;
+    }
 
     const br = this.makeRange(bitRange);
     const destSize = Math.abs(br[0] - br[1]) + 1;

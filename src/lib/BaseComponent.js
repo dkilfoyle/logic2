@@ -1,10 +1,11 @@
+/* eslint-disable no-debugger */
 import Numeric from "./Numeric";
 
 // Component interface
 // All components have an id, an array of inputs and a numeric state
 
 class BaseComponent {
-  constructor(namespace, name, type, bitSize, defaultValue = 0) {
+  constructor(namespace, name, type, bitSize, defaultValue = "x") {
     this.name = name;
     this.namespace = namespace;
 
@@ -20,8 +21,9 @@ class BaseComponent {
   get id() {
     return this.namespace + "_" + this.name;
   }
-  clear() {
-    this.state.setValue(this.defaultValue);
+
+  clear(def) {
+    this.state.clear(def != undefined ? def : this.defaultValue);
   }
   update() {
     // update is called each clock and processes inputs to call this.setValue

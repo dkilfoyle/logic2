@@ -122,7 +122,7 @@ const simulate = (
   // reset all gates to state = 0
   // TODO: should set state to 'x'??
   gates.forEach(g => {
-    g.clear();
+    g.clear(0);
     newSimulation.gates[g.id] = [];
   });
 
@@ -143,7 +143,6 @@ const simulate = (
 
   // run the clock
   for (let clock = 0; clock <= maxClock; clock++) {
-    console.log("clock = ", clock);
     // store tick or tock
     if (gatesLookup["main_clock"])
       gatesLookup["main_clock"].state.setValue(
@@ -191,7 +190,18 @@ const simulate = (
 
     // run each always section for each instance
     // need to process gates before (to set always inputs) and after (to propogate always effects)
-    for (let i = 0; i < EVALS_PER_STEP; i++) {
+    let changing = true;
+    let i = 0;
+    while (changing && i < 15) {
+      let oldValues = gates.map(x => x.getValue());
+      if (i == 0) {
+        instancesLookup["main"].gates.forEach(gid => {
+          const gate = gatesLookup[gid];
+          if (gate.type == "control")
+            gate.state.lastBitArray = [...gate.state.bitArray];
+        });
+      }
+
       let alwaysRes = instances.every(instance => {
         return instance.always.reduce(
           (acc, curAlways) =>
@@ -205,42 +215,16 @@ const simulate = (
 
       // run gate evaluation and instance always for this time step (not t=0)
       try {
-        gates.forEach(gate => gate.update(gatesLookup));
+        const newValues = gates.map(gate => gate.update(gatesLookup));
+        changing = newValues.some((newVal, i) => newVal != oldValues[i]);
       } catch (e) {
         logger(chalk.red(e));
         return false;
       }
-
-      // let alwaysRes2 = instances.every(instance => {
-      //   return instance.always.reduce(
-      //     (acc, curAlways) =>
-      //       acc && evaluateSensitivities(curAlways.sensitivities, instance.id)
-      //         ? evaluateStatementTree(curAlways.statementTree, instance.id)
-      //         : true,
-      //     true
-      //   );
-      // });
-      // if (!alwaysRes2) return false;
+      i++;
     }
 
-    // for (let i = 0; i < EVALS_PER_STEP; i++) {
-    //   try {
-    //     gates.forEach(gate => gate.update(gatesLookup));
-    //   } catch (e) {
-    //     logger(chalk.red(e));
-    //     return false;
-    //   }
-    // }
-
-    // run gate evaluation and instance always for this time step (not t=0)
-    // for (let i = 0; i < EVALS_PER_STEP; i++) {
-    //   try {
-    //     gates.forEach(gate => gate.update(gatesLookup));
-    //   } catch (e) {
-    //     logger(chalk.red(e));
-    //     return false;
-    //   }
-    // }
+    console.log(`Clock = ${clock}, iterations = ${i}`);
 
     // and store gate results in newSimulation
     gates.forEach(g => {

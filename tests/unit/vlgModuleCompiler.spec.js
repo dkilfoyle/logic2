@@ -57,7 +57,7 @@ describe.each([
     "main_Fa",
     [1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1]
   ],
-  ["combinational/RippleAdder", 14, 128, "main_S0", [0, 1, 1, 1, 1]],
+  ["combinational/RippleAdder", 6, 72, "main_S0", [0, 1, 1, 1, 1]],
   // [
   //   "sequential/DFlipFlop",
   //   4,
@@ -70,7 +70,7 @@ describe.each([
     10,
     89,
     "main_Count0",
-    [1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1]
+    [1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0]
   ],
   [
     "sequential/ShiftRegister",

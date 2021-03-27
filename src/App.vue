@@ -187,12 +187,12 @@ export default {
     };
   },
   created() {
-    // this.$store.commit("openFile", {
-    //   newSourceName: "TruthTable",
-    //   code: ""
-    // });
-    this.addFileTab("Scratch");
-    this.addFileTab("LW");
+    // this.addFileTab("Scratch");
+    // this.addFileTab("LW");
+    // this.addFileTab("Mux2_1");
+    // this.addFileTab("DFlipFlop");
+    // this.addFileTab("RippleCounter");
+    this.addFileTab("SumProducts");
   },
   mounted() {
     setTimeout(() => this.about(), 3000);

@@ -33,6 +33,12 @@ module DLatch (
   input d, c,
   output Q, Qn);
 
+  initial
+    begin
+      Q = 0;
+      Qn = 0;
+    end
+
   wire dn;
   not(dn, d);
 
