@@ -30,13 +30,20 @@ class LogicGate extends BaseComponent {
   update(gatesLookup) {
     // update is called each clock and processes inputs to call this.setValue
 
-    if (this.inputs.length == 0) return; // nothing to process
+    if (this.inputs.length == 0) return this.state.getValue(); // nothing to process
     if (this.inputs.length > 1 && this.type == "not")
       throw new Error(`Logic gate ${this.id} is a NOT gate with > 1 input`);
     if (this.inputs.length > 3)
       throw new Error(
         `Logic gate ${this.id} has more than 3 inputs (${this.inputs.length})`
       );
+
+    if (
+      this.inputs.some(input =>
+        gatesLookup[input.id].state.bitArray.includes("x")
+      )
+    )
+      return this.state.getValue(); // todo: implment and/nand/etc allowing for 'x' bits
 
     let [a, b, c] = this.inputs.map(input =>
       input.getValue(gatesLookup, input.namespace)
@@ -69,7 +76,7 @@ class LogicGate extends BaseComponent {
           `Logic gate ${this.id} has invalid logicfn (${this.type})`
         );
     }
-    this.propogateChange(gatesLookup);
+    return this.state.getValue();
   }
 }
 

@@ -25,7 +25,7 @@ module Main (
 		.a(a),
 		.b(b),
     .cin(cin),
-		.S(S),
+		.S(Sum),
 		.Cout(Cout)
   );
 

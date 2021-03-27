@@ -1,35 +1,16 @@
 // 4 bit Ripple adder
 
-module HalfAdder (
-  input a, b, cin,
-  output S, Cout);
-
-  assign S = a ^ b;
-  assign Cout = a & b;
-endmodule
-
 module FullAdder (
   input a, b, cin,
-  output Sum, Cout
-);
+  output Sum, Cout);
 
-  wire S1, Cout1, Cout2;
+  wire p, g;
 
-  HalfAdder half1(
-		.a(a),
-		.b(b),
-		.S(S1),
-		.Cout(Cout1)
-  );
+  assign p = a ^ b;
+  assign g = a & b;
 
-  HalfAdder half2(
-		.a(S1),
-		.b(cin),
-		.S(Sum),
-		.Cout(Cout2)
-  );
-
-  assign Cout = Cout2 | Cout1;
+  assign Sum = p ^ cin;
+  assign Cout = g | (p & cin); // remove brackets to test operator precedence
 endmodule
 
 module Display(

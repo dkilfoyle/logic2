@@ -6,6 +6,9 @@ module DLatch (
   input d, c,
   output Q, Qn);
 
+  initial Q=0;
+  initial Qn=0;
+
   wire dn;
   not(dn, d);
 

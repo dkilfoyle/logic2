@@ -47,14 +47,6 @@
             {{ props.row.inputs.map(x => x.id).join(", ") }}
           </b-table-column>
 
-          <b-table-column
-            field="subscribers"
-            label="Subscribers"
-            v-slot="props"
-          >
-            {{ props.row.subscribers.join(", ") }}
-          </b-table-column>
-
           <b-table-column field="state" label="State" numeric>
             <template v-slot:header="{ column }">
               <div class="level top">

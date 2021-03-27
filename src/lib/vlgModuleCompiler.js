@@ -28,63 +28,6 @@ const isBuffer = x =>
     "constant"
   ].includes(x);
 
-const getGate = id => {
-  const foundGate = gates.find(g => g.id == id);
-  if (!foundGate)
-    throw new Error("ModuleCompiler.getGate couldnt find gate with id " + id);
-  return foundGate;
-};
-
-// const findSelfInInputChain = (inputChain, chainGate, depth) => {
-//   if (inputChain.length > 100) debugger;
-//   return chainGate.inputs.some(input => {
-//     console.log(inputChain);
-//     if (inputChain.some((icg, i) => icg == inputChain[0] && i != 0))
-//       return true;
-//     else {
-//       inputChain.push(input.id);
-//       return findSelfInInputChain(inputChain, getGate(input.id), depth + 1);
-//     }
-//   });
-// };
-
-// const subscribeToInputs = gate => {
-//   const inputChain = [gate.id];
-//   gate.inputs.forEach(input => {
-//     // to avoid circular dependencies trace the inputs back as far as possible making sure gate is not an input somewhere in the chain
-//     if (!findSelfInInputChain(inputChain, gate, 0))
-//       getGate(input.id).subscribers.push(gate.id);
-//     console.log("InputChain: ", inputChain);
-//   });
-// };
-
-const findSubscribers = gate => {
-  // find all gates that have gate.id as an input
-  // if (gate.id == "main_dff_master_Q") debugger;
-  const subscribers = gates.filter(g => g.inputs.some(gi => gi.id == gate.id));
-
-  // record gate as a subscription for each subscriber
-  subscribers.forEach(subscriberGate =>
-    subscriberGate.subscriptions.push(...[gate.id, ...gate.subscriptions])
-  );
-
-  // subscribe to gate if not already in subscription list
-  todo if gate already in subscription list add as a count limited subscription
-  const nonCircularSubscribers = subscribers.filter(
-    subscriberGate =>
-      !subscriberGate.subscriptions.some(
-        subscription => subscription == subscriberGate.id
-      )
-  );
-
-  gate.subscribers = nonCircularSubscribers.map(
-    subscriberGate => subscriberGate.id
-  );
-
-  // now find subscribers of these subscribers
-  nonCircularSubscribers.forEach(subscriber => findSubscribers(subscriber));
-};
-
 const createInstance = (parentNamespace, instanceDeclaration) => {
   console.groupCollapsed(
     "createInstance: ",
@@ -109,6 +52,10 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     constants: []
   };
   instances.push(newInstance);
+
+  const inputGates = [];
+  const outputGates = [];
+  const logicGates = [];
 
   // combine moduleParameters and instanceParameters and evaluate any expressions to get constant value
   Object.entries(instanceModule.moduleParameters).forEach((entry, i) => {
@@ -135,7 +82,20 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
   const gateBitSizesType = {
     number: 10,
+    ledbar: 10,
     sevenseg: 7
+  };
+
+  const gateDefaultValueType = {
+    number: 0,
+    ledbar: 0
+  };
+
+  const getGateDefaultValue = gateDef => {
+    const byType = gateDefaultValueType[gateDef.gateType];
+    if (byType != undefined) return byType;
+    if (gateDef.defaultValue != undefined) return gateDef.defaultValue;
+    return "x";
   };
 
   // calculate bitsize for wires and ports and regs which may include calculated parameters constants
@@ -175,7 +135,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
               gateBitSizesID[gateDef.id] ||
               gateDef.defaultSize ||
               null,
-            gateDef.defaultValue || "x"
+            getGateDefaultValue(gateDef)
           )
         : isBuffer(gateDef.gateType)
         ? new BufferGate(
@@ -186,7 +146,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
               gateBitSizesID[gateDef.id] ||
               gateDef.defaultSize ||
               null,
-            gateDef.defaultValue || "x"
+            getGateDefaultValue(gateDef)
           )
         : null;
       if (!newGate)
@@ -194,7 +154,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
           `Invalid gate type ${gateDef.gateType} in id ${gateDef.id}`
         );
       newGate.inputs = gateDef.inputs.map(x => x.instance(namespace));
-      gates.push(newGate);
+      logicGates.push(newGate);
       newInstance.gates.push(newGate.id);
     });
 
@@ -239,7 +199,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
           )
         ];
 
-    gates.push(newGate);
+    logicGates.push(newGate);
     newInstance.gates.push(newGate.id);
     return new Variable(namespace, gateID, null);
   };
@@ -277,7 +237,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       newGate = new RegGate(namespace, reg.id, gateBitSizesID[reg.id]);
     }
 
-    gates.push(newGate);
+    logicGates.push(newGate);
     newInstance.gates.push(newGate.id);
   });
 
@@ -299,7 +259,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       // output ports may already be defined as a buffer eg buffer(F, Fe);
       // if main_port.id already exists then just change it's logic to responsebuffer
 
-      if (gates.some(x => x.id == "main_" + port.id)) {
+      if (logicGates.some(x => x.id == "main_" + port.id)) {
         // console.log("main_" + port.id);
       } else {
         const newGate = new BufferGate(
@@ -308,7 +268,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
           portType,
           gateBitSizesID[port.id]
         );
-        gates.push(newGate);
+        if (port.direction == "input") inputGates.push(newGate);
+        else outputGates.push(newGate);
         newInstance.gates.push(newGate.id);
       }
       return;
@@ -348,8 +309,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         portGate.inputs.push(newInput);
         newInstance.inputs.push(portGate.id);
       }
+      inputGates.push(portGate);
     }
-
     /*
         | input           | output-out ------> parentGate
         |          output | output-out ------> parentGate = param.value.id
@@ -392,11 +353,10 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
         newInstance.outputs.push(portGate.id);
       }
+      outputGates.push(portGate);
     }
 
     // console.log("portGate: ", port.id, port.direction, portGate);
-
-    gates.push(portGate);
   });
 
   // silently instantiate a WireGate for any outputs or wires that have not been declared as as gate (LogicGate, BufferGate or Reg)
@@ -415,7 +375,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       );
       console.log("newGate: ", newWireGate);
       // inputs will be set in child instance
-      gates.push(newWireGate);
+      logicGates.push(newWireGate);
       newInstance.gates.push(newWireGate.id);
     }
   });
@@ -449,6 +409,10 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       return;
     }
   });
+
+  gates.push(...logicGates); // for feedback loops need to procees logic gates before inputs
+  gates.push(...inputGates);
+  gates.push(...outputGates);
 
   // instantiate a module
   instanceModule.instantiations
@@ -493,19 +457,11 @@ const compile = moduleArray => {
 
   console.group("ModuleCompiler");
 
-  createInstance("", mainInstantiation);
+  createInstance("", mainInstantiation, gates);
 
   modules["Main"].display.forEach(d => {
     gates.find(g => g.id == d.id).displayType = d.type;
   });
-
-  // subscribe each gate to all of its inputs
-  // todo: subscribe registers to all of the gates referenced in always and initial
-  // gates.forEach(gate => subscribeToInputs(gate));
-  modules["Main"].ports
-    .filter(port => port.direction == "input")
-    .map(inputPort => getGate("main_" + inputPort.id))
-    .forEach(gate => findSubscribers(gate));
 
   console.group("Compilation result:");
   console.log("Instances: ", stripReactive(instances));

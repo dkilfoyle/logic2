@@ -7,7 +7,7 @@ module DLatch (
   initial
     begin
       Q = 0;
-      Qn = 0;
+      Qn = 1;
     end
 
   wire u3, u4;
@@ -45,7 +45,6 @@ module Main(
   );
 
   test begin
-    #0;
     #1  { d=0, c=0 };
     #2  { d=0, c=1 };
     #3  { d=1, c=1 };

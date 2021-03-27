@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 import Numeric from "./Numeric";
 
 // Component interface
@@ -14,40 +15,19 @@ class BaseComponent {
       );
     this.type = type;
     this.inputs = [];
-    this.subscribers = [];
-    this.subscriptions = [];
     this.defaultValue = defaultValue;
     this.state = new Numeric(this.defaultValue, bitSize);
   }
   get id() {
     return this.namespace + "_" + this.name;
   }
-  clear() {
-    this.state.clear(this.defaultValue);
+
+  clear(def) {
+    this.state.clear(def != undefined ? def : this.defaultValue);
   }
   update() {
     // update is called each clock and processes inputs to call this.setValue
     throw new Error("BaseComponent.update() should be implemented in child");
-  }
-  propogateChange(gatesLookup) {
-    console.group(`propogateChange ${this.id}`);
-    if (this.state.hasChanged()) {
-      console.log(
-        `..has changed from ${this.state.lastBitArray.join(
-          ""
-        )} to ${this.state.bitArray.join("")}, propogating to subscribers: ${
-          this.subscribers
-        }`
-      );
-      this.subscribers.forEach(subscriber => {
-        gatesLookup[subscriber].update(gatesLookup);
-      });
-    } else {
-      console.log(
-        `..hasn't changed: ${this.state.bitArray.toString("binary")}`
-      );
-    }
-    console.groupEnd();
   }
   setValue(x, range) {
     this.state.setValue(x, range);

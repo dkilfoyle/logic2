@@ -96,7 +96,7 @@ class Numeric extends Operand {
 
   clear(defaultValue) {
     this.setValue(defaultValue);
-    this.lastBitArray.fill("y");
+    this.lastBitArray = [...this.bitArray];
   }
 
   hasChanged() {

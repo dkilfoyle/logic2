@@ -30,7 +30,7 @@ class WireGate extends BaseComponent {
         `Buffer.update() for ${this.id} inputMasks not implemented yet`
       );
     }
-    this.propogateChange(gatesLookup);
+    return this.state.getValue();
   }
 }
 
