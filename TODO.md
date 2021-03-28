@@ -15,8 +15,8 @@
 8. Concatenation and parameter - example 5.1 full addder - done
 9. Comparator - example 5.3
 10. Tests! - some
-11. Unfortunately should switch from Listener to Visitor so don't need to pass values by stacks
-12. Monaco language definition
+11. Unfortunately should switch from Listener to Visitor so don't need to pass values by stacks - argh, too late
+12. Monaco language definition - WIP
 13. Register file
     1. Arrays of numeric - done
     2. ternary operator - done
@@ -24,10 +24,9 @@
 15. MIPS single cycle processor
 16. MIPS multi cycle processor
 17. allow behavioural assign ie assign y = a + b instead of using always block
-18. Wires and Outputs not declared as gates should be silently declared as a WireGate with same id. This means that:
-    1. We don't need to declare wire x; buffer(x);
-    2. Output of a child isntance can connect without buffer to input of a sibling instance
-    3. Output of a child instance can connect without buffer to output of the parent instance
-19. Error markers in miniview
+18. Wires and Outputs not declared as gates should be silently declared as a WireGate with same id - done
+19. Error markers in miniview - done
 20. Separate MemoryGate into RegGate and ArrayGate
 21. Renderers for concatenation (a WireGate with multiple inputs) and slice (a WireGate that is connected to multiple gates with different offsets)
+22. ANTLR based formatter - use listener to repopulate text - will only work if valid input
+23. Tooltip for nodes - show type, input values, output vale and glow the connections
