@@ -104,8 +104,7 @@ export default {
   mixins: [UtilsMixin],
   data() {
     return {
-      syntaxErrors: [],
-      semanticErrors: [],
+      lintDecorations: [],
       monacoOptions: {
         glyphMargin: true,
         fontSize: 14
@@ -121,7 +120,7 @@ export default {
     }
   },
   mounted() {
-    // this.lint = this.debounce(this.lint, 1000);
+    this.lint = this.debounce(this.lint, 1000);
   },
   methods: {
     resize() {
@@ -129,7 +128,7 @@ export default {
     },
     onChange(val) {
       // console.log("onChange");
-      // this.lint(val);
+      this.lint(val);
       this.$emit("input", val);
     },
     onEditorDidMount(editor) {
@@ -142,25 +141,6 @@ export default {
     },
     onEditorWillMount() {
       const monaco = this.monaco;
-
-      monaco.editor.onDidCreateModel(model => {
-        const validate = () => {
-          console.log("validating");
-          const text = model.getValue();
-          this.lint(text);
-          monaco.editor.setModelMarkers(model, "miniVerilog", [
-            ...this.syntaxErrors,
-            ...this.semanticErrors
-          ]);
-        };
-
-        var handle = null;
-        model.onDidChangeContent(() => {
-          clearTimeout(handle);
-          handle = setTimeout(() => validate(), 500);
-        });
-      });
-
       monaco.languages.register({ id: "miniVerilog" });
 
       const miniVerilogConfig = {
@@ -187,7 +167,7 @@ export default {
         },
         folding: {
           offSide: false,
-          syntaxMarkers: {
+          markers: {
             start: new RegExp(
               "^(?:\\s*|.*(?!\\/[\\/\\*])[^\\w])(?:begin|module|case)\\b"
             ),
@@ -408,107 +388,65 @@ export default {
       });
     },
     lint(text) {
+      // console.log("lint");
       if (text.length == 0) return [];
       const parseResult = parse(text);
 
-      this.syntaxErrors = parseResult.errors.map(e => ({
-        severity: this.monaco.MarkerSeverity.Error,
-        startLineNumber: e.startLine,
-        startColumn: e.startColumn,
-        endLineNumber: e.endLineNumber,
-        endColumn: e.endColumn,
-        message: e.msg
+      let newDecorations = parseResult.errors.map(e => ({
+        range: new this.monaco.Range(
+          e.startLine,
+          e.startColumn,
+          e.endLine,
+          e.endColumn
+        ),
+        options: {
+          inlineClassName: "lintErrorUnderline",
+          glyphMarginClassName:
+            e.severity == "error"
+              ? "fa fa-exclamation-triangle marginError"
+              : "fa fa-exclamation-circle marginWarning",
+          glyphMarginHoverMessage: { value: e.msg }
+        }
       }));
 
       let walkResult = { errors: [] };
       if (parseResult.errors.length == 0) {
         walkResult = walk(parseResult.ast);
+        newDecorations = newDecorations.concat(
+          walkResult.errors.map(e => ({
+            range: new this.monaco.Range(
+              e.startLine,
+              e.startColumn,
+              e.endLine,
+              e.endColumn
+            ),
+            options: {
+              inlineClassName: "lintErrorUnderline",
+              glyphMarginClassName:
+                e.severity == "error"
+                  ? "fa fa-exclamation-triangle marginError"
+                  : "fa fa-exclamation-circle marginWarning",
+              glyphMarginHoverMessage: { value: e.msg }
+            }
+          }))
+        );
 
-        this.semanticErrors = walkResult.errors.map(e => ({
-          severity: this.monaco.MarkerSeverity.Warning,
-          startLineNumber: e.startLine,
-          startColumn: e.startColumn,
-          endLineNumber: e.endLineNumber,
-          endColumn: e.endColumn,
-          message: e.msg
-        }));
+        // TODO: convert walkResult.errors to add to newdecorations
       }
 
-      if (this.syntaxErrors.length == 0 && this.semanticErrors.length == 0) {
+      // console.log("lint result: ", parseResult, walkResult);
+      this.lintDecorations = this.editor.deltaDecorations(
+        this.lintDecorations,
+        newDecorations
+      );
+
+      if (parseResult.errors.length == 0 && walkResult.errors.length == 0) {
         this.$nextTick(() => {
-          this.$emit("passLint", {
-            name: this.name,
-            parseResult,
-            walkResult
-          });
+          this.$emit("passLint", { name: this.name, parseResult, walkResult });
         });
       } else
-        this.$emit("failLint", {
-          name: this.name,
-          parseResult,
-          walkResult
-        });
+        this.$emit("failLint", { name: this.name, parseResult, walkResult });
     }
-    // lint(text) {
-    //   console.log("lint");
-    //   if (text.length == 0) return [];
-    //   const parseResult = parse(text);
-
-    //   let newDecorations = parseResult.errors.map(e => ({
-    //     range: new this.monaco.Range(
-    //       e.startLine,
-    //       e.startColumn,
-    //       e.endLine,
-    //       e.endColumn
-    //     ),
-    //     options: {
-    //       inlineClassName: "lintErrorUnderline",
-    //       glyphMarginClassName:
-    //         e.severity == "error"
-    //           ? "fa fa-exclamation-triangle marginError"
-    //           : "fa fa-exclamation-circle marginWarning",
-    //       glyphMarginHoverMessage: { value: e.msg }
-    //     }
-    //   }));
-
-    //   let walkResult = { errors: [] };
-    //   if (parseResult.errors.length == 0) {
-    //     walkResult = walk(parseResult.ast);
-    //     newDecorations = newDecorations.concat(
-    //       walkResult.errors.map(e => ({
-    //         range: new this.monaco.Range(
-    //           e.startLine,
-    //           e.startColumn,
-    //           e.endLine,
-    //           e.endColumn
-    //         ),
-    //         options: {
-    //           inlineClassName: "lintErrorUnderline",
-    //           glyphMarginClassName:
-    //             e.severity == "error"
-    //               ? "fa fa-exclamation-triangle marginError"
-    //               : "fa fa-exclamation-circle marginWarning",
-    //           glyphMarginHoverMessage: { value: e.msg }
-    //         }
-    //       }))
-    //     );
-
-    //     // TODO: convert walkResult.errors to add to newdecorations
-    //   }
-
-    //   // console.log("lint result: ", parseResult, walkResult);
-    //   this.lintDecorations = this.editor.deltaDecorations(
-    //     this.lintDecorations,
-    //     newDecorations
-    //   );
-
-    //   if (parseResult.errors.length == 0 && walkResult.errors.length == 0) {
-    //     this.$nextTick(() => {
-    //       this.$emit("passLint", { name: this.name, parseResult, walkResult });
-    //     });
-    //   } else
-    //     this.$emit("failLint", { name: this.name, parseResult, walkResult });
-    // }
   }
 };
 </script>
