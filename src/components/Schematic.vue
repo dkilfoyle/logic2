@@ -608,6 +608,8 @@ body {
   stroke-opacity: 1;
   stroke-width: 3;
   fill: none;
+  stroke-linejoin: bevel;
+  stroke-linecap: unset;
 }
 
 .link-1 {
@@ -615,6 +617,8 @@ body {
   stroke-opacity: 1;
   stroke-width: 3;
   fill: none;
+  stroke-linejoin: bevel;
+  stroke-linecap: unset;
 }
 
 .link-x {
@@ -622,6 +626,8 @@ body {
   stroke-opacity: 1;
   stroke-width: 3;
   fill: none;
+  stroke-linejoin: bevel;
+  stroke-linecap: unset;
 }
 
 .external-0 {

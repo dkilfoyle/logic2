@@ -2,7 +2,7 @@
 import BaseComponent from "./BaseComponent";
 
 class BufferGate extends BaseComponent {
-  constructor(namespace, name, type, bitSize = 1, defaultValue = "x") {
+  constructor(namespace, name, type, bitSize = 1, defaultValue = 0) {
     super(namespace, name, type, bitSize, defaultValue);
     if (
       ![

@@ -16,8 +16,7 @@ const not = (a, bitSize) => {
 };
 
 class LogicGate extends BaseComponent {
-  constructor(namespace, name, type, bitSize = 1, defaultValue = "x") {
-    if (defaultValue != "x") debugger;
+  constructor(namespace, name, type, bitSize = 1, defaultValue = 0) {
     super(namespace, name, type, bitSize, defaultValue);
     if (
       !["and", "nand", "or", "xor", "xnor", "nor", "inv", "not"].includes(type)

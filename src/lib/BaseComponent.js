@@ -5,7 +5,7 @@ import Numeric from "./Numeric";
 // All components have an id, an array of inputs and a numeric state
 
 class BaseComponent {
-  constructor(namespace, name, type, bitSize, defaultValue = "x") {
+  constructor(namespace, name, type, bitSize, defaultValue = 0) {
     this.name = name;
     this.namespace = namespace;
 

@@ -2,7 +2,7 @@
 import BaseComponent from "./BaseComponent";
 
 class WireGate extends BaseComponent {
-  constructor(namespace, name, bitSize = 1, defaultValue = "x") {
+  constructor(namespace, name, bitSize = 1, defaultValue = 0) {
     super(namespace, name, "wiregate", bitSize, defaultValue);
     this.inputMasks = [];
   }

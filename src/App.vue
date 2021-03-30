@@ -298,7 +298,12 @@ export default {
       // needed for updating of gates table and schematic
 
       if (this.$store.getters.currentFile.autoCompile) {
-        const compileResult = vlgCompile(e.walkResult.modules);
+        let compileResult = null;
+        try {
+          compileResult = vlgCompile(e.walkResult.modules);
+        } catch (e) {
+          this.termWriteln(chalk.red("Compile exception: ") + e);
+        }
         this.$store.commit("setCompileResult", { ...compileResult });
         this.$store.commit("setStatus", "Compile OK");
       } else {
@@ -341,7 +346,12 @@ export default {
         )
       );
 
-      const compileResult = vlgCompile(walkResult.modules);
+      let compileResult = null;
+      try {
+        compileResult = vlgCompile(walkResult.modules);
+      } catch (e) {
+        this.termWriteln(chalk.red("└── Compile exception: ") + e.msg);
+      }
       this.$store.commit("setCompileResult", { ...compileResult });
       this.$store.commit("setStatus", "Compile OK");
       console.log("Compiled: ", this.stripReactive(compileResult));

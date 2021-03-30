@@ -95,7 +95,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     const byType = gateDefaultValueType[gateDef.gateType];
     if (byType != undefined) return byType;
     if (gateDef.defaultValue != undefined) return gateDef.defaultValue;
-    return "x";
+    return 0;
   };
 
   // calculate bitsize for wires and ports and regs which may include calculated parameters constants
@@ -392,7 +392,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       let startBit = 0;
 
       net.id.components.reverse().forEach(component => {
-        const componentGate = gates.find(
+        const componentGate = [...logicGates, ...outputGates].find(
           g => g.namespace == namespace && g.name == component.name
         );
         if (!componentGate) throw new Error("unable to build concatenation");

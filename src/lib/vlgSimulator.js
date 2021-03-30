@@ -122,7 +122,7 @@ const simulate = (
   // reset all gates to state = 0
   // TODO: should set state to 'x'??
   gates.forEach(g => {
-    g.clear(0);
+    g.clear();
     newSimulation.gates[g.id] = [];
   });
 
