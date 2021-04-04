@@ -3,6 +3,9 @@ import Vuex from "vuex";
 
 Vue.use(Vuex);
 
+// const getLocalId = x => x.substr(x.lastIndexOf("_") + 1);
+const getNamespace = x => x.substr(0, x.lastIndexOf("_"));
+
 export default new Vuex.Store({
   state: {
     openFiles: {},
@@ -11,6 +14,7 @@ export default new Vuex.Store({
     stateFormat: "logic",
     evals_per_step: 15,
     traceHeight: 30,
+    tableFollowsSchematic: true,
     memoryDumpHideZeros: true,
     memoryDumpCompact: false
   },
@@ -39,6 +43,8 @@ export default new Vuex.Store({
 
     selectedInstanceID: (state, getters) =>
       getters.currentFile.selectedInstanceID,
+    selectedGateID: (state, getters) => getters.currentFile.selectedGateID,
+
     getAllInstances: (state, getters) =>
       getters.isCompiled ? getters.currentFile.compileResult.instances : [],
     getAllGates: (state, getters) =>
@@ -152,6 +158,9 @@ export default new Vuex.Store({
     setTraceHeight(state, payload) {
       state.traceHeight = payload;
     },
+    setTableFollowsSchematic(state, payload) {
+      state.tableFollowsSchematic = payload;
+    },
     setShowWhichGates(state, payload) {
       state.showWhichGates = payload;
     },
@@ -173,6 +182,12 @@ export default new Vuex.Store({
     setSelectedInstanceID(state, id) {
       state.openFiles[state.currentFileTab].selectedInstanceID = id;
     },
+    setSelectedGateID(state, id) {
+      state.openFiles[state.currentFileTab].selectedInstanceID = id
+        ? getNamespace(id)
+        : "main";
+      state.openFiles[state.currentFileTab].selectedGateID = id;
+    },
     setCurrentFileTab(state, payload) {
       state.currentFileTab = payload;
     },
@@ -191,7 +206,7 @@ export default new Vuex.Store({
         status: "Parse Error",
         selectedTime: 0,
         selectedInstanceID: "main",
-        selectedGate: null,
+        selectedGateID: null,
         autoCompile: true
       });
     },
@@ -207,7 +222,7 @@ export default new Vuex.Store({
         status: "Parse Error",
         selectedTime: 0,
         selectedInstanceID: "main",
-        selectedGate: null,
+        selectedGateID: null,
         autoCompile: true
       });
     },

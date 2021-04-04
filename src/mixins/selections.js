@@ -6,6 +6,8 @@ export default {
       "getSelectedInstanceInputs",
       "getSelectedInstanceOutputs",
       "getSelectedInstanceGates",
+      "selectedInstanceID",
+      "selectedGateID",
       "isCompiled",
       "getGate"
     ]),

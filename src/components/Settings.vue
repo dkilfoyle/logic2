@@ -18,6 +18,11 @@
       <b-checkbox v-model="memoryDumpCompact">Compact Display</b-checkbox>
     </div>
 
+    <div class="dk-label">Schematic</div>
+    <div class="dk-flex-col dk-gap-8 dk-pl-5">
+      <b-checkbox v-model="tableFollowsSchematic">Hover Select</b-checkbox>
+    </div>
+
     <div class="dk-heading dk-pt-10">CURRENT FILE</div>
 
     <div class="dk-label">Options</div>
@@ -86,6 +91,14 @@ export default {
       },
       set(value) {
         this.$store.commit("toggleAutoCompile", value);
+      }
+    },
+    tableFollowsSchematic: {
+      get() {
+        return this.$store.state.tableFollowsSchematic;
+      },
+      set(value) {
+        this.$store.commit("setTableFollowsSchematic", value);
       }
     },
     evalsPerStep: {

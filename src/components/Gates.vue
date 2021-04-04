@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 <template>
   <div class="dk-h-100">
     <div class="dk-flex-col dk-h-100" v-if="$store.getters.isCompiled">
@@ -22,9 +23,9 @@
           :detailed="gates.some(x => x.type == 'array')"
           hoverable
           custom-detail-row
-          :default-sort="['name', 'type']"
           detail-key="name"
           :has-detailed-visible="row => row.type == 'array'"
+          :row-class="(row, index) => getRowClass(row)"
         >
           <b-table-column field="name" label="Name" sortable v-slot="props">
             <template v-if="showDetailIcon">
@@ -166,10 +167,36 @@ export default {
   components: { InstanceCrumbs },
   computed: {
     gates() {
-      return this.filteredInstanceGates.map(g => this.getGate(g));
+      if (this.$store.state.tableFollowsSchematic && this.selectedGateID) {
+        // eslint-disable-next-line no-debugger
+        let selectedGate = this.getGate(this.selectedGateID);
+        let topGates = [
+          this.selectedGateID,
+          ...selectedGate.inputs.map(input => input.id)
+        ];
+        // start off with the filteredinstance gates then remove selected gate and its inputs
+        let followGates = this.filteredInstanceGates.filter(
+          gateid => !topGates.includes(gateid)
+        );
+        // add the selectedgate and it's inputs back at the top
+        followGates.unshift(...topGates);
+        console.log(followGates);
+        return followGates.map(g => this.getGate(g));
+      } else return this.filteredInstanceGates.map(g => this.getGate(g));
     }
   },
   methods: {
+    getRowClass(row) {
+      if (!this.selectedGateID) return null;
+      if (row.id == this.selectedGateID) return "has-background-danger-light";
+      if (
+        this.getGate(this.selectedGateID).inputs.some(
+          input => input.id == row.id
+        )
+      )
+        return "has-background-info-light";
+      return null;
+    },
     formatState(value, numFormat, specialFormat) {
       const x = new Numeric(value, specialFormat == "instruction" ? 32 : null);
       return x.toString(numFormat, specialFormat);
@@ -197,7 +224,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .gateicon {
   width: 1.5em;
   height: 1.5em;
@@ -214,6 +241,16 @@ td img.stateicon {
   display: block;
   margin-left: auto;
   margin-right: 0;
+}
+
+tr.is-selectedGate {
+  background: #be6f56;
+  color: #fff;
+}
+
+tr.is-input {
+  background: #608dc0;
+  color: #fff;
 }
 
 #gatestable {

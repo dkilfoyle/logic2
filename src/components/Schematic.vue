@@ -35,6 +35,8 @@ class Tooltip {
   }
 
   show(evt, text) {
+    // todo: setSelectedNode in stroe
+    // gates.vue - use selected node to show at top the inputs and output value of the selected node
     var t = this.tooltip;
     t.style.display = "block";
     t.innerHTML = this.getTextFn(text);
@@ -241,6 +243,42 @@ export default {
         this.buildNetlist();
       }
     },
+    makeGlowFilter(id, color) {
+      const filter = this.g.defs
+        .append("filter")
+        .attr("id", id)
+        .attr("x", "-5000%")
+        .attr("y", "-5000%")
+        .attr("width", "10000%")
+        .attr("height", "10000%");
+      filter
+        .append("feFlood")
+        .attr("flood-color", color)
+        .attr("flood-opacity", "1")
+        .attr("result", "flood");
+      filter
+        .append("feComposite")
+        .attr("in", "flood")
+        .attr("in2", "SourceGraphic")
+        .attr("operator", "in")
+        .attr("result", "mask");
+      filter
+        .append("feMorphology")
+        .attr("in", "mask")
+        .attr("radius", "0.5")
+        .attr("operator", "dilate")
+        .attr("result", "dilated");
+      filter
+        .append("feGaussianBlur")
+        .attr("in", "dilated")
+        .attr("stdDeviation", "2")
+        .attr("result", "blurred");
+
+      var feMerge = filter.append("feMerge");
+      feMerge.append("feMergeNode").attr("in", "blurred");
+      feMerge.append("feMergeNode").attr("in", "SourceGraphic");
+    },
+
     buildNetlist() {
       // console.log(this.width, this.getAllGates, this.isCompiled);
       if (this.width == null || !this.getAllGates) return; // prevent building before properly sized
@@ -268,39 +306,8 @@ export default {
       this.buildInstance(this.elkData);
       console.log("elkData: ", this.stripReactive(this.elkData));
 
-      const filter = this.g.defs
-        .append("filter")
-        .attr("id", "glow")
-        .attr("x", "-5000%")
-        .attr("y", "-5000%")
-        .attr("width", "10000%")
-        .attr("height", "10000%");
-      filter
-        .append("feFlood")
-        .attr("flood-color", "rgb(0,186,255)")
-        .attr("flood-opacity", "1")
-        .attr("result", "flood");
-      filter
-        .append("feComposite")
-        .attr("in", "flood")
-        .attr("in2", "SourceGraphic")
-        .attr("operator", "in")
-        .attr("result", "mask");
-      filter
-        .append("feMorphology")
-        .attr("in", "mask")
-        .attr("radius", "1.5")
-        .attr("operator", "dilate")
-        .attr("result", "dilated");
-      filter
-        .append("feGaussianBlur")
-        .attr("in", "dilated")
-        .attr("stdDeviation", "1.2")
-        .attr("result", "blurred");
-
-      var feMerge = filter.append("feMerge");
-      feMerge.append("feMergeNode").attr("in", "blurred");
-      feMerge.append("feMergeNode").attr("in", "SourceGraphic");
+      this.makeGlowFilter("glow-blue", "rgb(0,186,255)"); //rgb(0,186,255)
+      this.makeGlowFilter("glow-red", "#da5c5c");
 
       let that = this;
 
@@ -310,18 +317,39 @@ export default {
         this.getAllInstances.forEach(instance =>
           instance.gates.forEach(gateID => {
             const node = this.g.root.select("." + gateID + "_internal");
-            node.on("click", function(ev, d) {
+            //   node.on("click", function(ev, d) {
+            //     const id = d.id.substr(0, d.id.indexOf("_gate"));
+            //     const index = that.selectedGates.indexOf(id);
+            //     if (index != -1) {
+            //       // gate is already selected, so deselect it
+            //       that.selectedGates.splice(index, 1);
+            //       node.style("filter", "none");
+            //     } else {
+            //       // newly selected gate
+            //       that.selectedGates.push(id);
+            //       node.style("filter", "url(#glow)");
+            //     }
+            //   });
+            // })
+            node.on("mouseover", function(ev, d) {
               const id = d.id.substr(0, d.id.indexOf("_gate"));
-              const index = that.selectedGates.indexOf(id);
-              if (index != -1) {
-                // gate is already selected, so deselect it
-                that.selectedGates.splice(index, 1);
-                node.style("filter", "none");
-              } else {
-                // newly selected gate
-                that.selectedGates.push(id);
-                node.style("filter", "url(#glow)");
-              }
+              that.$store.commit("setSelectedGateID", id);
+              node.style("filter", "url(#glow-red)");
+              that.getGate(id).inputs.forEach(input => {
+                that.g.root
+                  .select(`.${input.id}_internal`)
+                  .style("filter", "url(#glow-blue)");
+              });
+            });
+            node.on("mouseout", function(ev, d) {
+              const id = d.id.substr(0, d.id.indexOf("_gate"));
+              that.$store.commit("setSelectedGateID", null);
+              node.style("filter", "none");
+              that.getGate(id).inputs.forEach(input => {
+                that.g.root
+                  .select(`.${input.id}_internal`)
+                  .style("filter", "none");
+              });
             });
           })
         );
