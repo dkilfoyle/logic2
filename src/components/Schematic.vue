@@ -13,6 +13,8 @@
 // import "d3-hwschematic/dist/d3-hwschematic.js";
 import "d3-hwschematic/dist/d3-hwschematic.css";
 
+// const getLocalID = x => x.substr(x.lastIndexOf("_") + 1);
+
 import UtilsMixin from "../mixins/utils";
 import { mapGetters } from "vuex";
 
@@ -21,6 +23,7 @@ import NumberRenderer from "./renderers/number.js";
 import BufferRenderer from "./renderers/buffer.js";
 import LedBarRenderer from "./renderers/ledbar.js";
 import WireGateRenderer from "./renderers/wiregate.js";
+import RegGateRenderer from "./renderers/reggate.js";
 import { barData } from "./renderers/number.js";
 import Numeric from "../lib/Numeric";
 
@@ -125,6 +128,18 @@ export default {
             .attr("fill", d => (d.on ? COLOR_ON : COLOR_OFF));
         });
 
+      this.getAllGates
+        .filter(gate => gate.type == "reg")
+        .forEach(gate => {
+          console.log(
+            gate.id,
+            d3.select(`.${gate.id}_internal`).selectAll("text")
+          );
+          d3.select(`.${gate.id}_internal`)
+            .select("#val")
+            .text(timestate[gate.id].toString().padStart(3, "0"));
+        });
+
       // animate the links, controls, and responses
       for (const [gateid, gatevalue] of Object.entries(
         this.getGatesStateAtSelectedTime
@@ -184,6 +199,7 @@ export default {
     this.g.nodeRenderers.registerCustomRenderer(new BufferRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new LedBarRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new WireGateRenderer(this.g));
+    this.g.nodeRenderers.registerCustomRenderer(new RegGateRenderer(this.g));
 
     var zoom = d3.zoom();
     zoom.on("zoom", this.onZoom);
@@ -316,21 +332,9 @@ export default {
         // console.log("buildNetList bind data: ", this.elkData);
         this.getAllInstances.forEach(instance =>
           instance.gates.forEach(gateID => {
-            const node = this.g.root.select("." + gateID + "_internal");
-            //   node.on("click", function(ev, d) {
-            //     const id = d.id.substr(0, d.id.indexOf("_gate"));
-            //     const index = that.selectedGates.indexOf(id);
-            //     if (index != -1) {
-            //       // gate is already selected, so deselect it
-            //       that.selectedGates.splice(index, 1);
-            //       node.style("filter", "none");
-            //     } else {
-            //       // newly selected gate
-            //       that.selectedGates.push(id);
-            //       node.style("filter", "url(#glow)");
-            //     }
-            //   });
-            // })
+            const node = this.g.root.select(
+              `.${gateID}_internal, .${gateID}_external`
+            );
             node.on("mouseover", function(ev, d) {
               const id = d.id.substr(0, d.id.indexOf("_gate"));
               that.$store.commit("setSelectedGateID", id);

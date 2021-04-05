@@ -192,7 +192,8 @@ export default {
     // this.addFileTab("Mux2_1");
     // this.addFileTab("DFlipFlop");
     // this.addFileTab("RippleCounter");
-    this.addFileTab("SumProducts");
+    // this.addFileTab("SumProducts");
+    this.addFileTab("RegFile");
   },
   mounted() {
     setTimeout(() => this.about(), 3000);

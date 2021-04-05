@@ -10,6 +10,9 @@ class RegGate extends BaseComponent {
     // registers and memory have no inputs, their values are set in expressions, not by inputs
     return this.state.getValue();
   }
+  getSchematicName() {
+    return "REGGATE";
+  }
 }
 
 export default RegGate;
