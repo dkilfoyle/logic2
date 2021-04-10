@@ -460,7 +460,7 @@ class Listener extends vlgListener {
   // ;
 
   exitAtomExpr(ctx) {
-    //  console.log("atomExpression value stack: ", this.valueStack)
+    console.log("atomExp value stack: ", this.valueStack);
     this.expressionStack.push(this.valueStack.pop());
   }
 
@@ -479,6 +479,14 @@ class Listener extends vlgListener {
     const rhs = this.expressionStack.pop();
     const lhs = this.expressionStack.pop();
     this.expressionStack.push(new Operation(lhs, ctx.op.getText(), rhs));
+  }
+
+  exitTernaryExpr(ctx) {
+    //  console.log("binaryExpression stack: ", this.expressionStack)
+    const lhs0 = this.expressionStack.pop();
+    const lhs1 = this.expressionStack.pop();
+    const test = this.expressionStack.pop();
+    this.expressionStack.push(new TernOperation(test, lhs1, lhs0));
   }
 
   // identifier

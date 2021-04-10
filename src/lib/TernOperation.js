@@ -14,6 +14,7 @@ class TernOperation extends Operand {
     this.lhs0 = lhs0;
     this.lhs1 = lhs1;
     this.test = test;
+    this.op = "mux";
   }
   getBitSize(gatesLookup, namespace) {
     const testResult = this.test.getValue(gatesLookup, namespace);

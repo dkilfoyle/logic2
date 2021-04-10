@@ -137,7 +137,7 @@ export default {
         this.$emit("onDidChangeCursorPosition", e.position)
       );
       // console.log("editorDidMount");
-      this.lint(editor.getValue());
+      // this.lint(editor.getValue());
       // this.onChange(editor.getValue());
     },
     onEditorWillMount() {
@@ -159,6 +159,8 @@ export default {
           clearTimeout(handle);
           handle = setTimeout(() => validate(), 500);
         });
+
+        validate(); // call once on first onDidCreateModel
       });
 
       monaco.languages.register({ id: "miniVerilog" });

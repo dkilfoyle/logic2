@@ -214,13 +214,15 @@ const simulate = (
       if (!alwaysRes) return false;
 
       // run gate evaluation and instance always for this time step (not t=0)
-      try {
-        const newValues = gates.map(gate => gate.update(gatesLookup));
-        changing = newValues.some((newVal, i) => newVal != oldValues[i]);
-      } catch (e) {
-        logger(chalk.red(e));
-        return false;
-      }
+      // try {
+      const newValues = gates.map(gate => gate.update(gatesLookup));
+      changing = newValues.some((newVal, i) => newVal != oldValues[i]);
+      // } catch (e) {
+      // logger(chalk.red(e));
+      // console.log(e);
+      // debugger;
+      // return false;
+      // }
       i++;
     }
 

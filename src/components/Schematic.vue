@@ -24,6 +24,7 @@ import BufferRenderer from "./renderers/buffer.js";
 import LedBarRenderer from "./renderers/ledbar.js";
 import WireGateRenderer from "./renderers/wiregate.js";
 import RegGateRenderer from "./renderers/reggate.js";
+import ConstantGateRenderer from "./renderers/constantgate.js";
 import { barData } from "./renderers/number.js";
 import Numeric from "../lib/Numeric";
 
@@ -129,12 +130,12 @@ export default {
         });
 
       this.getAllGates
-        .filter(gate => gate.type == "reg")
+        .filter(gate => gate.type == "reg" || gate.type == "constant")
         .forEach(gate => {
-          console.log(
-            gate.id,
-            d3.select(`.${gate.id}_internal`).selectAll("text")
-          );
+          // console.log(
+          //   gate.id,
+          //   d3.select(`.${gate.id}_internal`).selectAll("text")
+          // );
           d3.select(`.${gate.id}_internal`)
             .select("#val")
             .text(timestate[gate.id].toString().padStart(3, "0"));
@@ -200,6 +201,9 @@ export default {
     this.g.nodeRenderers.registerCustomRenderer(new LedBarRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new WireGateRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new RegGateRenderer(this.g));
+    this.g.nodeRenderers.registerCustomRenderer(
+      new ConstantGateRenderer(this.g)
+    );
 
     var zoom = d3.zoom();
     zoom.on("zoom", this.onZoom);
@@ -387,6 +391,7 @@ export default {
               gate.type == "response"
                 ? this.getLocalId(gate.id)
                 : gate.getSchematicName(),
+            val: gate.getValue(currentInstance.parameters, currentInstance.id),
             isExternalPort: gate.type == "control" || gate.type == "response"
           },
           properties: {
@@ -418,10 +423,13 @@ export default {
             hwMeta: {
               name: this.getLocalId(gate.id)
             },
-            properties: {
-              side: "WEST",
-              portIndex: gate.inputs.length > 1 ? i + 1 : 0
-            }
+            properties:
+              gate.type == "mux" && i == 0
+                ? { side: "SOUTH", portIndex: 0 }
+                : {
+                    side: "WEST",
+                    portIndex: gate.inputs.length > 1 ? i + 1 : 0
+                  }
           });
 
           let gate2gate = {

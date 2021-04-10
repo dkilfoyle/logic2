@@ -167,26 +167,27 @@ export default {
       var area = (x, y) =>
         d3
           .area()
-          .defined(d => !isNaN(d))
+          // .defined(d => !isNaN(d))
           .x((d, i) => x(i))
-          .y0(traceHeight)
-          .y1(d => y(d))
+          .y0(y(0))
+          .y1(d => (isNaN(d) ? y(0) : y(d)))
           .curve(d3.curveStepAfter);
 
-      // var line2 = (x, y) =>
-      //   d3
-      //     .line()
-      //     .defined(d => isNaN(d.y))
-      //     .x(d => x(d.x))
-      //     .y(() => y(0))
-      //     .curve(d3.curveStepAfter);
+      var nanarea = (x, y) =>
+        d3
+          .area()
+          // .defined(d => isNaN(d))
+          .x((d, i) => x(i))
+          .y0(y(0))
+          .y1(d => (isNaN(d) ? y(1) : y(0)))
+          .curve(d3.curveStepAfter);
 
       var line = (x, y) =>
         d3
           .line()
-          .defined(d => !isNaN(d))
+          // .defined(d => !isNaN(d))
           .x((d, i) => x(i))
-          .y(d => y(d))
+          .y(d => (isNaN(d) ? y(0) : y(d)))
           .curve(d3.curveStepAfter);
 
       function enterFilledPlot() {
@@ -195,10 +196,10 @@ export default {
           .attr("class", "area");
         d3.select(this)
           .append("path")
-          .attr("class", "nanline");
+          .attr("class", "line");
         d3.select(this)
           .append("path")
-          .attr("class", "line");
+          .attr("class", "nanarea");
         d3.select(this)
           .append("text")
           .attr("class", "label")
@@ -221,6 +222,11 @@ export default {
           .attr("fill", d => that.traceColor(d.id, true))
           .datum(d => d.values)
           .attr("d", area(x, y));
+        d3.select(this)
+          .select(".nanarea")
+          .attr("fill", "#f5f5f5") //d => that.traceColor(d.id, true))
+          .datum(d => d.values)
+          .attr("d", nanarea(x, y));
         // d3.select(this)
         //   .select(".nanline")
         //   .datum(d =>

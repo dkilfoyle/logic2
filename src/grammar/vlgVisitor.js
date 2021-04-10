@@ -1,4 +1,4 @@
-// Generated from c:\code\JS\logic2\src\grammar\vlg.g4 by ANTLR 4.8
+// Generated from c:\code\logic2\src\grammar\vlg.g4 by ANTLR 4.8
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
 
@@ -362,6 +362,12 @@ vlgVisitor.prototype.visitTernaryExpression = function(ctx) {
 
 // Visit a parse tree produced by vlgParser#unaryExpr.
 vlgVisitor.prototype.visitUnaryExpr = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#ternaryExpr.
+vlgVisitor.prototype.visitTernaryExpr = function(ctx) {
   return this.visitChildren(ctx);
 };
 

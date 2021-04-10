@@ -16,15 +16,14 @@ class WireGate extends BaseComponent {
       if (inputValues.length == 1) {
         this.setValue(inputValues[0]);
       }
-      // buffer gate with multiple inputs = concatenation of 1 bits
-      else
-        inputValues.forEach((x, i) => {
-          if (x > 1)
-            throw new Error(
-              "Multiple input wiregate - each input must be 1 bit wide"
-            );
-          this.setValue(x, i);
-        });
+      // wire gate with multiple inputs = select one with non z value
+      else {
+        let nonz = inputValues.filter(x => !x.toString().includes("z"));
+        if (nonz.length == 0) this.setValue("z");
+        else if (nonz.length > 1)
+          throw new Error("Wire gate with more than 1 nonz input");
+        else this.setValue(nonz[0]);
+      }
     } else {
       throw new Error(
         `Buffer.update() for ${this.id} inputMasks not implemented yet`

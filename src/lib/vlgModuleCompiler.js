@@ -4,11 +4,13 @@ import Numeric from "./Numeric";
 import Operation from "./Operation";
 import LogicGate from "./LogicGate";
 import BufferGate from "./BufferGate";
+import ConstantGate from "./ConstantGate";
 import WireGate from "./WireGate";
 import ArrayGate from "./ArrayGate";
 import RegGate from "./RegGate";
 import ParameterGate from "./ParameterGate";
 import Concatenation from "./Concatenation";
+import ConcatenationGate from "./ConcatenationGate";
 
 var modules, instances, gates, parameters;
 
@@ -169,12 +171,43 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     let gateID = id + (counter == 0 ? "" : counter);
     counter = counter + 1;
 
+    // debugger;
+
     if (op instanceof Variable) {
       return op;
     }
 
     if (id instanceof Concatenation) {
       return; // concatenations are handled later
+    }
+
+    if (op instanceof Concatenation) {
+      const newGate = new ConcatenationGate(
+        namespace,
+        gateID,
+        op.getBitSize(parameters, namespace)
+      );
+      newGate.copynum = op.copynum.getValue(parameters, namespace);
+      newGate.inputs = op.components.map(component =>
+        walkOperationTree(namespace, id, component, netBitSize).instance(
+          namespace
+        )
+      );
+      newInstance.gates.push(newGate.id);
+      logicGates.push(newGate);
+      return new Variable(namespace, gateID, null);
+    }
+
+    if (op instanceof Numeric) {
+      const newGate = new ConstantGate(
+        namespace,
+        gateID,
+        netBitSize,
+        op.getValue()
+      );
+      newInstance.gates.push(newGate.id);
+      logicGates.push(newGate);
+      return new Variable(namespace, gateID, null);
     }
 
     const newGate =
@@ -184,20 +217,33 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
     console.log("newGate: ", newGate);
 
-    newGate.inputs = op.rhs
-      ? [
-          walkOperationTree(namespace, id, op.lhs, netBitSize).instance(
-            namespace
-          ),
-          walkOperationTree(namespace, id, op.rhs, netBitSize).instance(
-            namespace
-          )
-        ]
-      : [
-          walkOperationTree(namespace, id, op.lhs, netBitSize).instance(
-            namespace
-          )
-        ];
+    if (op.op == "mux")
+      newGate.inputs = [
+        walkOperationTree(namespace, id, op.test, netBitSize).instance(
+          namespace
+        ),
+        walkOperationTree(namespace, id, op.lhs1, netBitSize).instance(
+          namespace
+        ),
+        walkOperationTree(namespace, id, op.lhs0, netBitSize).instance(
+          namespace
+        )
+      ];
+    else
+      newGate.inputs = op.rhs
+        ? [
+            walkOperationTree(namespace, id, op.lhs, netBitSize).instance(
+              namespace
+            ),
+            walkOperationTree(namespace, id, op.rhs, netBitSize).instance(
+              namespace
+            )
+          ]
+        : [
+            walkOperationTree(namespace, id, op.lhs, netBitSize).instance(
+              namespace
+            )
+          ];
 
     logicGates.push(newGate);
     newInstance.gates.push(newGate.id);

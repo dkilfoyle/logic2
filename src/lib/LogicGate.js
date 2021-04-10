@@ -19,7 +19,17 @@ class LogicGate extends BaseComponent {
   constructor(namespace, name, type, bitSize = 1, defaultValue = 0) {
     super(namespace, name, type, bitSize, defaultValue);
     if (
-      !["and", "nand", "or", "xor", "xnor", "nor", "inv", "not"].includes(type)
+      ![
+        "and",
+        "nand",
+        "or",
+        "xor",
+        "xnor",
+        "nor",
+        "inv",
+        "not",
+        "mux"
+      ].includes(type)
     )
       throw new Error(
         `LogicGate.constructor(${namespace},${name},${type},${bitSize}): invalid type ${type}`
@@ -69,6 +79,9 @@ class LogicGate extends BaseComponent {
         break;
       case "not":
         this.setValue(not(a, this.bitSize));
+        break;
+      case "mux":
+        this.setValue(a ? b : c);
         break;
       default:
         throw new Error(

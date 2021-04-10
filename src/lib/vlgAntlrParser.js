@@ -20,7 +20,7 @@ class vlgErrorListener extends error.ErrorListener {
       msg,
       severity: "error" // This the error code you can customize them as you want
     });
-    console.log("Error: ", this.errors[this.errors.length - 1]);
+    // console.log("Error: ", this.errors[this.errors.length - 1]);
   }
 }
 

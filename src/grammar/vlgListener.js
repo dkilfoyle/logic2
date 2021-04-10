@@ -1,4 +1,4 @@
-// Generated from c:\code\JS\logic2\src\grammar\vlg.g4 by ANTLR 4.8
+// Generated from c:\code\logic2\src\grammar\vlg.g4 by ANTLR 4.8
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
 
@@ -539,6 +539,15 @@ vlgListener.prototype.enterUnaryExpr = function(ctx) {
 
 // Exit a parse tree produced by vlgParser#unaryExpr.
 vlgListener.prototype.exitUnaryExpr = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#ternaryExpr.
+vlgListener.prototype.enterTernaryExpr = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#ternaryExpr.
+vlgListener.prototype.exitTernaryExpr = function(ctx) {
 };
 
 

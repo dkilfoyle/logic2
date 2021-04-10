@@ -4,7 +4,8 @@ export const SourceFiles = {
   ...require("./combinational").SourceFiles,
   ...require("./behavioural").SourceFiles,
   ...require("./sequential").SourceFiles,
-  ...require("./fsm").SourceFiles
+  ...require("./fsm").SourceFiles,
+  ...require("./cpu").SourceFiles
 };
 
 export const SourceTree = [
@@ -17,5 +18,6 @@ export const SourceTree = [
   require("./combinational").SourceTree,
   require("./sequential").SourceTree,
   require("./fsm").SourceTree,
-  require("./behavioural").SourceTree
+  require("./behavioural").SourceTree,
+  require("./cpu").SourceTree
 ];

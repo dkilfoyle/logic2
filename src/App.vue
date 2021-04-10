@@ -193,7 +193,9 @@ export default {
     // this.addFileTab("DFlipFlop");
     // this.addFileTab("RippleCounter");
     // this.addFileTab("SumProducts");
-    this.addFileTab("RegFile");
+    // this.addFileTab("RegFile");
+    // this.addFileTab("BenEater");
+    this.addFileTab("TriBuff");
   },
   mounted() {
     setTimeout(() => this.about(), 3000);

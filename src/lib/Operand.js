@@ -4,6 +4,7 @@ class Operand {
       type == "variable" ||
       type == "numeric" ||
       type == "operation" ||
+      type == "tern" ||
       type == "concatenation"
     )
       this.type = type;

@@ -152,7 +152,7 @@ statement:
 	| case_statement
 	| error_statement;
 
-blocking_assignment: lhs = lvalue '=' rhs = expression;
+blocking_assignment: lhs = lvalue ('=' | '<=') rhs = expression;
 
 conditional_statement:
 	'if' '(' cond = expression ')' thenblock = statement_block (
@@ -191,10 +191,14 @@ expression: // behavioural
 	| expression '?' expression ':' expression								# ternaryExpression;
 
 expr: // gate
-	identifier						# atomExpr
+	number							# atomExpr
+	| identifier					# atomExpr
+	| concatenation					# atomExpr
+	| multiple_concatenation		# atomExpr
 	| '(' expr ')'					# parensExpr
 	| op = unary_gate_op expr		# unaryExpr
-	| expr op = binary_gate_op expr	# binaryExpr;
+	| expr op = binary_gate_op expr	# binaryExpr
+	| expr '?' expr ':' expr		# ternaryExpr;
 
 binary_gate_op: AND | NAND | OR | NOR | XOR;
 unary_gate_op: NOT | NEG;

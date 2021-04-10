@@ -49,7 +49,12 @@ const parseVerilogNumber = x => {
   let value, binaryString;
   let hasX = false;
 
-  if (valueString.includes("x") | valueString.includes("X")) {
+  if (
+    valueString.includes("x") |
+    valueString.includes("X") |
+    valueString.includes("z") |
+    valueString.includes("Z")
+  ) {
     if (format != "binary")
       throw new Error(
         `parseVerilogNumber(${x}): only binary value strings can have 'x' bits`
@@ -80,6 +85,9 @@ class Numeric extends Operand {
       this.setValue(value);
     } else if (value == "x") {
       this.bitArray = new Array(bitSize || 1).fill("x");
+      this.format = "binary";
+    } else if (value == "z") {
+      this.bitArray = new Array(bitSize || 1).fill("zx");
       this.format = "binary";
     } else if (typeof value == "string") {
       // eg 4'b1100
@@ -123,9 +131,9 @@ class Numeric extends Operand {
       throw new Error(
         `Numeric.setBit(bit=${bit},n=${n}): n is out of range of bitsize ${this.bitArray.length}`
       );
-    if (!(bit == 0 || bit == 1 || bit == "x"))
+    if (!(bit == 0 || bit == 1 || bit == "x" || bit == "z"))
       throw new Error(
-        `Numeric.setBit(bit=${bit},n=${n}): bit must be one of 0,1,x`
+        `Numeric.setBit(bit=${bit},n=${n}): bit must be one of 0,1,x,z`
       );
     this.bitArray[this.bitArray.length - n - 1] = bit;
   }
@@ -162,15 +170,20 @@ class Numeric extends Operand {
   setValue(value, bitRange) {
     // check for valid newDecimalValue
     if (
-      !(Number.isInteger(value) | (typeof value == "string") | (value == "x"))
+      !(
+        Number.isInteger(value) |
+        (typeof value == "string") |
+        (value == "x") |
+        (value == "z")
+      )
     )
       throw new Error(
         `Numeric.setValue(value=${value}, bitRange=${bitRange}): value must be an integer or verilog number string or 'x'`
       );
     this.lastBitArray = [...this.bitArray];
 
-    if (value == "x") {
-      this.bitArray.fill("x");
+    if ((value == "x") | (value == "z")) {
+      this.bitArray.fill(value);
       return;
     }
 
@@ -188,9 +201,9 @@ class Numeric extends Operand {
         .split("")
         .map(x => {
           if (x == "0" || x == "1") return +x;
-          if (x == "x") return x;
+          if ((x == "x") | (x == "z")) return x;
           throw new Error(
-            `Numeric.setValue(${value}): valueString ${valueString} must contain only 0, 1, x`
+            `Numeric.setValue(${value}): valueString ${valueString} must contain only 0, 1, x, z`
           );
         }),
       br
@@ -236,7 +249,7 @@ class Numeric extends Operand {
   _getValue(bitRange) {
     const br = this.makeRange(bitRange);
     const bitArrayString = this.getBits(br).join("");
-    if (bitArrayString.includes("x") || bitArrayString.includes("X")) {
+    if (bitArrayString.match(/[xXzZ]/)) {
       return `${bitArrayString.length}'b${bitArrayString}`;
     } else return parseInt(bitArrayString, 2);
   }
