@@ -21,7 +21,7 @@ module TriBuff #(parameter WIDTH = 8) (
   input enable,
   output [WIDTH-1:0] dataOut
 );
-  assign dataOut = enable ? data : {WIDTH{1'bz}}}
+  assign dataOut = enable ? data : {WIDTH{1'bz}};
 endmodule
 
 module RAM(
