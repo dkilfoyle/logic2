@@ -31,7 +31,7 @@ export default class RegGateRenderer extends window.d3.GenericNodeRenderer {
     node.txtHeight = sizeOfText("000").height;
     node.width = node.idWidth + node.valWidth + 10;
     node.height = node.txtHeight + 7;
-    console.log(node);
+    // console.log(node);
   }
 
   render(root, nodeG) {

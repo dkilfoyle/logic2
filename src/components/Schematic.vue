@@ -391,7 +391,7 @@ export default {
               gate.type == "response"
                 ? this.getLocalId(gate.id)
                 : gate.getSchematicName(),
-            val: gate.getValue(currentInstance.parameters, currentInstance.id),
+            val: gate.getValue(), //currentInstance.parameters, currentInstance.id),
             isExternalPort: gate.type == "control" || gate.type == "response"
           },
           properties: {
@@ -426,6 +426,8 @@ export default {
             properties:
               gate.type == "mux" && i == 0
                 ? { side: "SOUTH", portIndex: 0 }
+                : (gate.type == "reg") | (gate.type == "array")
+                ? { side: "NORTH", portIndex: i }
                 : {
                     side: "WEST",
                     portIndex: gate.inputs.length > 1 ? i + 1 : 0

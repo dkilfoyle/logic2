@@ -474,8 +474,53 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     newInstance.initial = instanceModule.initial;
   }
 
+  const blockingAssignments = [];
+  const findBlockingAssignments = statements => {
+    statements.forEach(s => {
+      if (s.type == "conditional_statement") {
+        findBlockingAssignments(s.thenBlock.statements);
+        if (s.elseBlock) findBlockingAssignments(s.elseBlock.statements);
+      }
+      if (s.type == "blocking_assignment")
+        if (!s.lhs.type == "concatenation") blockingAssignments.push(s);
+    });
+  };
+
+  const rhsVars = [];
+  const findRhsVars = operand => {
+    if (operand instanceof Operation) {
+      findRhsVars(operand.lhs);
+      if (operand.rhs) findRhsVars(operand.rhs);
+    }
+    if (operand instanceof Variable) rhsVars.push(operand);
+  };
+
   if (instanceModule.always) {
     newInstance.always = [...instanceModule.always];
+    instanceModule.always.forEach(a => {
+      // debugger;
+      findBlockingAssignments(a.statementTree.statements);
+      blockingAssignments.forEach(assign => {
+        let lhsGate = [...logicGates, ...inputGates].find(
+          g => g.name == assign.lhs.name
+        );
+
+        if ((lhsGate.type != "reg") & (lhsGate.type != "array"))
+          throw new Error("blocking assignment lhs should be reg");
+        rhsVars.length = 0;
+        findRhsVars(assign.rhs);
+        a.sensitivities.forEach(sensitivity => {
+          if (!lhsGate.inputs.some(input => input.name == sensitivity.id.name))
+            lhsGate.inputs.push(new Variable(namespace, sensitivity.id.name));
+        });
+        lhsGate.inputs.push(
+          ...rhsVars
+            .filter(x => x.name != lhsGate.name)
+            .map(x => new Variable(namespace, x.name))
+        );
+        console.log(lhsGate);
+      });
+    });
   }
 
   console.log("Instance: ", stripReactive(newInstance));

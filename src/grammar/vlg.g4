@@ -184,9 +184,10 @@ expression: // behavioural
 	| concatenation															# atomExpression
 	| multiple_concatenation												# atomExpression
 	| '(' expression ')'													# parensExpression
-	| op = (PLUS | MINUS) expression										# unaryExpression
+	| op = (PLUS | MINUS | NEG) expression									# unaryExpression
 	| expression op = (MUL | DIV) expression								# binaryExpression
 	| expression op = (PLUS | MINUS) expression								# binaryExpression
+	| expression op = (AND | OR) expression									# binaryExpression
 	| expression op = (LT | LTE | GT | GTE | EQUAL | NOTEQUAL) expression	# binaryExpression
 	| expression '?' expression ':' expression								# ternaryExpression;
 

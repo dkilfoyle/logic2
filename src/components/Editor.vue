@@ -30,7 +30,9 @@
             class="tag is-info"
             >Parsed OK</span
           >
-          <span v-else class="tag is-danger">Errors</span>
+          <span v-else class="tag is-danger"
+            >{{ syntaxErrors.length + semanticErrors.length }} Errors</span
+          >
         </div>
         <div class="level-right">
           <div class="level-item dkbuttongroup">

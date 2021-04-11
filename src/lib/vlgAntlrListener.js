@@ -433,7 +433,7 @@ class Listener extends vlgListener {
   }
 
   exitUnaryExpression(ctx) {
-    const lhs = this.expression.stack.pop();
+    const lhs = this.expressionStack.pop();
     this.expressionStack.push(new Operation(lhs, ctx.op.text, null));
   }
 

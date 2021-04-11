@@ -68,6 +68,19 @@ class Operation extends Operand {
         return lhs != rhs ? 1 : 0;
       case "equals":
         return lhs;
+      case "inv":
+        return parseInt(
+          lhs
+            .toString(2)
+            .split("")
+            .map(x => +!+x)
+            .join(""),
+          2
+        );
+      case "and":
+        return lhs & rhs;
+      case "or":
+        return lhs | rhs;
       default:
         throw new Error(`Operation getValue: invalid op ${this.op}`);
     }

@@ -13,10 +13,10 @@ class vlgErrorListener extends error.ErrorListener {
     this.errors.push({
       startLine: line,
       endLine: line,
-      startColumn: column,
+      startColumn: column + 1,
       endColumn: offendingSymbol
         ? column + (offendingSymbol.stop - offendingSymbol.start) + 2
-        : column + 1, //Let's suppose the length of the error is only 1 char for simplicity
+        : column + 2, //Let's suppose the length of the error is only 1 char for simplicity
       msg,
       severity: "error" // This the error code you can customize them as you want
     });
