@@ -482,7 +482,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         if (s.elseBlock) findBlockingAssignments(s.elseBlock.statements);
       }
       if (s.type == "blocking_assignment")
-        if (!s.lhs.type == "concatenation") blockingAssignments.push(s);
+        if (s.lhs.type != "concatenation") blockingAssignments.push(s);
     });
   };
 

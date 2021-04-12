@@ -25,6 +25,9 @@ class ArrayGate extends BaseComponent {
     this.checkIndex(index, "getValue");
     return this.state[index].getValue();
   }
+  getValues() {
+    return this.state.map(s => s.getValue());
+  }
   checkIndex(index, msg) {
     if (index > this.state.length)
       throw new Error(`MemoryGate.${msg}: ${this.name} invalid index ${index}`);

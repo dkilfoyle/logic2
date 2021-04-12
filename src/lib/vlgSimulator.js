@@ -215,6 +215,7 @@ const simulate = (
 
       // run gate evaluation and instance always for this time step (not t=0)
       // try {
+      // todo: what about array gates????
       const newValues = gates.map(gate => gate.update(gatesLookup));
       changing = newValues.some((newVal, i) => newVal != oldValues[i]);
       // } catch (e) {
@@ -230,7 +231,9 @@ const simulate = (
 
     // and store gate results in newSimulation
     gates.forEach(g => {
-      newSimulation.gates[g.id].push(gatesLookup[g.id].getValue());
+      newSimulation.gates[g.id].push(
+        g.type == "array" ? g.getValues() : g.getValue()
+      );
     });
     newSimulation.clock.push(clock % 2);
 

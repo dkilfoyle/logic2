@@ -196,8 +196,8 @@ export default {
     // this.addFileTab("RegFile");
     // this.addFileTab("BenEater");
     // this.addFileTab("TriBuff");
-    // this.addFileTab("RAM");
-    this.addFileTab("PC");
+    this.addFileTab("RAM");
+    // this.addFileTab("PC");
   },
   mounted() {
     setTimeout(() => this.about(), 3000);

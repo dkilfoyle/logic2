@@ -101,7 +101,11 @@
           <template slot="detail" slot-scope="props">
             <template v-for="(item, index) in props.row.state">
               <tr
-                v-if="item.getValue() != 0 || !$store.state.memoryDumpHideZeros"
+                v-if="
+                  $store.getters.getGateStateAtSelectedTime(props.row.id)[
+                    index
+                  ] != 0 || $store.state.memoryDumpHideZeros
+                "
                 :key="index"
               >
                 <td></td>
@@ -114,7 +118,10 @@
                 <td></td>
                 <td class="has-text-right">
                   {{
-                    item.toString(
+                    formatState(
+                      $store.getters.getGateStateAtSelectedTime(props.row.id)[
+                        index
+                      ],
                       $store.state.stateFormat,
                       props.row.displayType
                     )

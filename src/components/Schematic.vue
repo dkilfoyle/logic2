@@ -25,6 +25,7 @@ import LedBarRenderer from "./renderers/ledbar.js";
 import WireGateRenderer from "./renderers/wiregate.js";
 import RegGateRenderer from "./renderers/reggate.js";
 import ConstantGateRenderer from "./renderers/constantgate.js";
+import ArrayRenderer from "./renderers/array.js";
 import { barData } from "./renderers/number.js";
 import Numeric from "../lib/Numeric";
 
@@ -130,6 +131,18 @@ export default {
         });
 
       this.getAllGates
+        .filter(gate => gate.type == "array")
+        .forEach(gate => {
+          const table = d3.select(`.${gate.id}_internal`);
+          const tr = table
+            .selectAll("tr")
+            .data(timestate[gate.id].map((x, i) => [i, x]));
+          tr.selectAll("td")
+            .data((d, i) => [i, timestate[gate.id][i]])
+            .text(d => d);
+        });
+
+      this.getAllGates
         .filter(gate => gate.type == "reg" || gate.type == "constant")
         .forEach(gate => {
           // console.log(
@@ -201,6 +214,7 @@ export default {
     this.g.nodeRenderers.registerCustomRenderer(new LedBarRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new WireGateRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new RegGateRenderer(this.g));
+    this.g.nodeRenderers.registerCustomRenderer(new ArrayRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(
       new ConstantGateRenderer(this.g)
     );
@@ -391,7 +405,7 @@ export default {
               gate.type == "response"
                 ? this.getLocalId(gate.id)
                 : gate.getSchematicName(),
-            val: gate.getValue(), //currentInstance.parameters, currentInstance.id),
+            val: gate.type == "array" ? gate.arraySize : gate.getValue(), //currentInstance.parameters, currentInstance.id),
             isExternalPort: gate.type == "control" || gate.type == "response"
           },
           properties: {
@@ -623,6 +637,31 @@ body {
 .wiregaterect {
   fill: #e6ffff;
   stroke: darkgrey;
+}
+
+.arrayrect {
+  fill: #e6ffff;
+  stroke: darkgrey;
+}
+
+.arrayTable {
+  font-size: 6px;
+}
+
+.arrayTable th {
+  font-size: 6px;
+}
+
+.td0 {
+  padding-right: 4px;
+  text-align: right !important;
+  border-right: 1px solid darkgrey;
+  width: 30%;
+}
+
+.td1 {
+  padding-right: 2px;
+  text-align: right !important;
 }
 
 .d3-hwschematic .link-wrap {

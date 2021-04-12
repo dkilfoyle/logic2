@@ -1,12 +1,12 @@
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
-const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
-  .BundleAnalyzerPlugin;
+// const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
+// .BundleAnalyzerPlugin;
 
 module.exports = {
   publicPath: "/logic2/",
   configureWebpack: {
-    devtool: "source-map",
-    plugins: [new BundleAnalyzerPlugin()]
+    devtool: "source-map"
+    // plugins: [new BundleAnalyzerPlugin()]
   },
   chainWebpack: config => {
     config.plugin("monaco-editor").use(MonacoWebpackPlugin, [
