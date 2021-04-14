@@ -4,7 +4,8 @@ export const SourceFiles = {
   Register: require("./register.v").default,
   TriBuff: require("./tribuff.v").default,
   RAM: require("./ram.v").default,
-  PC: require("./pc.v").default
+  PC: require("./pc.v").default,
+  Controller: require("./controller.v").default
 };
 
 export const SourceTree = {
@@ -16,7 +17,8 @@ export const SourceTree = {
         { text: "Register" },
         { text: "TriBuff" },
         { text: "RAM" },
-        { text: "PC" }
+        { text: "PC" },
+        { text: "Controller" }
       ]
     },
     { text: "BenEater" }

@@ -110,6 +110,15 @@ vlgListener.prototype.exitReg = function(ctx) {
 };
 
 
+// Enter a parse tree produced by vlgParser#localparam.
+vlgListener.prototype.enterLocalparam = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#localparam.
+vlgListener.prototype.exitLocalparam = function(ctx) {
+};
+
+
 // Enter a parse tree produced by vlgParser#assign.
 vlgListener.prototype.enterAssign = function(ctx) {
 };
@@ -215,6 +224,15 @@ vlgListener.prototype.enterDisplay_assignment = function(ctx) {
 
 // Exit a parse tree produced by vlgParser#display_assignment.
 vlgListener.prototype.exitDisplay_assignment = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#localparam_declaration.
+vlgListener.prototype.enterLocalparam_declaration = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#localparam_declaration.
+vlgListener.prototype.exitLocalparam_declaration = function(ctx) {
 };
 
 

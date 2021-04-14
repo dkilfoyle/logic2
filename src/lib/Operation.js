@@ -18,7 +18,9 @@ const opLookup = {
   gte: ">=",
   equality: "==",
   ne: "!=",
-  assign: "assign"
+  assign: "assign",
+  shl: "<<",
+  shr: ">>"
 };
 
 class Operation extends Operand {
@@ -34,6 +36,7 @@ class Operation extends Operand {
     this.rhs = rhs;
 
     this.op = Object.entries(opLookup).find(x => x[1] == op)[0];
+    if (!this.op) throw new Error(`Operation constructor: invalid op ${op}`);
   }
   getBitSize(gatesLookup, namespace) {
     const lhs = this.lhs.getBitSize(gatesLookup, namespace);
@@ -81,6 +84,10 @@ class Operation extends Operand {
         return lhs & rhs;
       case "or":
         return lhs | rhs;
+      case "shl":
+        return lhs << rhs;
+      case "shr":
+        return lhs >> rhs;
       default:
         throw new Error(`Operation getValue: invalid op ${this.op}`);
     }

@@ -56,6 +56,9 @@ module Main(
     .dataOut(dataOut)
   );
 
+  // wire out0;
+  // led(out0, dataOut[0]);
+
   test begin
     #0   { address=0, we=0, re=1, dataIn=8'b10101010 }; // read address 0 : dataOut = 8'b0001_1010
     #2   { address=1, we=0, re=1, dataIn=8'b10101010 }; // read address 1 : dataOut = 8'b0010_1011

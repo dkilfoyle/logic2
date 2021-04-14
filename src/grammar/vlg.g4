@@ -34,13 +34,14 @@ port_identifier_list: IDENTIFIER (',' IDENTIFIER)*;
 port_direction: 'input' | 'output';
 
 module_item:
-	net_declaration			# net
-	| reg_declaration		# reg
-	| net_assignment		# assign
-	| gate_instantiation	# gate
-	| module_instantiation	# instance
-	| initial_construct		# initial
-	| always_construct		# always;
+	net_declaration				# net
+	| reg_declaration			# reg
+	| localparam_declaration	# localparam
+	| net_assignment			# assign
+	| gate_instantiation		# gate
+	| module_instantiation		# instance
+	| initial_construct			# initial
+	| always_construct			# always;
 
 /* Test bench ====================================================== */
 
@@ -60,6 +61,9 @@ display_bench: '$display' 'begin' display_assignment* 'end';
 display_assignment: lhs = IDENTIFIER '=' rhs = IDENTIFIER ';';
 
 // 2. Declarations
+
+localparam_declaration:
+	'localparam' IDENTIFIER '=' expression ';';
 
 net_declaration:
 	'wire' (bitDim = range)? ids = simple_identifier_list ';';
@@ -113,6 +117,7 @@ gate_type:
 	| 'buffer'
 	| 'sevenseg'
 	| 'number'
+	| 'led'
 	| 'ledbar';
 
 net_assignment: 'assign' lvalue '=' expr ';';
@@ -163,7 +168,7 @@ case_statement:
 	'case' '(' casevar = identifier ')' clauses += case_clause+ defaultclause = case_default?
 		'endcase';
 
-case_clause: number ':' statement_block;
+case_clause: expression ':' statement_block;
 case_default: 'default' ':' statement_block;
 
 error_statement: '$error' '(' string ')' ';';
@@ -179,17 +184,26 @@ multiple_concatenation:
 
 /* 8.3 Expressions ============================================== */
 expression: // behavioural
-	number																	# atomExpression
-	| identifier															# atomExpression
-	| concatenation															# atomExpression
-	| multiple_concatenation												# atomExpression
-	| '(' expression ')'													# parensExpression
-	| op = (PLUS | MINUS | NEG) expression									# unaryExpression
-	| expression op = (MUL | DIV) expression								# binaryExpression
-	| expression op = (PLUS | MINUS) expression								# binaryExpression
-	| expression op = (AND | OR) expression									# binaryExpression
-	| expression op = (LT | LTE | GT | GTE | EQUAL | NOTEQUAL) expression	# binaryExpression
-	| expression '?' expression ':' expression								# ternaryExpression;
+	number										# atomExpression
+	| identifier								# atomExpression
+	| concatenation								# atomExpression
+	| multiple_concatenation					# atomExpression
+	| '(' expression ')'						# parensExpression
+	| op = (PLUS | MINUS | NEG) expression		# unaryExpression
+	| expression op = (MUL | DIV) expression	# binaryExpression
+	| expression op = (PLUS | MINUS) expression	# binaryExpression
+	| expression op = (AND | OR) expression		# binaryExpression
+	| expression op = (
+		LT
+		| LTE
+		| GT
+		| GTE
+		| EQUAL
+		| NOTEQUAL
+		| SHL
+		| SHR
+	) expression								# binaryExpression
+	| expression '?' expression ':' expression	# ternaryExpression;
 
 expr: // gate
 	number							# atomExpr
@@ -298,6 +312,8 @@ GT: '>';
 GTE: '>=';
 EQUAL: '==';
 NOTEQUAL: '!=';
+SHL: '<<';
+SHR: '>>';
 
 /* 9.2 Comments  ============================================== */
 

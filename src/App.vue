@@ -196,8 +196,9 @@ export default {
     // this.addFileTab("RegFile");
     // this.addFileTab("BenEater");
     // this.addFileTab("TriBuff");
-    this.addFileTab("RAM");
+    // this.addFileTab("RAM");
     // this.addFileTab("PC");
+    this.addFileTab("Controller");
   },
   mounted() {
     setTimeout(() => this.about(), 3000);
@@ -307,10 +308,14 @@ export default {
         try {
           compileResult = vlgCompile(e.walkResult.modules);
         } catch (e) {
-          this.termWriteln(chalk.red("Compile exception: ") + e);
+          // this.termWriteln(chalk.red("Compile exception: ") + e);
+          console.log("lint exception: ", e);
+          this.$store.commit("setStatus", "Compile Error");
+          this.$store.commit("setCompileResult", { ...compileResult });
+          return;
         }
-        this.$store.commit("setCompileResult", { ...compileResult });
         this.$store.commit("setStatus", "Compile OK");
+        this.$store.commit("setCompileResult", { ...compileResult });
       } else {
         this.$store.commit("setStatus", "Parse OK");
       }
@@ -355,7 +360,12 @@ export default {
       try {
         compileResult = vlgCompile(walkResult.modules);
       } catch (e) {
+        // eslint-disable-next-line no-debugger
+        debugger;
+        console.log(e, compileResult);
+        this.$store.commit("setStatus", "Compile Error");
         this.termWriteln(chalk.red("└── Compile exception: ") + e.msg);
+        return;
       }
       this.$store.commit("setCompileResult", { ...compileResult });
       this.$store.commit("setStatus", "Compile OK");

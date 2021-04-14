@@ -78,6 +78,12 @@ vlgVisitor.prototype.visitReg = function(ctx) {
 };
 
 
+// Visit a parse tree produced by vlgParser#localparam.
+vlgVisitor.prototype.visitLocalparam = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by vlgParser#assign.
 vlgVisitor.prototype.visitAssign = function(ctx) {
   return this.visitChildren(ctx);
@@ -146,6 +152,12 @@ vlgVisitor.prototype.visitDisplay_bench = function(ctx) {
 
 // Visit a parse tree produced by vlgParser#display_assignment.
 vlgVisitor.prototype.visitDisplay_assignment = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#localparam_declaration.
+vlgVisitor.prototype.visitLocalparam_declaration = function(ctx) {
   return this.visitChildren(ctx);
 };
 

@@ -210,6 +210,11 @@ class Listener extends vlgListener {
     }
   }
 
+  exitLocalparam_declaration(ctx) {
+    const paramName = ctx.IDENTIFIER().getText();
+    this.curModule.moduleParameters[paramName] = this.expressionStack.pop();
+  }
+
   exitNet_declaration(ctx) {
     const bitDim = ctx.bitDim ? this.valueStack.pop() : null;
     ctx.ids.IDENTIFIER().forEach(id => {
@@ -394,6 +399,13 @@ class Listener extends vlgListener {
       caseclauses: this.valueStack.splice(-ctx.clauses.length),
       casevar: this.valueStack.pop()
     };
+
+    if (!this.isWireOrPortOrReg(newStatement.casevar))
+      this.addSemanticError(
+        ctx.casevar,
+        `Unknown case test variable ${newStatement.casevar.name}`
+      );
+
     this.statementBlockStack[
       this.statementBlockStack.length - 1
     ].statements.push(newStatement);
@@ -407,7 +419,7 @@ class Listener extends vlgListener {
       sourceStart: { column: ctx.start.column, line: ctx.start.line },
       sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
       statements: this.statementBlockStack.pop(),
-      clauseval: this.valueStack.pop()
+      clauseval: this.expressionStack.pop()
     };
     this.valueStack.push(newItem);
   }

@@ -26,6 +26,11 @@
             >Compiled</span
           >
           <span
+            v-else-if="$store.getters.currentFile.status == 'Compile Error'"
+            class="tag is-danger"
+            >Compile Error</span
+          >
+          <span
             v-else-if="$store.getters.currentFile.status == 'Parse OK'"
             class="tag is-info"
             >Parsed OK</span
@@ -241,7 +246,8 @@ export default {
           "response",
           "reg",
           "posedge",
-          "negedge"
+          "negedge",
+          "localparam"
         ],
         operators: ["=", "&", "|", "~", "^", "+", "-", "*", "/"],
         symbols: /[=><!~?:&|+\-*/^%]+/,

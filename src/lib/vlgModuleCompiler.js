@@ -25,6 +25,7 @@ const isBuffer = x =>
     "control",
     "number",
     "ledbar",
+    "led",
     "sevenseg",
     "reg",
     "constant"
@@ -85,7 +86,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   const gateBitSizesType = {
     number: 10,
     ledbar: 10,
-    sevenseg: 7
+    sevenseg: 7,
+    led: 1
   };
 
   const gateDefaultValueType = {
@@ -510,7 +512,10 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         rhsVars.length = 0;
         findRhsVars(assign.rhs);
         a.sensitivities.forEach(sensitivity => {
-          if (!lhsGate.inputs.some(input => input.name == sensitivity.id.name))
+          if (
+            !lhsGate.inputs.some(input => input.name == sensitivity.id.name) &
+            (sensitivity.type != "everytime")
+          )
             lhsGate.inputs.push(new Variable(namespace, sensitivity.id.name));
         });
         lhsGate.inputs.push(
@@ -548,7 +553,14 @@ const compile = moduleArray => {
 
   console.group("ModuleCompiler");
 
-  createInstance("", mainInstantiation, gates);
+  try {
+    createInstance("", mainInstantiation, gates);
+  } catch (e) {
+    console.groupEnd();
+    console.groupEnd();
+    console.log("CreatInstance exception: ", e);
+    throw e;
+  }
 
   modules["Main"].display.forEach(d => {
     gates.find(g => g.id == d.id).displayType = d.type;

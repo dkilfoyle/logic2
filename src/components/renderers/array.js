@@ -17,6 +17,11 @@ const getLocalID = x => {
 };
 
 export default class ArrayRenderer extends window.d3.GenericNodeRenderer {
+  constructor(schematic) {
+    super(schematic);
+    this.node = null;
+  }
+
   selector(node) {
     return node.hwMeta.name === "Operator" || node.hwMeta.name === "ARRAY";
   }
@@ -31,11 +36,13 @@ export default class ArrayRenderer extends window.d3.GenericNodeRenderer {
     node.txtHeight = sizeOfText("000").height;
     node.tableHeight = (node.txtHeight + 2) * Math.min(node.hwMeta.val, 10) + 2;
     node.width = Math.max(node.idWidth, node.valWidth) + 10;
-    node.height = node.txtHeight + 4 + node.tableHeight;
+    node.height = node.txtHeight + 4 + node.tableHeight + 15;
+    this.node = node;
     // console.log(node);
   }
 
   render(root, nodeG) {
+    console.log(root, nodeG);
     nodeG
       .attr("class", d => d.hwMeta.cssClass)
       .attr("style", d => d.hwMeta.cssStyle)
@@ -85,30 +92,84 @@ export default class ArrayRenderer extends window.d3.GenericNodeRenderer {
       .append("table")
       .attr("class", "arrayTable");
 
-    var tablebody = table.append("tbody");
-    const rows = tablebody
-      .selectAll("tr")
-      .data(d => new Array(d.hwMeta.val).fill(0).map((x, i) => [i, x]))
-      .enter()
-      .append("tr");
-    // We built the rows using the nested array - now each row has its own array.
-    const td = rows
-      .selectAll("td")
-      // each row has data associated; we get it and enter it for the cells.
-      .data(function(d) {
-        return d;
-      });
+    table.append("tbody");
 
-    td.enter()
-      .append("td")
-      .attr("class", (d, i) => "td" + i)
-      .merge(td)
-      .text(function(d) {
-        return d;
-      });
+    updateTable(
+      nodeG.data()[0].hwMeta.cssClass,
+      new Array(this.node.hwMeta.val).fill(0).map((x, i) => [i, x])
+    );
+
+    const buttonArea = nodeG
+      .append("g")
+      .attr(
+        "transform",
+        d => `translate(0, ${d.txtHeight + 4 + d.tableHeight})`
+      );
+
+    buttonArea
+      .append("rect")
+      .attr("width", d => d.width)
+      .attr("height", 10)
+      .attr("class", "arrayrect");
+
+    const makeButton = (x, y, title, func) => {
+      buttonArea
+        .append("rect")
+        .attr("x", x)
+        .attr("y", y)
+        .attr("width", 8)
+        .attr("height", 6)
+        .attr("fill", "darkgrey")
+        .attr("rx", 3)
+        .attr("ry", 3)
+        .on("click", func);
+      buttonArea
+        .append("text")
+        .attr("x", x + 4)
+        .attr("y", y + 3)
+        .attr("font-size", "6px")
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "central")
+        .text(title);
+    };
+
+    makeButton(4, 2, "<", () => {
+      console.log("click left");
+    });
+    makeButton(15, 2, ">", () => {
+      console.log("click right");
+    });
 
     // todo:
     // 1. value format
     // 2. pagination buttons
+    // 3. change value transition
   }
 }
+
+export const updateTable = (id, data) => {
+  const table = window.d3.select("." + id).select("tbody");
+  const rows = table.selectAll("tr").data(data, d => d);
+
+  rows
+    .enter()
+    .append("tr")
+    .transition()
+    .style("background-color", "#ffcdd2")
+    .transition()
+    .delay(1000)
+    .style("background-color", "#e6ffff");
+  rows.exit().remove();
+
+  const columns = table
+    .selectAll("tr")
+    .selectAll("td")
+    .data(d => d);
+
+  columns
+    .enter()
+    .append("td")
+    .attr("class", (d, i) => "td" + i)
+    .merge(columns)
+    .text(d => d);
+};

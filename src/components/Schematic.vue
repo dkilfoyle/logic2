@@ -22,12 +22,15 @@ import SevenSegRenderer from "./renderers/sevenseg.js";
 import NumberRenderer from "./renderers/number.js";
 import BufferRenderer from "./renderers/buffer.js";
 import LedBarRenderer from "./renderers/ledbar.js";
+import LedRenderer from "./renderers/led.js";
 import WireGateRenderer from "./renderers/wiregate.js";
 import RegGateRenderer from "./renderers/reggate.js";
 import ConstantGateRenderer from "./renderers/constantgate.js";
 import ArrayRenderer from "./renderers/array.js";
 import { barData } from "./renderers/number.js";
 import Numeric from "../lib/Numeric";
+
+import { updateTable } from "./renderers/array.js";
 
 class Tooltip {
   constructor(root, getTextFn) {
@@ -82,11 +85,32 @@ export default {
       var COLOR_OFF = "white";
 
       this.getAllGates
+        .filter(gate => gate.type == "led")
+        .forEach(gate => {
+          d3.select("#svgSchematic #" + gate.id + "_gate_LED")
+            .select("#glowBulb")
+            .attr(
+              "class",
+              timestate[gate.id] >= 1 ? "ledGlowOn" : "ledGlowOff"
+            );
+          d3.select("#svgSchematic #" + gate.id + "_gate_LED")
+            .select("#bulb")
+            .attr("class", timestate[gate.id] >= 1 ? "ledRedOn" : "ledRedOff");
+        });
+
+      this.getAllGates
         .filter(gate => gate.type == "ledbar")
         .forEach(gate => {
           d3.select("#svgSchematic #" + gate.id + "_gate_LEDBAR")
             .selectAll(".bar")
-            .data(gate.inputs.map(input => timestate[input]))
+            .data(
+              gate.inputs.length == 1
+                ? timestate[gate.inputs[0].id]
+                    .toString(2)
+                    .split("")
+                    .map(x => +x)
+                : gate.inputs.map(input => timestate[input.id])
+            )
             .attr("id", d => d)
             .attr("fill", d => (d ? COLOR_ON : COLOR_OFF));
         });
@@ -133,13 +157,10 @@ export default {
       this.getAllGates
         .filter(gate => gate.type == "array")
         .forEach(gate => {
-          const table = d3.select(`.${gate.id}_internal`);
-          const tr = table
-            .selectAll("tr")
-            .data(timestate[gate.id].map((x, i) => [i, x]));
-          tr.selectAll("td")
-            .data((d, i) => [i, timestate[gate.id][i]])
-            .text(d => d);
+          updateTable(
+            `${gate.id}_internal`,
+            timestate[gate.id].map((x, i) => [i, x])
+          );
         });
 
       this.getAllGates
@@ -212,6 +233,7 @@ export default {
     this.g.nodeRenderers.registerCustomRenderer(new NumberRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new BufferRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new LedBarRenderer(this.g));
+    this.g.nodeRenderers.registerCustomRenderer(new LedRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new WireGateRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new RegGateRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new ArrayRenderer(this.g));
@@ -430,6 +452,15 @@ export default {
           });
         }
 
+        const getInputPortDescription = (type, i) => {
+          if (gate.type == "mux" && i == 0)
+            return { side: "SOUTH", portIndex: 0 };
+          if ((gate.type == "reg") | (gate.type == "array"))
+            return { side: "NORTH", portIndex: i };
+          if (gate.type == "led") return { side: "SOUTH", portIndex: i };
+          return { side: "WEST", portIndex: i };
+        };
+
         gate.inputs.forEach((input, i) => {
           gateNet.ports.push({
             direction: "INPUT",
@@ -437,15 +468,15 @@ export default {
             hwMeta: {
               name: this.getLocalId(gate.id)
             },
-            properties:
-              gate.type == "mux" && i == 0
-                ? { side: "SOUTH", portIndex: 0 }
-                : (gate.type == "reg") | (gate.type == "array")
-                ? { side: "NORTH", portIndex: i }
-                : {
-                    side: "WEST",
-                    portIndex: gate.inputs.length > 1 ? i + 1 : 0
-                  }
+            properties: getInputPortDescription(gate.type, i)
+            // gate.type == "mux" && i == 0
+            //   ? { side: "SOUTH", portIndex: 0 }
+            //   : (gate.type == "reg") | (gate.type == "array")
+            //   ? { side: "NORTH", portIndex: i }
+            //   : {
+            //       side: "WEST",
+            //       portIndex: gate.inputs.length > 1 ? i + 1 : 0
+            //     }
           });
 
           let gate2gate = {
@@ -721,5 +752,24 @@ body {
 
 .d3-hwschematic-tooltip {
   font-size: 6pt;
+}
+.ledGlowOn {
+  filter: url(#gaussian-blur-filter-0);
+  fill-opacity: 0.66;
+  mix-blend-mode: hard-light;
+}
+.ledGlowOff {
+  fill-opacity: 0;
+  stroke-opacity: 0;
+}
+
+.ledRedOn {
+  fill-rule: evenodd;
+  mix-blend-mode: darken;
+  opacity: 0.76;
+  fill: url(#gradient-0);
+}
+.ledRedOff {
+  fill: #b02116d1;
 }
 </style>
