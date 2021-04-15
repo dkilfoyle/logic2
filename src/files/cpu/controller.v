@@ -6,7 +6,10 @@ module Controller (
   wire CLK;
   assign CLK = (~clk & enable);
   reg [2:0] inststage;
-  reg resetin;
+  // reg resetin;
+
+  wire [3:0] inststageled;
+  led(inststageled, inststage);
 
   // Op codes
   localparam NOP = 4'b0000; // No operation.
@@ -110,8 +113,8 @@ module Main(
     .ctrlwrd(ctrlwrd)
   );
 
-  wire [14:0] ctrlwrdled;
-  ledbar(ctrlwrdled, ctrlwrd);
+  // wire [14:0] ctrlwrdled;
+  // ledbar(ctrlwrdled, ctrlwrd);
 
   test begin
     #0   { enable=1, instruction=4'b0001 }; // LDA

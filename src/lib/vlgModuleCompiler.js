@@ -86,8 +86,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   const gateBitSizesType = {
     number: 10,
     ledbar: 10,
-    sevenseg: 7,
-    led: 1
+    sevenseg: 7
+    // led: 1
   };
 
   const gateDefaultValueType = {
@@ -483,6 +483,11 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         findBlockingAssignments(s.thenBlock.statements);
         if (s.elseBlock) findBlockingAssignments(s.elseBlock.statements);
       }
+      if (s.type == "case_statement") {
+        s.caseclauses.forEach(clause =>
+          findBlockingAssignments(clause.statements.statements)
+        );
+      }
       if (s.type == "blocking_assignment")
         if (s.lhs.type != "concatenation") blockingAssignments.push(s);
     });
@@ -494,7 +499,11 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       findRhsVars(operand.lhs);
       if (operand.rhs) findRhsVars(operand.rhs);
     }
-    if (operand instanceof Variable) rhsVars.push(operand);
+    if (
+      operand instanceof Variable &&
+      !parameters[namespace + "_" + operand.name]
+    )
+      rhsVars.push(operand);
   };
 
   if (instanceModule.always) {

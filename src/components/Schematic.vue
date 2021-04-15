@@ -87,15 +87,27 @@ export default {
       this.getAllGates
         .filter(gate => gate.type == "led")
         .forEach(gate => {
-          d3.select("#svgSchematic #" + gate.id + "_gate_LED")
-            .select("#glowBulb")
-            .attr(
-              "class",
-              timestate[gate.id] >= 1 ? "ledGlowOn" : "ledGlowOff"
+          const ledbits = new Array(2 ** gate.bitSize - 1).fill(0);
+          ledbits[timestate[gate.id] - 1] = 1;
+
+          // timestate[gate.id]
+          //   .toString(2)
+          //   .padStart(gate.bitSize, "0")
+          //   .split("")
+          //   .map(x => +x);
+
+          const ledid = "#svgSchematic ." + gate.id + "_internal";
+
+          d3.select(ledid)
+            .selectAll(".glowBulb")
+            .data(ledbits)
+            .attr("class", d =>
+              d >= 1 ? "glowBulb ledGlowOn" : "glowBulb ledGlowOff"
             );
-          d3.select("#svgSchematic #" + gate.id + "_gate_LED")
-            .select("#bulb")
-            .attr("class", timestate[gate.id] >= 1 ? "ledRedOn" : "ledRedOff");
+          d3.select(ledid)
+            .selectAll(".bulb")
+            .data(ledbits)
+            .attr("class", d => (d >= 1 ? "bulb ledRedOn" : "bulb ledRedOff"));
         });
 
       this.getAllGates
@@ -428,6 +440,7 @@ export default {
                 ? this.getLocalId(gate.id)
                 : gate.getSchematicName(),
             val: gate.type == "array" ? gate.arraySize : gate.getValue(), //currentInstance.parameters, currentInstance.id),
+            bitSize: gate.bitSize, //currentInstance.parameters, currentInstance.id),
             isExternalPort: gate.type == "control" || gate.type == "response"
           },
           properties: {
@@ -771,5 +784,15 @@ body {
 }
 .ledRedOff {
   fill: #b02116d1;
+}
+
+.led {
+  stroke: rgb(0, 0, 0);
+  stroke-width: 1;
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
+  stroke-miterlimit: 4;
+  stroke-dasharray: none;
+  stroke-opacity: 1;
 }
 </style>
