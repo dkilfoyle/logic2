@@ -658,6 +658,32 @@ class Listener extends vlgListener {
 
   // gates ==================================================
 
+  exitMeta_assignment(ctx) {
+    const metastring = ctx.metastring.getText().slice(1, -1);
+    const gateid = ctx.gateID.text;
+    // semantic error if the output is not a wire or module output
+    if (!this.isWireOrOutput(gateid)) {
+      const idctx = ctx.gateID;
+      this.addSemanticError(
+        idctx,
+        `'${gateid}' is not defined as a wire or module output`
+      );
+    }
+    const gate = this.curModule.instantiations.find(x => x.id == gateid);
+    if (!gate) {
+      const idctx = ctx.gateID;
+      this.addSemanticError(idctx, `'${gateid}' is not instantiated yet`);
+    } else {
+      try {
+        gate.meta = JSON.parse(metastring);
+      } catch (e) {
+        console.log(e, metastring);
+        const msctx = ctx.metastring;
+        this.addSemanticError(msctx, `Unable to parse metastring`);
+      }
+    }
+  }
+
   exitGate_instantiation(ctx) {
     const gateType = ctx.gate_type().getText();
     const gateOutput = ctx.gateID.text;

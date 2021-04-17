@@ -231,7 +231,8 @@ export default {
           "assign",
           "always",
           "initial",
-          "parameter"
+          "parameter",
+          "$meta"
         ],
         typeKeywords: [
           "and",

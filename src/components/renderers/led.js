@@ -63,12 +63,11 @@ function LED(root) {
     );
   led
     .append("path")
-    .attr("class", "base")
+    .attr("class", "base ledRedOff")
     .attr(
       "d",
       "m 114.44549,466.634 v 39.30443 l 184.01929,-2.1e-4 v -39.30487 z"
-    )
-    .attr("style", "fill:#ff4a4a;fill-opacity:1;fill-rule:evenodd;");
+    );
 }
 
 export default class LedRenderer extends window.d3.GenericNodeRenderer {

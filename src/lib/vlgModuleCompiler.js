@@ -26,6 +26,7 @@ const isBuffer = x =>
     "number",
     "ledbar",
     "led",
+    "leds",
     "sevenseg",
     "reg",
     "constant"
@@ -158,6 +159,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
           `Invalid gate type ${gateDef.gateType} in id ${gateDef.id}`
         );
       newGate.inputs = gateDef.inputs.map(x => x.instance(namespace));
+      if (gateDef.meta) newGate.meta = gateDef.meta;
       logicGates.push(newGate);
       newInstance.gates.push(newGate.id);
     });

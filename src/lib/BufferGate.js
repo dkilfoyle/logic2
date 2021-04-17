@@ -13,6 +13,7 @@ class BufferGate extends BaseComponent {
         "number",
         "ledbar",
         "led",
+        "leds",
         "sevenseg",
         "reg",
         "constant"

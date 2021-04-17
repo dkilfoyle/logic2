@@ -23,6 +23,7 @@ import NumberRenderer from "./renderers/number.js";
 import BufferRenderer from "./renderers/buffer.js";
 import LedBarRenderer from "./renderers/ledbar.js";
 import LedRenderer from "./renderers/led.js";
+import LedsRenderer from "./renderers/leds.js";
 import WireGateRenderer from "./renderers/wiregate.js";
 import RegGateRenderer from "./renderers/reggate.js";
 import ConstantGateRenderer from "./renderers/constantgate.js";
@@ -31,6 +32,7 @@ import { barData } from "./renderers/number.js";
 import Numeric from "../lib/Numeric";
 
 import { updateTable } from "./renderers/array.js";
+import { updateLeds } from "./renderers/leds.js";
 
 class Tooltip {
   constructor(root, getTextFn) {
@@ -85,30 +87,45 @@ export default {
       var COLOR_OFF = "white";
 
       this.getAllGates
-        .filter(gate => gate.type == "led")
+        .filter(gate => gate.type == "leds")
         .forEach(gate => {
-          const ledbits = new Array(2 ** gate.bitSize - 1).fill(0);
-          ledbits[timestate[gate.id] - 1] = 1;
-
-          // timestate[gate.id]
-          //   .toString(2)
-          //   .padStart(gate.bitSize, "0")
-          //   .split("")
-          //   .map(x => +x);
-
-          const ledid = "#svgSchematic ." + gate.id + "_internal";
-
-          d3.select(ledid)
-            .selectAll(".glowBulb")
-            .data(ledbits)
-            .attr("class", d =>
-              d >= 1 ? "glowBulb ledGlowOn" : "glowBulb ledGlowOff"
-            );
-          d3.select(ledid)
-            .selectAll(".bulb")
-            .data(ledbits)
-            .attr("class", d => (d >= 1 ? "bulb ledRedOn" : "bulb ledRedOff"));
+          updateLeds(
+            d3.select(`#svgSchematic .${gate.id}_internal`),
+            timestate[gate.id],
+            gate.bitSize,
+            gate.meta
+          );
         });
+
+      // this.getAllGates
+      //   .filter(gate => gate.type == "led")
+      //   .forEach(gate => {
+      //     const ledbits = new Array(2 ** gate.bitSize - 1).fill(0);
+      //     ledbits[timestate[gate.id] - 1] = 1;
+
+      //     // timestate[gate.id]
+      //     //   .toString(2)
+      //     //   .padStart(gate.bitSize, "0")
+      //     //   .split("")
+      //     //   .map(x => +x);
+
+      //     const ledid = "#svgSchematic ." + gate.id + "_internal";
+
+      //     d3.select(ledid)
+      //       .selectAll(".glowBulb")
+      //       .data(ledbits)
+      //       .attr("class", d =>
+      //         d >= 1 ? "glowBulb ledGlowOn" : "glowBulb ledGlowOff"
+      //       );
+      //     d3.select(ledid)
+      //       .selectAll(".bulb")
+      //       .data(ledbits)
+      //       .attr("class", d => (d >= 1 ? "bulb ledRedOn" : "bulb ledRedOff"));
+      //     d3.select(ledid)
+      //       .selectAll(".base")
+      //       .data(ledbits)
+      //       .attr("class", d => (d >= 1 ? "base ledRedOn" : "base ledRedOff"));
+      //   });
 
       this.getAllGates
         .filter(gate => gate.type == "ledbar")
@@ -246,6 +263,7 @@ export default {
     this.g.nodeRenderers.registerCustomRenderer(new BufferRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new LedBarRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new LedRenderer(this.g));
+    this.g.nodeRenderers.registerCustomRenderer(new LedsRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new WireGateRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new RegGateRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new ArrayRenderer(this.g));
@@ -441,6 +459,7 @@ export default {
                 : gate.getSchematicName(),
             val: gate.type == "array" ? gate.arraySize : gate.getValue(), //currentInstance.parameters, currentInstance.id),
             bitSize: gate.bitSize, //currentInstance.parameters, currentInstance.id),
+            meta: gate.meta,
             isExternalPort: gate.type == "control" || gate.type == "response"
           },
           properties: {
@@ -766,7 +785,7 @@ body {
 .d3-hwschematic-tooltip {
   font-size: 6pt;
 }
-.ledGlowOn {
+/* .ledGlowOn {
   filter: url(#gaussian-blur-filter-0);
   fill-opacity: 0.66;
   mix-blend-mode: hard-light;
@@ -779,11 +798,10 @@ body {
 .ledRedOn {
   fill-rule: evenodd;
   mix-blend-mode: darken;
-  opacity: 0.76;
   fill: url(#gradient-0);
 }
 .ledRedOff {
-  fill: #b02116d1;
+  fill: #911e15d1;
 }
 
 .led {
@@ -794,5 +812,10 @@ body {
   stroke-miterlimit: 4;
   stroke-dasharray: none;
   stroke-opacity: 1;
+} */
+
+.ledlabel {
+  font-size: 6px;
+  text-anchor: middle;
 }
 </style>

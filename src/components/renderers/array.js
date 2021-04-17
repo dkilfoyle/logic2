@@ -19,7 +19,6 @@ const getLocalID = x => {
 export default class ArrayRenderer extends window.d3.GenericNodeRenderer {
   constructor(schematic) {
     super(schematic);
-    this.node = null;
   }
 
   selector(node) {
@@ -37,7 +36,6 @@ export default class ArrayRenderer extends window.d3.GenericNodeRenderer {
     node.tableHeight = (node.txtHeight + 2) * Math.min(node.hwMeta.val, 10) + 2;
     node.width = Math.max(node.idWidth, node.valWidth) + 10;
     node.height = node.txtHeight + 4 + node.tableHeight + 15;
-    this.node = node;
     // console.log(node);
   }
 
@@ -96,7 +94,7 @@ export default class ArrayRenderer extends window.d3.GenericNodeRenderer {
 
     updateTable(
       nodeG.data()[0].hwMeta.cssClass,
-      new Array(this.node.hwMeta.val).fill(0).map((x, i) => [i, x])
+      new Array(nodeG.data()[0].hwMeta.val).fill(0).map((x, i) => [i, x])
     );
 
     const buttonArea = nodeG

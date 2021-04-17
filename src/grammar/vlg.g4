@@ -37,6 +37,7 @@ module_item:
 	net_declaration				# net
 	| reg_declaration			# reg
 	| localparam_declaration	# localparam
+	| meta_assignment			# meta
 	| net_assignment			# assign
 	| gate_instantiation		# gate
 	| module_instantiation		# instance
@@ -118,9 +119,13 @@ gate_type:
 	| 'sevenseg'
 	| 'number'
 	| 'led'
+	| 'leds'
 	| 'ledbar';
 
 net_assignment: 'assign' lvalue '=' expr ';';
+
+meta_assignment:
+	'$meta' '(' gateID = IDENTIFIER ',' metastring = string ')' ';';
 
 // expr // For gate assign only : NEG expr # negateExpr | expr binary_gate_op expr # binaryExpr |
 // '(' expr ')' # parenExpr | IDENTIFIER # idExpr;
@@ -333,4 +338,4 @@ identifier:
 /* 9.5 Whitespace ============================================= */
 
 White_space: [ \t\n\r]+ -> channel (HIDDEN);
-string: '"' .* '"';
+string: '\'' ('"' | .)*? '\'';

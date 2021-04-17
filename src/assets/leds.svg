@@ -1,0 +1,20 @@
+<svg width="436" height="987" id="svg25552" version="1.0" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <linearGradient gradientUnits="userSpaceOnUse" x1="211.5" y1="290.869" x2="211.5" y2="466.634" id="gradient-0">
+      <stop offset="0" style="stop-color: rgba(255, 128, 128, 1)"></stop>
+      <stop offset="1" style="stop-color: rgba(255, 26, 26, 1)"></stop>
+    </linearGradient>
+    <filter id="gaussian-blur-filter-0" color-interpolation-filters="sRGB" x="-500%" y="-500%" width="1000%" height="1000%" bx:preset="gaussian-blur 1 10">
+      <feGaussianBlur stdDeviation="10 10" edgeMode="none"></feGaussianBlur>
+    </filter>
+  </defs>
+  <g id="layer1" transform="matrix(1, 0, 0, 1, -114.445488, -290.869415)">
+    <path style="fill-rule: evenodd; stroke: rgb(0, 0, 0); stroke-width: 1; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 4; stroke-dasharray: none; stroke-opacity: 1; fill: rgb(237, 13, 13); filter: url(#gaussian-blur-filter-0); fill-opacity: 0.66; mix-blend-mode: hard-light;" d="M 127.445 479.869 L 127.445 330.591 C 127.445 330.591 143.214 280.907 210.031 278.92 C 276.845 276.932 293.445 333.77 293.445 333.77 L 293.445 479.869" id="path-1"></path>
+    <path style="fill-opacity: 1; fill-rule: evenodd; stroke: rgb(0, 0, 0); stroke-width: 1px; stroke-linecap: butt; stroke-linejoin: miter; stroke-opacity: 1; fill: rgb(206, 72, 72);" d="M 166.28601,466.643 V 339.5 h 15.35714 l 22.86481,13.201 3.9209,10.37043 -19.28571,7.14285 V 466.643 Z" id="path26579"></path>
+    <path style="fill-opacity: 1; fill-rule: evenodd; stroke: rgb(0, 0, 0); stroke-width: 1px; stroke-linecap: butt; stroke-linejoin: miter; stroke-opacity: 1; fill: rgb(206, 72, 72);" d="m 196.28601,337.71428 h 68.92857 V 466.643 H 229.85744 L 213.07172,434.5 v -54.64286 l 14.64286,-23.57143 z" id="path26581"></path>
+    <path style="fill: rgb(128, 128, 128); fill-opacity: 1; fill-rule: evenodd; stroke: rgb(0, 0, 0); stroke-width: 1px; stroke-linecap: butt; stroke-linejoin: miter; stroke-opacity: 1; mix-blend-mode: darken;" d="M 166.286 505.929 L 166.286 650.929 L 190.572 650.929 L 190.572 505.929 Z" id="path26583"></path>
+    <path style="fill:#808080;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="M 240.929 505.929 L 240.929 605.929 L 265.215 605.929 L 265.215 505.929 Z" id="path26585"></path>
+    <path style="fill-rule: evenodd; stroke: rgb(0, 0, 0); stroke-width: 1; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 4; stroke-dasharray: none; stroke-opacity: 1; mix-blend-mode: darken; opacity: 0.76; fill: url(#gradient-0);" d="M 141.98688,466.634 V 336.09765 c 0,0 13.20755,-43.44588 69.16584,-45.18371 55.95829,-1.73783 69.86098,47.96424 69.86098,47.96424 V 466.634" id="path26577"></path>
+    <path style="fill:#ff4a4a;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" d="m 114.44549,466.634 v 39.30443 l 184.01929,-2.1e-4 v -39.30487 z" id="path26575"></path>
+  </g>
+</svg>

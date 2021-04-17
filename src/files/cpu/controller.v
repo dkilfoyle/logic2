@@ -6,10 +6,15 @@ module Controller (
   wire CLK;
   assign CLK = (~clk & enable);
   reg [2:0] inststage;
-  // reg resetin;
+  reg resetstage;
 
-  wire [3:0] inststageled;
-  led(inststageled, inststage);
+  wire [4:0] inststageled;
+  leds(inststageled, inststage);
+  $meta(inststageled, '{"color":"green","type":"counter","labels":[0,1,2,3,4,5]}');
+
+  wire [14:0] ctrlwrdled;
+  leds(ctrlwrdled, ctrlwrd);
+  $meta(ctrlwrdled, '{"color":"blue","type":"bits","labels":["HLT","MI", "RI", "RO", "IO", "II", "AI", "AO", "SO", "SU", "BI", "OI", "CE", "CO", "J"]}');
 
   // Op codes
   localparam NOP = 4'b0000; // No operation.
@@ -45,20 +50,21 @@ module Controller (
   initial
     begin
       inststage = 3'b000;
+      resetstage = 1'b1;
     end
 
   always @(posedge CLK)
     begin
+      inststage = resetstage ? 3'b000 : inststage + 1;
+      resetstage = 1'b0;
       case(inststage) //HLT, MI, RI, RO, IO, II, AI, AO, SO, SU, BI, OI, CE, CO, J;
           3'b000: 
             begin
               ctrlwrd = (1 << mi) | (1 << co); // push PC onto BUS, read BUS into MAR
-              inststage = 3'b001;
             end
           3'b001: 
             begin
               ctrlwrd = (1 << ro) | (1 << ii) | (1 << ce); // inc PC, push RAM @ MAR onto BUS, read BUS into IR
-              inststage = 3'b010;
             end
           3'b010:
             begin
@@ -71,7 +77,6 @@ module Controller (
                 HLT: ctrlwrd = (1 << hlt); // HLT
                 default: ctrlwrd = 0; 
               endcase 
-              inststage = 3'b011;
             end      
           3'b011: 
             begin
@@ -81,7 +86,6 @@ module Controller (
                 SUB: ctrlwrd = (1 << ro) | (1 << bi); // SUB - push RAM @ MAR onto BUS, read BUS into RegB
                 default: ctrlwrd = 0;
               endcase
-              inststage = 3'b100;           
             end
           3'b100:
             begin
@@ -90,7 +94,7 @@ module Controller (
                 SUB: ctrlwrd = (1 << so) | (1 << su) | (1 << ai);  // SUB - ALU op = SU, push ALU onto BUS, read BUS into Reg A
                 default: ctrlwrd = 0;
               endcase
-              inststage = 3'b000;
+              resetstage = 1'b1;
             end                  
           default: ctrlwrd = 0;
       endcase                          
@@ -117,14 +121,15 @@ module Main(
   // ledbar(ctrlwrdled, ctrlwrd);
 
   test begin
-    #0   { enable=1, instruction=4'b0001 }; // LDA
-    #2   { enable=1, instruction=4'b0010 }; // ADD
-    #4   { enable=1, instruction=4'b0011 }; // SUB
-    #6   { enable=1, instruction=4'b0101 }; // OUT
-    #8   { enable=1, instruction=4'b0110 }; // JMP
-    #10  { enable=1, instruction=4'b0000 }; // NOP
-    #12  { enable=0, instruction=4'b0000 }; // 
-    #14  { enable=0, instruction=4'b0001 }; // 
-    #16;
+    #0    { enable=0, instruction=4'b0000 }; // NOP
+    #2    { enable=0, instruction=4'b0001 }; // LDA
+    #10   { enable=1, instruction=4'b0010 }; // ADD
+    #18   { enable=1, instruction=4'b0011 }; // SUB
+    #26   { enable=1, instruction=4'b0101 }; // OUT
+    #34   { enable=1, instruction=4'b0110 }; // JMP
+    #42   { enable=1, instruction=4'b0000 }; // NOP
+    #50   { enable=0, instruction=4'b0000 }; // 
+    #58   { enable=0, instruction=4'b0001 }; // 
+    #70;
   end
 endmodule
