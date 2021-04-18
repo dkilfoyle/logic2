@@ -225,3 +225,122 @@ describe("PC", () => {
     expect(simulateResult.gates[testGate]).toEqual(testOutput);
   });
 });
+
+describe("Controller", () => {
+  const numInstances = 2;
+  const numGates = 15;
+  const testGate = "main_ctrlwrd";
+  const testOutput = [
+    0,
+    0,
+    8194,
+    8194,
+    2564,
+    2564,
+    9216,
+    9216,
+    2304,
+    2304,
+    0,
+    0,
+    8194,
+    8194,
+    2564,
+    2564,
+    9216,
+    9216,
+    2064,
+    2064,
+    320,
+    320,
+    8194,
+    8194,
+    2564,
+    2564,
+    9216,
+    9216,
+    2064,
+    2064,
+    352,
+    352,
+    8194,
+    8194,
+    2564,
+    2564,
+    136,
+    136,
+    0,
+    0,
+    0,
+    0,
+    8194,
+    8194,
+    2564,
+    2564,
+    1025,
+    1025,
+    0,
+    0,
+    0,
+    0,
+    8194,
+    8194,
+    2564,
+    2564,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ];
+
+  const {
+    parseResult,
+    walkResult,
+    compileResult,
+    simulateResult
+  } = compileAndSimulate("cpu/Controller");
+
+  test("Can parse", () => {
+    expect(parseResult.errors.length).toBe(0);
+  });
+
+  test("Can walk", () => {
+    expect(walkResult.errors.length).toBe(0);
+  });
+
+  test("Can compile", () => {
+    expect(compileResult.instances.length).toBe(numInstances);
+    expect(compileResult.gates.length).toBe(numGates);
+  });
+
+  test("Can simulate", () => {
+    expect(simulateResult).toBeTruthy();
+  });
+
+  test(`Simulate output is correct`, () => {
+    expect(simulateResult.gates[testGate]).toEqual(testOutput);
+  });
+});

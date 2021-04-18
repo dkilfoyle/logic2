@@ -524,8 +524,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         findRhsVars(assign.rhs);
         a.sensitivities.forEach(sensitivity => {
           if (
-            !lhsGate.inputs.some(input => input.name == sensitivity.id.name) &
-            (sensitivity.type != "everytime")
+            sensitivity.type != "everytime" &&
+            !lhsGate.inputs.some(input => input.name == sensitivity.id.name)
           )
             lhsGate.inputs.push(new Variable(namespace, sensitivity.id.name));
         });

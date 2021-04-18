@@ -122,14 +122,14 @@ module Main(
 
   test begin
     #0    { enable=0, instruction=4'b0000 }; // NOP
-    #2    { enable=0, instruction=4'b0001 }; // LDA
-    #10   { enable=1, instruction=4'b0010 }; // ADD
-    #18   { enable=1, instruction=4'b0011 }; // SUB
-    #26   { enable=1, instruction=4'b0101 }; // OUT
-    #34   { enable=1, instruction=4'b0110 }; // JMP
-    #42   { enable=1, instruction=4'b0000 }; // NOP
-    #50   { enable=0, instruction=4'b0000 }; // 
-    #58   { enable=0, instruction=4'b0001 }; // 
-    #70;
+    #2    { enable=1, instruction=4'b0001 }; // LDA
+    #12   { enable=1, instruction=4'b0010 }; // ADD
+    #22   { enable=1, instruction=4'b0011 }; // SUB
+    #32   { enable=1, instruction=4'b0101 }; // OUT
+    #42   { enable=1, instruction=4'b0110 }; // JMP
+    #52   { enable=1, instruction=4'b0000 }; // NOP
+    #62   { enable=0, instruction=4'b0000 }; // 
+    #72   { enable=0, instruction=4'b0001 }; // 
+    #82;
   end
 endmodule

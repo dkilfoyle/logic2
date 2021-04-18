@@ -11,6 +11,7 @@ function LED(root) {
     .text(d => d.label);
   root
     .append("circle")
+    .attr("stroke-width", "0")
     .attr("cy", DEFAULT_NODE_SIZE[1] / 2)
     .attr("r", 4);
 }
@@ -19,38 +20,30 @@ function makeRadial(defs, id, c1, c2) {
   const radial = defs.append("radialGradient").attr("id", id);
   radial
     .append("stop")
-    .attr("offset", "10%")
+    .attr("offset", "50%")
     .attr("stop-color", c1);
   radial
     .append("stop")
-    .attr("offset", "95%")
+    .attr("offset", "100%")
     .attr("stop-color", c2);
 }
 
-function makeGlow(defs, id, c1, stddev = 0.5) {
+function makeGlow(defs, id, c1, stddev = 0.8) {
   const glow = defs.append("filter").attr("id", id);
+
+  glow
+    .attr("x", "-20%")
+    .attr("y", "-20%")
+    .attr("width", "140%")
+    .attr("height", "140%");
+
   glow
     .append("feDropShadow")
     .attr("dx", "0")
     .attr("dy", "0")
-    .attr("width", "1000%")
-    .attr("height", "1000%")
     .attr("stdDeviation", stddev)
     .attr("flood-color", c1)
     .attr("flood-opacity", 0.8);
-  // glow
-  //   .append("filter")
-  //   .attr("id", "gaussian-blur-filter-0")
-  //   .attr("color-interpolation-filters", "sRGB")
-  //   .attr("x", "-500%")
-  //   .attr("y", "-500%")
-  //   .attr("width", "1000%")
-  //   .attr("height", "1000%")
-  //   .attr("bx:preset", "gaussian-blur 1 10");
-  // glow
-  //   .append("feGaussianBlur")
-  //   .attr("stdDeviation", "10 10")
-  //   .attr("edgeMode", "none");
 }
 
 const DEFAULT_NODE_SIZE = [10, 10];
@@ -70,7 +63,7 @@ export default class LedsRenderer extends window.d3.GenericNodeRenderer {
       makeRadial(defs, "greenradialon", "#ABFF00", "green");
       makeRadial(defs, "greenradialoff", "green", "darkgreen");
       makeGlow(defs, "greenglow", "green");
-      makeRadial(defs, "blueradialon", "#24E0FF", "blue");
+      makeRadial(defs, "blueradialon", "#24E0FF", "rgb(0,0,255)");
       makeRadial(defs, "blueradialoff", "blue", "darkblue");
       makeGlow(defs, "blueglow", "blue");
     }
@@ -131,7 +124,7 @@ export const updateLeds = (node, value, bitSize, meta = {}) => {
         : null
   }));
 
-  console.log("leddata: ", node, value, bitSize, meta, leddata);
+  // console.log("leddata: ", node, value, bitSize, meta, leddata);
   const leds = node.selectAll(".led").data(leddata);
 
   leds
@@ -141,10 +134,11 @@ export const updateLeds = (node, value, bitSize, meta = {}) => {
     .attr("transform", (d, i) => `translate(${5 + i * DEFAULT_NODE_SIZE[0]} 0)`)
     .call(LED);
 
+  leds.exit().remove();
+
   node
     .selectAll("circle")
     .data(leddata)
-    .attr("stroke-width", "0")
     .attr("style", d => {
       return d.val >= 1
         ? `fill:url(#${d.color}radialon);filter:url(#${d.color}glow);`
