@@ -55,13 +55,18 @@ class Concatenation extends Operand {
     );
   }
   getBitSize(gatesLookup, namespace = null) {
-    return this.copynum
+    const copynum = this.copynum
       ? this.copynum.getValue(gatesLookup, namespace)
-      : 1 *
-          this.components.reduce(
-            (acc, x) => acc + x.getBitSize(gatesLookup, namespace),
-            0
-          );
+      : 1;
+
+    this.components.forEach(x =>
+      console.log(x.getBitSize(gatesLookup, namespace))
+    );
+    const bitsizes = this.components.reduce(
+      (acc, x) => acc + x.getBitSize(gatesLookup, namespace),
+      0
+    );
+    return bitsizes * copynum;
   }
   getBit(num, bit) {
     return (num >> bit) % 2;

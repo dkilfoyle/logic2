@@ -189,15 +189,15 @@ multiple_concatenation:
 
 /* 8.3 Expressions ============================================== */
 expression: // behavioural
-	number										# atomExpression
-	| identifier								# atomExpression
-	| concatenation								# atomExpression
-	| multiple_concatenation					# atomExpression
-	| '(' expression ')'						# parensExpression
-	| op = (PLUS | MINUS | NEG) expression		# unaryExpression
-	| expression op = (MUL | DIV) expression	# binaryExpression
-	| expression op = (PLUS | MINUS) expression	# binaryExpression
-	| expression op = (AND | OR) expression		# binaryExpression
+	number											# atomExpression
+	| identifier									# atomExpression
+	| concatenation									# atomExpression
+	| multiple_concatenation						# atomExpression
+	| '(' expression ')'							# parensExpression
+	| op = (PLUS | MINUS | NEG) expression			# unaryExpression
+	| expression op = (MUL | DIV) expression		# binaryExpression
+	| expression op = (PLUS | MINUS) expression		# binaryExpression
+	| expression op = (AND | OR | XOR) expression	# binaryExpression
 	| expression op = (
 		LT
 		| LTE

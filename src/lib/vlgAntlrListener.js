@@ -554,7 +554,7 @@ class Listener extends vlgListener {
       return comp;
     });
     // .reverse();
-    this.valueStack.push(new Concatenation(null, components));
+    this.valueStack.push(new Concatenation(new Numeric(1), components));
   }
 
   exitMultiple_concatenation(ctx) {

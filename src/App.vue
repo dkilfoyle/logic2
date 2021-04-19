@@ -198,7 +198,8 @@ export default {
     // this.addFileTab("TriBuff");
     // this.addFileTab("RAM");
     // this.addFileTab("PC");
-    this.addFileTab("Controller");
+    // this.addFileTab("Controller");
+    this.addFileTab("ALU");
   },
   mounted() {
     setTimeout(() => this.about(), 3000);

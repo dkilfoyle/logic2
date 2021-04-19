@@ -96,7 +96,7 @@ var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
     "\b\n\f\u000e\u0010\u0012\u0014\u0016\u0018\u001a\u001c\u001e \"$&(*",
     ",.02468:<>@BDFHJLNPRTVXZ\\^`bdfhjlnprtvxz|~\u0002\u000f\u0003\u0002",
     "\f\r\u0003\u0002\u0017%\u0003\u0002+,\u0004\u0002CCKK\u0004\u0002??",
-    "DE\u0003\u0002HI\u0003\u0002DE\u0003\u0002FG\u0003\u0002JQ\u0004\u0002",
+    "DE\u0003\u0002HI\u0003\u0002DE\u0004\u0002BBFG\u0003\u0002JQ\u0004\u0002",
     "@BFG\u0003\u0002>?\u0004\u0002>>DE\u0005\u0002DEHINO\u0002\u0295\u0002",
     "\u0080\u0003\u0002\u0002\u0002\u0004\u0086\u0003\u0002\u0002\u0002\u0006",
     "\u008c\u0003\u0002\u0002\u0002\b\u00a3\u0003\u0002\u0002\u0002\n\u00b4",
@@ -5470,6 +5470,10 @@ BinaryExpressionContext.prototype.OR = function() {
     return this.getToken(vlgParser.OR, 0);
 };
 
+BinaryExpressionContext.prototype.XOR = function() {
+    return this.getToken(vlgParser.XOR, 0);
+};
+
 BinaryExpressionContext.prototype.LT = function() {
     return this.getToken(vlgParser.LT, 0);
 };
@@ -5842,7 +5846,7 @@ vlgParser.prototype.expression = function(_p) {
                     this.state = 533;
                     localctx.op = this._input.LT(1);
                     _la = this._input.LA(1);
-                    if(!(_la===vlgParser.AND || _la===vlgParser.OR)) {
+                    if(!(((((_la - 64)) & ~0x1f) == 0 && ((1 << (_la - 64)) & ((1 << (vlgParser.XOR - 64)) | (1 << (vlgParser.AND - 64)) | (1 << (vlgParser.OR - 64)))) !== 0))) {
                         localctx.op = this._errHandler.recoverInline(this);
                     }
                     else {

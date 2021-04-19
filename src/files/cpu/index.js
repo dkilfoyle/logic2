@@ -5,7 +5,8 @@ export const SourceFiles = {
   TriBuff: require("./tribuff.v").default,
   RAM: require("./ram.v").default,
   PC: require("./pc.v").default,
-  Controller: require("./controller.v").default
+  Controller: require("./controller.v").default,
+  ALU: require("./alu.v").default
 };
 
 export const SourceTree = {
@@ -18,6 +19,7 @@ export const SourceTree = {
         { text: "TriBuff" },
         { text: "RAM" },
         { text: "PC" },
+        { text: "ALU" },
         { text: "Controller" }
       ]
     },

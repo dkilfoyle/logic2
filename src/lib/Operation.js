@@ -84,6 +84,8 @@ class Operation extends Operand {
         return lhs & rhs;
       case "or":
         return lhs | rhs;
+      case "xor":
+        return lhs ^ rhs;
       case "shl":
         return lhs << rhs;
       case "shr":

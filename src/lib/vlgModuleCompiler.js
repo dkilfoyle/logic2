@@ -16,6 +16,12 @@ var modules, instances, gates, parameters;
 
 const stripReactive = x => JSON.parse(JSON.stringify(x));
 
+const indexBy = (array, prop) =>
+  array.reduce((output, item) => {
+    output[item[prop]] = item;
+    return output;
+  }, {});
+
 const isLogicGate = x => ["and", "nand", "or", "xor", "nor", "not"].includes(x);
 const isBuffer = x =>
   [
@@ -117,180 +123,6 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
   console.log("gateBitSizes: ", gateBitSizesID);
 
-  // console.log("createInstance: ", newInstance.id);
-  // console.log("-- instance connections: ", instanceDeclaration.connections);
-  // instanceDeclaration is generated from module statement Mymodule foo(.a(user1), .b(user2), .X(o1))
-  // => { id: "foo", module: "Mymodule", connections: [{port: {id: "a"}, value: {id: "user1", index: 0}}, ...]}
-
-  // console.log("varMap: ", varMap);
-
-  // create all the gates defined in the instance's module statements
-  // gate declaration has the form { id: "X", gate: "and", inputs: ["a", "b"], type: "gate"}
-  // if the gate has the same id as an output port then map that id to id.gate and set the output ports input to id.gate
-
-  instanceModule.instantiations
-    .filter(statement => statement.type == "gate")
-    .forEach(gateDef => {
-      const newGate = isLogicGate(gateDef.gateType)
-        ? new LogicGate(
-            namespace,
-            gateDef.id,
-            gateDef.gateType,
-            gateBitSizesType[gateDef.gateType] ||
-              gateBitSizesID[gateDef.id] ||
-              gateDef.defaultSize ||
-              null,
-            getGateDefaultValue(gateDef)
-          )
-        : isBuffer(gateDef.gateType)
-        ? new BufferGate(
-            namespace,
-            gateDef.id,
-            gateDef.gateType,
-            gateBitSizesType[gateDef.gateType] ||
-              gateBitSizesID[gateDef.id] ||
-              gateDef.defaultSize ||
-              null,
-            getGateDefaultValue(gateDef)
-          )
-        : null;
-      if (!newGate)
-        throw new Error(
-          `Invalid gate type ${gateDef.gateType} in id ${gateDef.id}`
-        );
-      newGate.inputs = gateDef.inputs.map(x => x.instance(namespace));
-      if (gateDef.meta) newGate.meta = gateDef.meta;
-      logicGates.push(newGate);
-      newInstance.gates.push(newGate.id);
-    });
-
-  // ~a & b | c
-  // op(op(op(a, not) & b) | c)
-
-  let counter;
-
-  // walk the operation tree until both lhs and rhs are variables
-  // then make a new gate namespace.idx which is op(lhs, rhs)
-  const walkOperationTree = (namespace, id, op, netBitSize) => {
-    let gateID = id + (counter == 0 ? "" : counter);
-    counter = counter + 1;
-
-    // debugger;
-
-    if (op instanceof Variable) {
-      return op;
-    }
-
-    if (id instanceof Concatenation) {
-      return; // concatenations are handled later
-    }
-
-    if (op instanceof Concatenation) {
-      const newGate = new ConcatenationGate(
-        namespace,
-        gateID,
-        op.getBitSize(parameters, namespace)
-      );
-      newGate.copynum = op.copynum.getValue(parameters, namespace);
-      newGate.inputs = op.components.map(component =>
-        walkOperationTree(namespace, id, component, netBitSize).instance(
-          namespace
-        )
-      );
-      newInstance.gates.push(newGate.id);
-      logicGates.push(newGate);
-      return new Variable(namespace, gateID, null);
-    }
-
-    if (op instanceof Numeric) {
-      const newGate = new ConstantGate(
-        namespace,
-        gateID,
-        netBitSize,
-        op.getValue()
-      );
-      newInstance.gates.push(newGate.id);
-      logicGates.push(newGate);
-      return new Variable(namespace, gateID, null);
-    }
-
-    const newGate =
-      op.op == "assign"
-        ? new BufferGate(namespace, gateID, "buffer", netBitSize) // TODO: if gateID is an output newGate = gates.get(gateID+"-out")??
-        : new LogicGate(namespace, gateID, op.op, netBitSize);
-
-    console.log("newGate: ", newGate);
-
-    if (op.op == "mux")
-      newGate.inputs = [
-        walkOperationTree(namespace, id, op.test, netBitSize).instance(
-          namespace
-        ),
-        walkOperationTree(namespace, id, op.lhs1, netBitSize).instance(
-          namespace
-        ),
-        walkOperationTree(namespace, id, op.lhs0, netBitSize).instance(
-          namespace
-        )
-      ];
-    else
-      newGate.inputs = op.rhs
-        ? [
-            walkOperationTree(namespace, id, op.lhs, netBitSize).instance(
-              namespace
-            ),
-            walkOperationTree(namespace, id, op.rhs, netBitSize).instance(
-              namespace
-            )
-          ]
-        : [
-            walkOperationTree(namespace, id, op.lhs, netBitSize).instance(
-              namespace
-            )
-          ];
-
-    logicGates.push(newGate);
-    newInstance.gates.push(newGate.id);
-    return new Variable(namespace, gateID, null);
-  };
-
-  instanceModule.netAssignments.forEach(net => {
-    console.groupCollapsed("netAsssigment: ", net.id.name);
-    counter = 0;
-    let netBitSize = gateBitSizesID[net.id.name]; // intermediary gates will be same bitsize as the assign lhs
-    if (net.operationTree instanceof Variable)
-      walkOperationTree(
-        namespace,
-        net.id,
-        new Operation(net.operationTree, "assign", null),
-        netBitSize
-      );
-    else walkOperationTree(namespace, net.id, net.operationTree, netBitSize);
-    console.groupEnd();
-  });
-
-  instanceModule.regs.forEach(reg => {
-    var newGate;
-    if (reg.arrayDim) {
-      // array of regs = memory
-      let arrayDim = reg.arrayDim.map(x =>
-        x.getValue(parameters, newInstance.id)
-      );
-      newGate = new ArrayGate(
-        namespace,
-        reg.id,
-        gateBitSizesID[reg.id],
-        0,
-        Math.abs(arrayDim[1] - arrayDim[0]) + 1
-      );
-    } else {
-      newGate = new RegGate(namespace, reg.id, gateBitSizesID[reg.id]);
-    }
-
-    logicGates.push(newGate);
-    newInstance.gates.push(newGate.id);
-  });
-
   // console.log("-- instance gates: ", newInstance.gates);
   // create a buffer gate for each port in the instance's module definition
   // each port is mapped to {parentNamespace}_{connection.value.id}
@@ -304,24 +136,15 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
   instanceModule.ports.forEach(port => {
     if (namespace == "main") {
-      const portType = port.direction == "input" ? "control" : "response";
-
-      // output ports may already be defined as a buffer eg buffer(F, Fe);
-      // if main_port.id already exists then just change it's logic to responsebuffer
-
-      if (logicGates.some(x => x.id == "main_" + port.id)) {
-        // console.log("main_" + port.id);
-      } else {
-        const newGate = new BufferGate(
-          "main",
-          port.id,
-          portType,
-          gateBitSizesID[port.id]
-        );
-        if (port.direction == "input") inputGates.push(newGate);
-        else outputGates.push(newGate);
-        newInstance.gates.push(newGate.id);
-      }
+      const newGate = new BufferGate(
+        "main",
+        port.id,
+        port.direction == "input" ? "control" : "response",
+        gateBitSizesID[port.id]
+      );
+      if (port.direction == "input") inputGates.push(newGate);
+      else outputGates.push(newGate);
+      newInstance.gates.push(newGate.id);
       return;
     }
 
@@ -407,6 +230,206 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     }
 
     // console.log("portGate: ", port.id, port.direction, portGate);
+  });
+
+  // console.log("createInstance: ", newInstance.id);
+  // console.log("-- instance connections: ", instanceDeclaration.connections);
+  // instanceDeclaration is generated from module statement Mymodule foo(.a(user1), .b(user2), .X(o1))
+  // => { id: "foo", module: "Mymodule", connections: [{port: {id: "a"}, value: {id: "user1", index: 0}}, ...]}
+
+  // console.log("varMap: ", varMap);
+
+  // create all the gates defined in the instance's module statements
+  // gate declaration has the form { id: "X", gate: "and", inputs: ["a", "b"], type: "gate"}
+  // if the gate has the same id as an output port then map that id to id.gate and set the output ports input to id.gate
+
+  instanceModule.instantiations
+    .filter(statement => statement.type == "gate")
+    .forEach(gateDef => {
+      let newGate = null;
+      if (gateDef.gateType == "response") {
+        newGate = outputGates.find(g => g.name == gateDef.id);
+        newGate.inputs = gateDef.inputs.map(x => x.instance(namespace));
+        return;
+      }
+      newGate = isLogicGate(gateDef.gateType)
+        ? new LogicGate(
+            namespace,
+            gateDef.id,
+            gateDef.gateType,
+            gateBitSizesType[gateDef.gateType] ||
+              gateBitSizesID[gateDef.id] ||
+              gateDef.defaultSize ||
+              null,
+            getGateDefaultValue(gateDef)
+          )
+        : isBuffer(gateDef.gateType)
+        ? new BufferGate(
+            namespace,
+            gateDef.id,
+            gateDef.gateType,
+            gateBitSizesType[gateDef.gateType] ||
+              gateBitSizesID[gateDef.id] ||
+              gateDef.defaultSize ||
+              null,
+            getGateDefaultValue(gateDef)
+          )
+        : null;
+      if (!newGate)
+        throw new Error(
+          `Invalid gate type ${gateDef.gateType} in id ${gateDef.id}`
+        );
+      newGate.inputs = gateDef.inputs.map(x => x.instance(namespace));
+      if (gateDef.meta) newGate.meta = gateDef.meta;
+      logicGates.push(newGate);
+      newInstance.gates.push(newGate.id);
+    });
+
+  // ~a & b | c
+  // op(op(op(a, not) & b) | c)
+
+  let counter;
+
+  // walk the operation tree until both lhs and rhs are variables
+  // then make a new gate namespace.idx which is op(lhs, rhs)
+  const walkOperationTree = (namespace, id, op, netBitSize) => {
+    // debugger;
+
+    if (op instanceof Variable) {
+      return op;
+    }
+
+    if (id instanceof Concatenation) {
+      return; // concatenations are handled later
+    }
+
+    let gateID = id + (counter == 0 ? "" : counter);
+    counter = counter + 1;
+
+    if (op instanceof Concatenation) {
+      const lookup = Object.assign(
+        indexBy(inputGates, "id"),
+        indexBy(outputGates, "id"),
+        indexBy(logicGates, "id"),
+        parameters
+      );
+      const bitSize = op.getBitSize(lookup, namespace);
+      const newGate = new ConcatenationGate(namespace, gateID, bitSize);
+      newGate.copynum = op.copynum.getValue(parameters, namespace);
+      newGate.inputs = op.components.map(
+        component =>
+          walkOperationTree(namespace, id, component, null).instance(namespace)
+        // send null instead of netBitSize so that child gates calculate minimum bit size
+      );
+      newInstance.gates.push(newGate.id);
+      logicGates.push(newGate);
+      return new Variable(namespace, gateID, null);
+    }
+
+    if (op instanceof Numeric) {
+      const newGate = new ConstantGate(
+        namespace,
+        gateID,
+        netBitSize,
+        op.getValue()
+      );
+      newInstance.gates.push(newGate.id);
+      logicGates.push(newGate);
+      return new Variable(namespace, gateID, null);
+    }
+
+    const lookup = Object.assign(
+      indexBy(inputGates, "id"),
+      indexBy(outputGates, "id"),
+      indexBy(logicGates, "id"),
+      parameters
+    );
+
+    const newGate =
+      op.op == "assign"
+        ? new BufferGate(namespace, gateID, "buffer", netBitSize) // TODO: if gateID is an output newGate = gates.get(gateID+"-out")??
+        : new LogicGate(
+            namespace,
+            gateID,
+            op.op,
+            // op.getBitSize(lookup, namespace)
+            netBitSize || op.getBitSize(lookup, namespace)
+          );
+
+    console.log("newGate: ", newGate);
+
+    if (op.op == "mux")
+      newGate.inputs = [
+        walkOperationTree(namespace, id, op.test, netBitSize).instance(
+          namespace
+        ),
+        walkOperationTree(namespace, id, op.lhs1, netBitSize).instance(
+          namespace
+        ),
+        walkOperationTree(namespace, id, op.lhs0, netBitSize).instance(
+          namespace
+        )
+      ];
+    else
+      newGate.inputs = op.rhs
+        ? [
+            walkOperationTree(namespace, id, op.lhs, netBitSize).instance(
+              namespace
+            ),
+            walkOperationTree(namespace, id, op.rhs, netBitSize).instance(
+              namespace
+            )
+          ]
+        : [
+            walkOperationTree(namespace, id, op.lhs, netBitSize).instance(
+              namespace
+            )
+          ];
+
+    logicGates.push(newGate);
+    newInstance.gates.push(newGate.id);
+    return new Variable(namespace, gateID, null);
+  };
+
+  instanceModule.netAssignments.forEach(net => {
+    console.groupCollapsed("netAsssigment: ", net.id.name);
+    counter = 0;
+
+    let netBitSize = gateBitSizesID[net.id.name];
+    // intermediary gates will be same bitsize as the assign lhs
+    // except for new gate instantiations inside a concatenation
+
+    if (net.operationTree instanceof Variable)
+      walkOperationTree(
+        namespace,
+        net.id,
+        new Operation(net.operationTree, "assign", null),
+        netBitSize
+      );
+    else walkOperationTree(namespace, net.id, net.operationTree, netBitSize);
+    console.groupEnd();
+  });
+
+  instanceModule.regs.forEach(reg => {
+    var newGate;
+    if (reg.arrayDim) {
+      // array of regs = memory
+      let arrayDim = reg.arrayDim.map(x =>
+        x.getValue(parameters, newInstance.id)
+      );
+      newGate = new ArrayGate(
+        namespace,
+        reg.id,
+        gateBitSizesID[reg.id],
+        0,
+        Math.abs(arrayDim[1] - arrayDim[0]) + 1
+      );
+    } else {
+      newGate = new RegGate(namespace, reg.id, gateBitSizesID[reg.id]);
+    }
+
+    logicGates.push(newGate);
+    newInstance.gates.push(newGate.id);
   });
 
   // silently instantiate a WireGate for any outputs or wires that have not been declared as as gate (LogicGate, BufferGate or Reg)
