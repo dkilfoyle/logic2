@@ -1,3 +1,13 @@
+const DIGIT_WIDTH = 25;
+const DIGIT_PADDING = 0.15 * DIGIT_WIDTH;
+const BAR_HEIGHT = 0.2 * (DIGIT_WIDTH - 2 * DIGIT_PADDING);
+const BAR_SPACE = 0.1 * BAR_HEIGHT;
+const BAR_WIDTH = DIGIT_WIDTH - 2 * DIGIT_PADDING - BAR_HEIGHT;
+const DIGIT_HEIGHT =
+  2 * DIGIT_PADDING + 2 * BAR_WIDTH + BAR_HEIGHT + 4 * BAR_SPACE;
+
+import { updateNumber } from "./number.js";
+
 /* eslint-disable no-debugger */
 function sizeOfText(text) {
   if (!window.d3) return;
@@ -63,16 +73,32 @@ export default class RegGateRenderer extends window.d3.GenericNodeRenderer {
       })
       .attr("font-size", "6px")
       .attr("x", 3)
-      .attr("y", 8);
+      .attr("y", 8.5);
 
-    nodeG
-      .append("text")
-      .text(d => {
-        return `${d.val || "xxx"}`;
-      })
-      .attr("font-size", "6px")
-      .attr("x", d => 6 + d.idWidth)
-      .attr("y", 8)
-      .attr("id", "val");
+    // nodeG
+    //   .append("text")
+    //   .text(d => {
+    //     return `${d.val || "xxx"}`;
+    //   })
+    //   .attr("font-size", "6px")
+    //   .attr("x", d => 6 + d.idWidth)
+    //   .attr("y", 8)
+    //   .attr("id", "val");
+
+    const num = nodeG
+      .append("g")
+      .attr("transform", d => `translate(${6 + d.idWidth} 4) scale(0.15)`);
+    num
+      .append("rect")
+      .attr("width", 3 * DIGIT_WIDTH)
+      .attr("height", DIGIT_HEIGHT)
+      .attr("fill", "#000");
+
+    var cont = num
+      .append("g")
+      .attr("class", "d3-hwschematic node-operator node-number2")
+      .attr("transform", `translate(${DIGIT_PADDING} ${DIGIT_PADDING})`);
+
+    updateNumber(cont, [0, 0, 0]);
   }
 }

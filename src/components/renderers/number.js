@@ -82,45 +82,6 @@ export function barData(v) {
   ];
 }
 
-function NUMBER_SHAPE(root) {
-  root
-    .append("rect")
-    .attr("width", 3 * DIGIT_WIDTH)
-    .attr("height", DIGIT_HEIGHT)
-    .attr("fill", "#000");
-
-  // Create clock.
-  const clock = root
-    .append("g")
-    .attr(
-      "transform",
-      "translate(" + DIGIT_PADDING + "," + DIGIT_PADDING + ")"
-    );
-
-  // Create digits.
-  const digits = clock
-    .selectAll(".digit")
-    .data([0, 0, 0])
-    .enter()
-    .append("g")
-    .attr("class", "digit")
-    .attr("transform", (d, i) => "translate(" + i * DIGIT_WIDTH + ",0)");
-
-  // Create bars for each digit.
-  digits
-    .selectAll(".bar")
-    .data(d => barData(d))
-    .enter()
-    .append("path")
-    .attr("class", "bar")
-    .attr("d", barPath)
-    .attr("fill", d => (d.on ? COLOR_ON : COLOR_OFF))
-    .attr(
-      "transform",
-      d => "translate(" + d.x + "," + d.y + ") rotate(" + d.rot + ")"
-    );
-}
-
 export default class NumberRenderer extends window.d3.GenericNodeRenderer {
   constructor(schematic) {
     super(schematic);
@@ -158,11 +119,50 @@ export default class NumberRenderer extends window.d3.GenericNodeRenderer {
         return "translate(" + d.x + " " + d.y + ")";
       })
       .attr("class", d => d.hwMeta.cssClass)
-      .attr("style", d => d.hwMeta.cssStyle);
-    // .attr("id", d => d.id);
-    var cont = nodeG.append("g");
-    cont.attr("id", d => d.id + "_NUMBER");
-    cont.attr("class", "d3-hwschematic node-operator node-number2");
-    NUMBER_SHAPE(cont);
+      .attr("style", d => d.hwMeta.cssStyle)
+      .attr("id", d => d.id + "_NUMBER");
+
+    nodeG
+      .append("rect")
+      .attr("width", 3 * DIGIT_WIDTH)
+      .attr("height", DIGIT_HEIGHT)
+      .attr("fill", "#000");
+
+    var cont = nodeG
+      .append("g")
+      .attr("class", "d3-hwschematic node-operator node-number2")
+      .attr("transform", `translate(${DIGIT_PADDING} ${DIGIT_PADDING})`);
+
+    // NUMBER_SHAPE(cont);
+    updateNumber(cont, [0, 0, 0]);
   }
 }
+
+export const updateNumber = (root, data) => {
+  // Create digits.
+  const digits = root.selectAll(".digit").data(data);
+
+  digits
+    .enter()
+    .append("g")
+    .attr("class", "digit")
+    .attr("transform", (d, i) => "translate(" + i * DIGIT_WIDTH + ",0)");
+
+  // Create bars for each digit.
+  const bars = root
+    .selectAll(".digit")
+    .selectAll(".bar")
+    .data(d => barData(d));
+
+  bars
+    .enter()
+    .append("path")
+    .attr("class", "bar")
+    .attr("d", barPath)
+    .attr(
+      "transform",
+      d => "translate(" + d.x + "," + d.y + ") rotate(" + d.rot + ")"
+    )
+    .merge(bars)
+    .attr("fill", d => (d.on ? COLOR_ON : COLOR_OFF));
+};

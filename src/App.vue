@@ -191,7 +191,7 @@ export default {
     // this.addFileTab("LW");
     // this.addFileTab("Mux2_1");
     // this.addFileTab("DFlipFlop");
-    // this.addFileTab("RippleCounter");
+    this.addFileTab("RippleCounter");
     // this.addFileTab("SumProducts");
     // this.addFileTab("RegFile");
     // this.addFileTab("BenEater");

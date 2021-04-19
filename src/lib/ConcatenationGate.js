@@ -29,7 +29,7 @@ class ConcatenationGate extends BaseComponent {
     // update is called each clock and processes inputs to call this.setValue
   }
   getSchematicName() {
-    return "BUFFER"; //"CONCATENATIONGATE";
+    return "CONCATENATIONGATE"; //"CONCATENATIONGATE";
   }
 }
 

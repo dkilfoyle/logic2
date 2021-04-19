@@ -21,6 +21,7 @@ import { mapGetters } from "vuex";
 import SevenSegRenderer from "./renderers/sevenseg.js";
 import NumberRenderer from "./renderers/number.js";
 import BufferRenderer from "./renderers/buffer.js";
+import ConcatRenderer from "./renderers/concat.js";
 import LedBarRenderer from "./renderers/ledbar.js";
 import LedRenderer from "./renderers/led.js";
 import LedsRenderer from "./renderers/leds.js";
@@ -28,11 +29,12 @@ import WireGateRenderer from "./renderers/wiregate.js";
 import RegGateRenderer from "./renderers/reggate.js";
 import ConstantGateRenderer from "./renderers/constantgate.js";
 import ArrayRenderer from "./renderers/array.js";
-import { barData } from "./renderers/number.js";
+// import { barData } from "./renderers/number.js";
 import Numeric from "../lib/Numeric";
 
 import { updateTable } from "./renderers/array.js";
 import { updateLeds } from "./renderers/leds.js";
+import { updateNumber } from "./renderers/number.js";
 
 class Tooltip {
   constructor(root, getTextFn) {
@@ -97,36 +99,6 @@ export default {
           );
         });
 
-      // this.getAllGates
-      //   .filter(gate => gate.type == "led")
-      //   .forEach(gate => {
-      //     const ledbits = new Array(2 ** gate.bitSize - 1).fill(0);
-      //     ledbits[timestate[gate.id] - 1] = 1;
-
-      //     // timestate[gate.id]
-      //     //   .toString(2)
-      //     //   .padStart(gate.bitSize, "0")
-      //     //   .split("")
-      //     //   .map(x => +x);
-
-      //     const ledid = "#svgSchematic ." + gate.id + "_internal";
-
-      //     d3.select(ledid)
-      //       .selectAll(".glowBulb")
-      //       .data(ledbits)
-      //       .attr("class", d =>
-      //         d >= 1 ? "glowBulb ledGlowOn" : "glowBulb ledGlowOff"
-      //       );
-      //     d3.select(ledid)
-      //       .selectAll(".bulb")
-      //       .data(ledbits)
-      //       .attr("class", d => (d >= 1 ? "bulb ledRedOn" : "bulb ledRedOff"));
-      //     d3.select(ledid)
-      //       .selectAll(".base")
-      //       .data(ledbits)
-      //       .attr("class", d => (d >= 1 ? "base ledRedOn" : "base ledRedOff"));
-      //   });
-
       this.getAllGates
         .filter(gate => gate.type == "ledbar")
         .forEach(gate => {
@@ -160,27 +132,17 @@ export default {
           });
         });
 
-      COLOR_ON = "#70fbfd";
-      COLOR_OFF = "#181917";
-
       this.getAllGates
         .filter(gate => gate.type == "number")
         .forEach(gate => {
-          let id = gate.id + "_gate_NUMBER";
-          // let element = document.querySelector("#svgSchematic #" + id);
-          // if (element) element.textContent = timestate[gate.id];
-          d3.select("#svgSchematic #" + id)
-            .selectAll(".digit")
-            .data(
-              timestate[gate.id]
-                .toString()
-                .padStart(3, "0")
-                .split("")
-                .map(x => parseInt(x))
-            )
-            .selectAll(".bar")
-            .data(d => barData(d))
-            .attr("fill", d => (d.on ? COLOR_ON : COLOR_OFF));
+          updateNumber(
+            d3.select(`#svgSchematic #${gate.id}_gate_NUMBER`),
+            timestate[gate.id]
+              .toString()
+              .padStart(3, "0")
+              .split("")
+              .map(x => parseInt(x))
+          );
         });
 
       this.getAllGates
@@ -195,13 +157,17 @@ export default {
       this.getAllGates
         .filter(gate => gate.type == "reg" || gate.type == "constant")
         .forEach(gate => {
-          // console.log(
-          //   gate.id,
-          //   d3.select(`.${gate.id}_internal`).selectAll("text")
-          // );
-          d3.select(`.${gate.id}_internal`)
-            .select("#val")
-            .text(timestate[gate.id].toString().padStart(3, "0"));
+          // d3.select(`.${gate.id}_internal`)
+          //   .select("#val")
+          //   .text(timestate[gate.id].toString().padStart(3, "0"));
+          updateNumber(
+            d3.select(`.${gate.id}_internal`),
+            timestate[gate.id]
+              .toString()
+              .padStart(3, "0")
+              .split("")
+              .map(x => +x)
+          );
         });
 
       // animate the links, controls, and responses
@@ -261,6 +227,7 @@ export default {
     this.g.nodeRenderers.registerCustomRenderer(new SevenSegRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new NumberRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new BufferRenderer(this.g));
+    this.g.nodeRenderers.registerCustomRenderer(new ConcatRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new LedBarRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new LedRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new LedsRenderer(this.g));
