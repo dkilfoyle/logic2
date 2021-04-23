@@ -20,7 +20,7 @@ module Main(
   output eq, neq, lt, lte, gt, gte
 ); 
 
-  Comparator compare #(4) (
+  Comparator #(4) compare  (
 		.a(x),
 		.b(y), 
 		.eq(eq), 

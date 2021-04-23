@@ -18,7 +18,7 @@ module Main(
   output [7:0] SUM, COUT
 ); 
 
-  Adder myAdder #(4) (
+  Adder #(4) myAdder  (
 		.a(x),
 		.b(y),
     .cin(cin),

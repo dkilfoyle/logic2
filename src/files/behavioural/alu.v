@@ -66,14 +66,14 @@ module Alu #(parameter N=8) (
   assign notb = ~b;
 
   wire [N-1:0] bb;
-  Mux2 bbmux #(N) (.a(b), .b(notb), .sel(F[2]), .y(bb));
+  Mux2 #(N) bbmux (.a(b), .b(notb), .sel(F[2]), .y(bb));
   
   wire [N-1:0] aandbb, aorbb;
   assign aandbb = a & bb;
   assign aorbb = a | bb;
 
   wire [N-1:0] S;
-  Add adder #(N) (.a(a), .b(bb), .cin(F[2]), .y(S), .cout(cout));
+  Add #(N) adder (.a(a), .b(bb), .cin(F[2]), .y(S), .cout(cout));
 
   Mux4 ymux(.a(aandbb), .b(aorbb), .c(S), .d(S[N-1]), .sel(F[1:0]), .y(y));
 endmodule
@@ -86,7 +86,7 @@ module Main (
   output cout
 );
 
-  Alu alu #(8) (.F(F), .a(a), .b(b), .y(y), .cout(cout));
+  Alu #(8) alu (.F(F), .a(a), .b(b), .y(y), .cout(cout));
 
   test begin
     #0  { F=0, a=2, b=3 }; // AND
