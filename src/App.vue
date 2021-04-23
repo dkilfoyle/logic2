@@ -487,6 +487,29 @@ body {
   background: var(--jp-layout-color1);
   font-size: var(--jp-ui-font-size1);
   height: 100%;
+  overflow: auto;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 10px;
+  padding-right: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dk-SideBarPanel::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+
+  /* border-left: #4a4a4a 1px solid; */
+}
+
+.dk-SideBarPanel::-webkit-scrollbar-thumb {
+  background-color: #808080;
+  /* border-left: #4a4a4a 1px solid; */
+  fill-opacity: 0.5;
+  border-radius: 6px;
+  /* border-right: 4px solid var(--jp-layout-color1); */
 }
 
 .tree-root {

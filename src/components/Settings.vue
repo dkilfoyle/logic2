@@ -1,5 +1,5 @@
 <template>
-  <div class="dk-flex-col dk-pa-10 dk-gap-5">
+  <div>
     <div class="dk-heading">GLOBAL</div>
 
     <div class="dk-label">Evals per Step</div>

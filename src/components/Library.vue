@@ -1,5 +1,5 @@
 <template>
-  <div class="dk-flex-col dk-gap-5 dk-pa-10 dk-h-100">
+  <div>
     <tree-menu
       @selected="x => $emit('onCodeTreeSelection', x.text)"
       :node="{ text: 'CIRCUIT LIBRARY', children: sourceTree }"

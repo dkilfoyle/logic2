@@ -1,6 +1,6 @@
 <template>
-  <div class="grid-container">
-    <div class="toolbar">
+  <div class="columns" style="height:100%">
+    <div class="column" style="width:100%">
       <nav class="level dktoolbar">
         <div class="level-left">
           <div class="level-item dkbuttongroup">
@@ -62,18 +62,19 @@
           </div>
         </div>
       </nav>
+
+      <MonacoEditor
+        ref="editor"
+        :value="value"
+        :options="monacoOptions"
+        @change="onChange"
+        @editorWillMount="onEditorWillMount"
+        @editorDidMount="onEditorDidMount"
+        class="editor"
+        language="miniVerilog"
+        theme="myCoolTheme"
+      />
     </div>
-    <MonacoEditor
-      ref="editor"
-      :value="value"
-      :options="monacoOptions"
-      @change="onChange"
-      @editorWillMount="onEditorWillMount"
-      @editorDidMount="onEditorDidMount"
-      language="miniVerilog"
-      theme="myCoolTheme"
-      class="editor"
-    />
   </div>
 </template>
 
@@ -556,22 +557,5 @@ export default {
 .dkbuttongroup {
   display: inline-flex;
   gap: 5px;
-}
-
-.grid-container {
-  height: 100%;
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr;
-  gap: 0px 0px;
-  grid-template-areas:
-    "toolbar"
-    "editor";
-}
-.toolbar {
-  grid-area: toolbar;
-}
-.editor {
-  grid-area: editor;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="dk-flex-col dk-grow-1 dk-gap-10 dk-pa-10">
+  <div>
     <tree-menu
       @selected="node => $store.commit('setSelectedInstanceID', node.data.id)"
       :node="{ text: 'INSTANCES', children: getInstanceTree }"
