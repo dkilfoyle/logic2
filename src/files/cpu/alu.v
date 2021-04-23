@@ -2,8 +2,8 @@ module Adder #(parameter N=8) (
   input [N-1:0] a, b,
   input cin,
   output reg [N-1:0] sum,
-  output reg cout
-);
+  output reg cout);
+  
   always @(*)
   begin
     {cout, sum} = a + b + cin;
@@ -43,9 +43,10 @@ module Main(
   input op,
   input [7:0] A,
   input [7:0] B,
-  output [8:0] res);
+  output [7:0] sum,
+  output co);
 
-  Alu alu(.op(op), .A(A), .B(B), .res(res));
+  Alu alu(.op(op), .A(A), .B(B), .res({co,sum}));
 
   test begin
     #0   { op=1, A=3, B=2 }; // Q=0

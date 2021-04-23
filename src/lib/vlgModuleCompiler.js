@@ -414,12 +414,13 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     }
   });
 
-  const createSplitterGate = (concatenation, sourceGateVariable) => {
+  const createSplitterGate = (concatenation, sourceGateVariable, counter) => {
     //  eg assign {a,b,c} = sourceGate
     //                                   | -------> concat.component[0]
     //   sourceGate -----> splitterGate  | -------> concat.component[1]
     //                                   | -------> concat.component[2]
     let startBit = 0;
+    const splitGateID = "split" + counter;
 
     [...concatenation.components].reverse().forEach(component => {
       const componentGate = [...logicGates, ...outputGates].find(
@@ -427,7 +428,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       );
       if (!componentGate) throw new Error("unable to build concatenation");
       componentGate.inputs.push(
-        new Variable(namespace, sourceGateVariable.name, [
+        new Variable(namespace, splitGateID, [
           new Numeric(startBit + componentGate.bitSize - 1),
           new Numeric(startBit)
         ])
@@ -436,23 +437,22 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       if (componentGate.inputs > 1) throw new Error("Invalid number of inputs");
     });
 
-    const newSplitterGate = new SplitterGate(
-      namespace,
-      "split" + counter,
-      startBit
-    );
+    const newSplitterGate = new SplitterGate(namespace, splitGateID, startBit);
+    newSplitterGate.inputs.push(sourceGateVariable);
     console.log("new splitter gate: ", newSplitterGate);
     return newSplitterGate;
   };
 
   // look for any concatenation assigns: assign {wirea, wireb, wirec} = multibitgate
   instanceModule.netAssignments.forEach(net => {
+    let counter = 0;
     if (net.id instanceof Concatenation) {
       if (!(net.operationTree instanceof Variable))
         throw new Error("concatenation assign rhs must be variable");
       // net.id = concatenation
       // net.operationTree = variable to multibitgate
-      const newGate = createSplitterGate(net.id, net.operationTree);
+      const newGate = createSplitterGate(net.id, net.operationTree, counter);
+      counter = counter + 1;
       logicGates.push(newGate);
       newInstance.gates.push(newGate.id);
     }
@@ -494,6 +494,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       var childInstance = createInstance(namespace, instDef);
       newInstance.instances.push(childInstance.id);
 
+      let counter = 0;
+
       // for each output connection process expression to find the target gate in parent namespace
       // and then add the connection output port to the target gate's inputs
       // this is the same as "assign targetgate = outputport-out"
@@ -519,9 +521,15 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
           } else if (connection.value.expr instanceof Concatenation) {
             const newGate = createSplitterGate(
               connection.value.expr,
-              connection.port.id
+              new Variable(
+                namespace + "_" + instDef.id,
+                connection.port.id + "-out",
+                null
+              ),
+              counter
             );
             gates.push(newGate); // push directly to gates as already had gates.push[...logicGates]
+            counter = counter + 1;
             newInstance.gates.push(newGate.id);
           } else throw new Error("invalid output connection type");
         });
