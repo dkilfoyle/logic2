@@ -283,18 +283,17 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         component => walkOperationTree(namespace, id, component, null)
         // send null instead of netBitSize so that child gates calculate minimum bit size
       );
+      const copyNum = op.copynum.getValue(parameters, namespace);
       const bitSize = walkedComponents.reduce((acc, comp) => {
-        const compBitSize = comp.getCompileBitSize(
-          parameters,
-          namespace,
-          gateBitSizesID
-        );
-        console.log("compBitSize: ", comp, compBitSize);
+        const compBitSize =
+          comp.getCompileBitSize(parameters, namespace, gateBitSizesID) *
+          copyNum;
+        console.log("compBitSize: ", op, comp, compBitSize);
         return acc + compBitSize;
       }, 0);
       const newGate = new ConcatenationGate(namespace, gateID, bitSize);
       gateBitSizesID[gateID] = bitSize;
-      newGate.copynum = op.copynum.getValue(parameters, namespace);
+      newGate.copynum = copyNum;
       newGate.inputs = walkedComponents;
 
       newInstance.gates.push(newGate.id);
@@ -311,7 +310,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       );
       newInstance.gates.push(newGate.id);
       logicGates.push(newGate);
-      gateBitSizesID[gateID] = netBitSize;
+      gateBitSizesID[gateID] = newGate.bitSize;
       return new Variable(namespace, gateID, null);
     }
 

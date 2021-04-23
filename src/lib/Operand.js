@@ -16,6 +16,9 @@ class Operand {
   getBitSize() {
     throw new Error("Operand subclasses must implement getBitSize");
   }
+  getCompileBitSize() {
+    throw new Error("Operand subclasses must implement getCompileBitSize");
+  }
 }
 
 export default Operand;

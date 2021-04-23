@@ -409,6 +409,18 @@ export default {
       currentInstance.gates.forEach((gateId, gateCount) => {
         const gate = this.getGate(gateId);
 
+        let metaVal;
+        switch (gate.type) {
+          case "array":
+            metaVal = gate.arraySize;
+            break;
+          case "concatenation":
+            metaVal = { copynum: gate.copynum, bitSize: gate.state.bitSize };
+            break;
+          default:
+            metaVal = gate.getValue();
+        }
+
         const gateNet = {
           id: gate.id + "_gate",
           hwMeta: {
@@ -424,7 +436,7 @@ export default {
               gate.type == "response"
                 ? this.getLocalId(gate.id)
                 : gate.getSchematicName(),
-            val: gate.type == "array" ? gate.arraySize : gate.getValue(), //currentInstance.parameters, currentInstance.id),
+            val: metaVal, //currentInstance.parameters, currentInstance.id),
             bitSize: gate.bitSize, //currentInstance.parameters, currentInstance.id),
             meta: gate.meta,
             isExternalPort: gate.type == "control" || gate.type == "response"
