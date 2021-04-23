@@ -155,7 +155,7 @@ export default {
         });
 
       this.getAllGates
-        .filter(gate => gate.type == "reg" || gate.type == "constant")
+        .filter(gate => gate.type == "reg")
         .forEach(gate => {
           // d3.select(`.${gate.id}_internal`)
           //   .select("#val")

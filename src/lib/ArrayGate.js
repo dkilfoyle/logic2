@@ -16,6 +16,7 @@ class ArrayGate extends BaseComponent {
   update() {
     // update is called each clock and processes inputs to call this.setValue
     // registers and memory have no inputs, their values are set in expressions, not by inputs
+    return this.getValue();
   }
   setValue(x, index = 0) {
     this.checkIndex(index, "setValue");

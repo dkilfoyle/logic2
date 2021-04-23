@@ -217,7 +217,14 @@ const simulate = (
       // try {
       // todo: what about array gates????
       const newValues = gates.map(gate => gate.update(gatesLookup));
-      changing = newValues.some((newVal, i) => newVal != oldValues[i]);
+      changing = newValues.some((newVal, i) => {
+        if (newVal != oldValues[i]) {
+          // console.log(
+          //   `${gates[i].id} changed from ${oldValues[i]} to ${newVal}}`
+          // );
+          return true;
+        }
+      });
       // } catch (e) {
       // logger(chalk.red(e));
       // console.log(e);

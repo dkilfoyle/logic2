@@ -43,6 +43,17 @@ class Operation extends Operand {
     const rhs = this.rhs ? this.rhs.getBitSize(gatesLookup, namespace) : null;
     return Math.max(lhs, rhs);
   }
+  getCompileBitSize(parameters, namespace, gateBitSizesID) {
+    const lhs = this.lhs.getCompileBitSize(
+      parameters,
+      namespace,
+      gateBitSizesID
+    );
+    const rhs = this.rhs
+      ? this.rhs.getCompileBitSize(parameters, namespace, gateBitSizesID)
+      : null;
+    return Math.max(lhs, rhs);
+  }
   getValue(gatesLookup, namespace) {
     const lhs = this.lhs.getValue(gatesLookup, namespace);
     const rhs = this.rhs ? this.rhs.getValue(gatesLookup, namespace) : null;

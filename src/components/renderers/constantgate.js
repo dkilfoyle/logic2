@@ -33,7 +33,6 @@ export default class ConstantGateRenderer extends window.d3
     node.txtHeight = sizeOfText(node.hwMeta.val).height;
     node.width = node.valWidth + 10;
     node.height = node.txtHeight + 7;
-    console.log(node);
   }
 
   render(root, nodeG) {

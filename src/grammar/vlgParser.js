@@ -1,4 +1,4 @@
-// Generated from c:\code\logic2\src\grammar\vlg.g4 by ANTLR 4.8
+// Generated from c:\c\logic2\src\grammar\vlg.g4 by ANTLR 4.8
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
 var vlgListener = require('./vlgListener').vlgListener;
@@ -53,8 +53,8 @@ var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
     "\u0003\u0016\u0003\u0016\u0007\u0016\u012e\n\u0016\f\u0016\u000e\u0016",
     "\u0131\u000b\u0016\u0003\u0017\u0003\u0017\u0003\u0017\u0005\u0017\u0136",
     "\n\u0017\u0003\u0018\u0003\u0018\u0003\u0018\u0007\u0018\u013b\n\u0018",
-    "\f\u0018\u000e\u0018\u013e\u000b\u0018\u0003\u0019\u0003\u0019\u0003",
-    "\u0019\u0005\u0019\u0143\n\u0019\u0003\u0019\u0003\u0019\u0005\u0019",
+    "\f\u0018\u000e\u0018\u013e\u000b\u0018\u0003\u0019\u0003\u0019\u0005",
+    "\u0019\u0142\n\u0019\u0003\u0019\u0003\u0019\u0003\u0019\u0005\u0019",
     "\u0147\n\u0019\u0003\u0019\u0003\u0019\u0003\u001a\u0003\u001a\u0003",
     "\u001a\u0003\u001a\u0003\u001a\u0007\u001a\u0150\n\u001a\f\u001a\u000e",
     "\u001a\u0153\u000b\u001a\u0003\u001a\u0003\u001a\u0003\u001b\u0003\u001b",
@@ -234,10 +234,10 @@ var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
     "\u0139\u0007\n\u0002\u0002\u0139\u013b\u0007T\u0002\u0002\u013a\u0138",
     "\u0003\u0002\u0002\u0002\u013b\u013e\u0003\u0002\u0002\u0002\u013c\u013a",
     "\u0003\u0002\u0002\u0002\u013c\u013d\u0003\u0002\u0002\u0002\u013d/",
-    "\u0003\u0002\u0002\u0002\u013e\u013c\u0003\u0002\u0002\u0002\u013f\u0140",
-    "\u0007T\u0002\u0002\u0140\u0142\u0007T\u0002\u0002\u0141\u0143\u0005",
-    "2\u001a\u0002\u0142\u0141\u0003\u0002\u0002\u0002\u0142\u0143\u0003",
-    "\u0002\u0002\u0002\u0143\u0146\u0003\u0002\u0002\u0002\u0144\u0147\u0005",
+    "\u0003\u0002\u0002\u0002\u013e\u013c\u0003\u0002\u0002\u0002\u013f\u0141",
+    "\u0007T\u0002\u0002\u0140\u0142\u00052\u001a\u0002\u0141\u0140\u0003",
+    "\u0002\u0002\u0002\u0141\u0142\u0003\u0002\u0002\u0002\u0142\u0143\u0003",
+    "\u0002\u0002\u0002\u0143\u0146\u0007T\u0002\u0002\u0144\u0147\u0005",
     "4\u001b\u0002\u0145\u0147\u00058\u001d\u0002\u0146\u0144\u0003\u0002",
     "\u0002\u0002\u0146\u0145\u0003\u0002\u0002\u0002\u0147\u0148\u0003\u0002",
     "\u0002\u0002\u0148\u0149\u0007\u0004\u0002\u0002\u01491\u0003\u0002",
@@ -410,7 +410,7 @@ var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
     "\u0002\u0002\u0002\u0284\u0282\u0003\u0002\u0002\u0002\u0285\u0286\u0007",
     "7\u0002\u0002\u0286\u007f\u0003\u0002\u0002\u00028\u0086\u008f\u0092",
     "\u0098\u009c\u009f\u00a6\u00a9\u00af\u00c2\u00c9\u00cc\u00d5\u00e3\u00ea",
-    "\u00f1\u00fe\u010c\u011e\u0125\u012f\u0135\u013c\u0142\u0146\u0151\u015c",
+    "\u00f1\u00fe\u010c\u011e\u0125\u012f\u0135\u013c\u0141\u0146\u0151\u015c",
     "\u016d\u0177\u019c\u019e\u01a1\u01a6\u01ae\u01b4\u01bf\u01cc\u01d5\u01d8",
     "\u01f0\u01fd\u020e\u0222\u0224\u0233\u023f\u0241\u024a\u0254\u025d\u0265",
     "\u027b\u0280\u0282"].join("");
@@ -3080,8 +3080,8 @@ function Module_instantiationContext(parser, parent, invokingState) {
     this.parser = parser;
     this.ruleIndex = vlgParser.RULE_module_instantiation;
     this.moduleID = null; // Token
-    this.instanceID = null; // Token
     this.params = null; // Parameter_value_assignmentContext
+    this.instanceID = null; // Token
     return this;
 }
 
@@ -3146,16 +3146,16 @@ vlgParser.prototype.module_instantiation = function() {
         this.enterOuterAlt(localctx, 1);
         this.state = 317;
         localctx.moduleID = this.match(vlgParser.IDENTIFIER);
-        this.state = 318;
-        localctx.instanceID = this.match(vlgParser.IDENTIFIER);
-        this.state = 320;
+        this.state = 319;
         this._errHandler.sync(this);
         _la = this._input.LA(1);
         if(_la===vlgParser.T__3) {
-            this.state = 319;
+            this.state = 318;
             localctx.params = this.parameter_value_assignment();
         }
 
+        this.state = 321;
+        localctx.instanceID = this.match(vlgParser.IDENTIFIER);
         this.state = 324;
         this._errHandler.sync(this);
         var la_ = this._interp.adaptivePredict(this._input,24,this._ctx);

@@ -24,15 +24,55 @@ module TriBuff #(parameter WIDTH = 8) (
   assign dataOut = enable ? data : {WIDTH{1'bz}};
 endmodule
 
+module Adder #(parameter N=8) (
+  input [N-1:0] a, b,
+  input cin,
+  output reg [N-1:0] sum,
+  output reg cout);
+
+  always @(*)
+    begin
+      {cout, sum} = a + b + cin;
+    end
+endmodule
+
+module ALU (
+  input op,
+  input [7:0] A,
+  input [7:0] B,
+  output [7:0] res,
+  output co);
+
+  // reg one;
+  // initial
+  //   one <= 1'b1;
+
+  wire [7:0] b2c;
+  assign b2c = {
+    B[7] ^ op,
+    B[6] ^ op,
+    B[5] ^ op,
+    B[4] ^ op,
+    B[3] ^ op,
+    B[2] ^ op,
+    B[1] ^ op,
+    B[0] ^ op
+  };
+  
+  Adder add(.a(A), .b(b2c), .cin(op), .sum(res), .cout(co));
+endmodule
+
+
 module RAM(
   input clk,
   input [3:0] address,
-  input write_enable,
-  input read_enable,
-  inout [7:0] data
+  input we, // writeEnable
+  input re, // readEnable
+  input [7:0] dataIn,
+  output [7:0] dataOut
 );
   reg [7:0] Memory[15:0];
-  reg [7:0] buffer;
+  reg [7:0] memBuffer;
 
   initial begin
     Memory[0] <= 8'b0001_1010;
@@ -55,13 +95,13 @@ module RAM(
 
   always @(posedge clk)
     begin
-      if(write_enable & ~read_enable)
-        Memory[address] <= data;
+      if(we & ~re) 
+        Memory[address] <= dataIn;
       else
-        buffer <= Memory[address];
+        memBuffer <= Memory[address];
     end
 
-  assign data = (read_enable & ~write_enable) ? buffer : 8'bzzzzzzzz;
+  assign dataOut = (re & ~we) ? memBuffer : 8'bzzzzzzzz;
 endmodule
 
 module PC(
@@ -76,31 +116,36 @@ module PC(
   assign CLK = (clk & enable);
   
   initial
-    begin
-      count <= 4'b0000;
-    end
+    count <= 4'b0000;
   
   always @(posedge CLK)
-    begin
-      if (rst)
-        count <= 4'b0000;
-      else
-        count <= count + 1;
-    end
+    if (rst)
+      count <= 4'b0000;
+    else
+      count <= count + 1;
 
   always @(posedge clk)
     if (jmp)
       count <= jmploc;
 endmodule
 
-module Control (
+module Controller (
   input clk, enable,
   input [3:0] instruction,
-  output reg [14:0] ctrl_wrd
-)
+  output reg [14:0] ctrlwrd
+);
+  wire CLK;
   assign CLK = (~clk & enable);
-  reg [2:0] inst_stage;
-  reg reset_in;
+  reg [2:0] inststage;
+  reg resetstage;
+
+  wire [4:0] inststageled;
+  leds(inststageled, inststage);
+  $meta(inststageled, '{"color":"green","type":"counter","labels":[0,1,2,3,4,5]}');
+
+  wire [14:0] ctrlwrdled;
+  leds(ctrlwrdled, ctrlwrd);
+  $meta(ctrlwrdled, '{"color":"blue","type":"bits","labels":["HLT","MI", "RI", "RO", "IO", "II", "AI", "AO", "SO", "SU", "BI", "OI", "CE", "CO", "J"]}');
 
   // Op codes
   localparam NOP = 4'b0000; // No operation.
@@ -135,55 +180,54 @@ module Control (
  
   initial
     begin
-      inst_stage = 3'b000;
+      inststage = 3'b000;
+      resetstage = 1'b1;
     end
 
-  always @ (posedge CLK)
+  always @(posedge CLK)
     begin
-      case(inst_stage) //HLT, MI, RI, RO, IO, II, AI, AO, SO, SU, BI, OI, CE, CO, J;
+      inststage = resetstage ? 3'b000 : inststage + 1;
+      resetstage = 1'b0;
+      case(inststage) //HLT, MI, RI, RO, IO, II, AI, AO, SO, SU, BI, OI, CE, CO, J;
           3'b000: 
             begin
-              ctrl_wrd = (1 << mi) | (1 << co); // push PC onto BUS, read BUS into MAR
-              inst_stage = 3'b001;
+              ctrlwrd = (1 << mi) | (1 << co); // push PC onto BUS, read BUS into MAR
             end
           3'b001: 
             begin
-              ctrl_wrd = (1 << ro) | (1 << ii) | (1 << ce); // inc PC, push RAM @ MAR onto BUS, read BUS into IR
-              inst_stage = 3'b010;
+              ctrlwrd = (1 << ro) | (1 << ii) | (1 << ce); // inc PC, push RAM @ MAR onto BUS, read BUS into IR
             end
           3'b010:
             begin
-              case(Instruction)
-                LDA: ctrl_wrd = (1 << mi) | (1 << io); // LDA - push instruction address onto BUS, read BUS into MAR
-                ADD: ctrl_wrd = (1 << mi) | (1 << io); // ADD - push instruction address onto BUS, read BUS into MAR
-                SUB: ctrl_wrd = (1 << mi) | (1 << io); // SUB - push instruction address onto BUS, read BUS into MAR
-                OUT: ctrl_wrd = (1 << ao) | (1 << oi); // OUT - push RegA onto BUS, read BUS into output buffer
-                JMP: ctrl_wrd = (1 << io) | (1 << j);  // JMP - PC input j, push instruction address onto BUS
-                HLT: ctrl_wrd = (1 << hlt); // HLT
-                default: ctrl_wrd = 0; 
+              case(instruction)
+                LDA: ctrlwrd = (1 << mi) | (1 << io); // LDA - push instruction address onto BUS, read BUS into MAR
+                ADD: ctrlwrd = (1 << mi) | (1 << io); // ADD - push instruction address onto BUS, read BUS into MAR
+                SUB: ctrlwrd = (1 << mi) | (1 << io); // SUB - push instruction address onto BUS, read BUS into MAR
+                OUT: ctrlwrd = (1 << ao) | (1 << oi); // OUT - push RegA onto BUS, read BUS into output buffer
+                JMP: ctrlwrd = (1 << io) | (1 << j);  // JMP - PC input j, push instruction address onto BUS
+                HLT: ctrlwrd = (1 << hlt); // HLT
+                default: ctrlwrd = 0; 
               endcase 
-              inst_stage = 3'b011;
             end      
           3'b011: 
             begin
-              case(Instruction)
-                LDA: ctrl_wrd = (1 << ro) | (1 << ai); // LDA - push RAM @ MAR onto BUS, read BUS into RegA
-                ADD: ctrl_wrd = (1 << ro) | (1 << bi); // ADD - push RAM @ MAR onto BUS, read BUS into RegB
-                SUB: ctrl_wrd = (1 << ro) | (1 << bi); // SUB - push RAM @ MAR onto BUS, read BUS into RegB
-                default: ctrl_wrd = 0;
+              case(instruction)
+                LDA: ctrlwrd = (1 << ro) | (1 << ai); // LDA - push RAM @ MAR onto BUS, read BUS into RegA
+                ADD: ctrlwrd = (1 << ro) | (1 << bi); // ADD - push RAM @ MAR onto BUS, read BUS into RegB
+                SUB: ctrlwrd = (1 << ro) | (1 << bi); // SUB - push RAM @ MAR onto BUS, read BUS into RegB
+                default: ctrlwrd = 0;
               endcase
-              inst_stage = 3'b100;           
             end
           3'b100:
             begin
-              case(Instruction)
-                ADD: ctrl_wrd = (1 << so) | (1 << ai);              // ADD - push ALU onto BUS, read BUS into Reg A
-                SUB: ctrl_wrd = (1 << so) | (1 << su) | (1 << ai);  // SUB - ALU op = SU, push ALU onto BUS, read BUS into Reg A
-                default: ctrl_wrd = 0;
+              case(instruction)
+                ADD: ctrlwrd = (1 << so) | (1 << ai);              // ADD - push ALU onto BUS, read BUS into Reg A
+                SUB: ctrlwrd = (1 << so) | (1 << su) | (1 << ai);  // SUB - ALU op = SU, push ALU onto BUS, read BUS into Reg A
+                default: ctrlwrd = 0;
               endcase
-              inst_stage = 3'b000;
+              resetstage = 1'b1;
             end                  
-          default: ctrl_wrd = 0;
+          default: ctrlwrd = 0;
       endcase                          
   end
 endmodule
@@ -205,33 +249,37 @@ module CPU(
   wire [7:0] aluOut;
 
   wire HLT, MI, RI, RO, IO, II, AI, AO, SO, SU, BI, OI, CE, CO, J;
-  wire pcRst, flag;
+  wire pcRst, flag, clk, nclk;
 
   assign clk = (clkin & ~HLT);
+  assign nclk = ~clk;
 
   Register  #(8) regA(.clk(clk), .D(bus), .Q(regAOut), .EI(AI));
-  TriBuff #(8) triA(.data(Aout), .dataOut(bus), .enable(AO));
+  TriBuff #(8) triA(.data(regAOut), .dataOut(bus), .enable(AO));
 
   Register #(8) regB(.clk(clk), .D(bus), .Q(regBOut), .EI(BI));
 
   Register #(8) instReg(.clk(clk), .D(bus), .Q(instRegOut), .EI(II));
-  TriBuff #(4) triInstReg(.data(Instout[3:0]), .dataOut(bus[3:0]), .enable(IO));
+  TriBuff #(4) triInstReg(.data(instRegOut[3:0]), .dataOut(bus[3:0]), .enable(IO));
 
   ALU alu(.A(regAOut), .B(regBOut), .op(SU), .res({flag, aluOut}));
   TriBuff #(8) triAlu(.data(aluOut), .enable(SO), .dataOut(bus));
 
-  PC pc(.clk(clk), .rst(1'b0), .enable(CE), .jmp(J), .jmploc(bus[3:0]), .count(Pcount));
-  TriBuff #(4) tripc(.data(Pcount), .dataOut(bus[3:0]), .enable(co));
+  PC pc(.clk(clk), .rst(1'b0), .enable(CE), .jmp(J), .jmploc(bus[3:0]), .count(pcOut));
+  TriBuff #(4) tripc(.data(pcOut), .dataOut(bus[3:0]), .enable(CO));
 
   Register #(4) mar(.clk(clk), .D(bus[3:0]), .Q(marOut), .EI(MI));
 
-  RAM ram(.clk(~clk), .address(marOut), .write_enable(RI), .read_enable(RO), .data(bus));
+  RAM ram(.clk(nclk), .address(marOut), .we(RI), .re(RO), .dataOut(bus));
 
-  Control ic(.clk(clk), .enable(1'b1), .Instruction(Instout[7:4]), .ctrl_wrd({HLT, MI, RI, RO, IO, II, AI, AO, SO, SU, BI, OI, CE, CO, J}));
+  Controller ic(
+    .clk(clk),
+    .enable(1'b1),
+    .instruction(instRegOut[7:4]),
+    .ctrlwrd({HLT, MI, RI, RO, IO, II, AI, AO, SO, SU, BI, OI, CE, CO, J})
+  );
 
-  Register8 res(.clk(clk), .D(bus), .Q(busOut), .EI(OI));
-  // bcd2sevenseg seg0(.bcd(OutPut[3:0]), .seg(LED1));
-  // bcd2sevenseg seg1(.bcd(OutPut[7:4]), .seg(LED2));
+  Register #(8) res(.clk(clk), .D(bus), .Q(busOut), .EI(OI));
 endmodule
 
 

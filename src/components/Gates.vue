@@ -187,7 +187,6 @@ export default {
         );
         // add the selectedgate and it's inputs back at the top
         followGates.unshift(...topGates);
-        console.log(followGates);
         return followGates.map(g => this.getGate(g));
       } else return this.filteredInstanceGates.map(g => this.getGate(g));
     }

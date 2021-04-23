@@ -232,6 +232,8 @@ export default {
           "always",
           "initial",
           "parameter",
+          "case",
+          "endcase",
           "$meta"
         ],
         typeKeywords: [

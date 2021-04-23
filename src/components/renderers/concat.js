@@ -1,6 +1,9 @@
 export default class ConcatNodeRenderer extends window.d3.GenericNodeRenderer {
   selector(node) {
-    return node.hwMeta.name === "CONCATENATIONGATE";
+    return (
+      node.hwMeta.name === "CONCATENATIONGATE" ||
+      node.hwMeta.name === "SPLITTERGATE"
+    );
   }
 
   getNodeLabelWidth() {

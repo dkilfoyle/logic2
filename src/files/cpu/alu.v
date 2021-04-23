@@ -14,9 +14,11 @@ module Alu (
   input op,
   input [7:0] A,
   input [7:0] B,
-  output [7:0] res,
-  output co
-);
+  output [8:0] res);
+
+  wire [7:0] sum;
+  wire co;
+
   // reg one;
   // initial
   //   one <= 1'b1;
@@ -33,22 +35,21 @@ module Alu (
       B[0] ^ op
     };
   
-  Adder add(.a(A), .b(b2c), .cin(op), .sum(res), .cout(co));
-
+  Adder add(.a(A), .b(b2c), .cin(op), .sum(sum), .cout(co));
+  assign res = {co, sum};
 endmodule
 
 module Main(
   input op,
   input [7:0] A,
   input [7:0] B,
-  output [7:0] res,
-  output co
-);
-  Alu alu(.op(op), .A(A), .B(B), .res(res), .co(co));
+  output [8:0] res);
+
+  Alu alu(.op(op), .A(A), .B(B), .res(res));
 
   test begin
-    #0   { op=0, A=3, B=2 }; // Q=0
-    #4   { op=1, A=3, B=2 }; // Q=0 
+    #0   { op=1, A=3, B=2 }; // Q=0
+    #4   { op=0, A=3, B=2 }; // Q=0 
     #6; // Q = 0
   end
 endmodule

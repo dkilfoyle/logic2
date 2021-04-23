@@ -762,19 +762,35 @@ class Listener extends vlgListener {
 
   // instances =========================================
 
-  convertConstantToGateVariable(numeric) {
-    const constid = "constant" + numeric.getValue();
-    if (!this.curModule.instantiations.find(x => x.id == constid))
-      this.curModule.instantiations.push({
-        type: "gate",
-        id: constid,
-        gateType: "constant",
-        defaultValue: numeric.getValue(),
-        defaultSize: numeric.bitSize,
-        inputs: []
-      });
-    return new Variable(null, constid);
-  }
+  // convertConstantToGateVariable(numeric) {
+  //   const constid = "constant" + numeric.getValue();
+  //   if (!this.curModule.instantiations.find(x => x.id == constid))
+  //     this.curModule.instantiations.push({
+  //       type: "gate",
+  //       id: constid,
+  //       gateType: "constant",
+  //       defaultValue: numeric.getValue(),
+  //       defaultSize: numeric.bitSize,
+  //       inputs: []
+  //     });
+  //   this.curModule.regs.push({ id: constid, bitDim: numeric.bitSize });
+  //   return new Variable(null, constid);
+  // }
+
+  // convertConcatenationToGateVariable(concat) {
+  //   const concatid = "concat" + concat.components.map(c => c.name).join("");
+  //   if (!this.curModule.instantiations.find(x => x.id == concatid))
+  //     this.curModule.instantiations.push({
+  //       type: "gate",
+  //       id: concatid,
+  //       gateType: "concat",
+  //       defaultValue: numeric.getValue(),
+  //       defaultSize: numeric.bitSize,
+  //       inputs: []
+  //     });
+  //   this.curModule.regs.push({ id: concatid, bitDim: numeric.bitSize });
+  //   return new Variable(null, concatid);
+  // }
 
   exitNamed_module_connections_list(ctx) {
     this.valueStack.push(
@@ -783,15 +799,15 @@ class Listener extends vlgListener {
         .reverse() // reverse in order to pop the identifiers in the correct order
         .map(x => {
           // if the port input is a numeric constant add a constant buffer gate to instantiations
-          const valueexpr = this.expressionStack.pop();
-          const valueid =
-            valueexpr instanceof Numeric
-              ? this.convertConstantToGateVariable(valueexpr)
-              : valueexpr;
+          // const valueexpr = this.expressionStack.pop();
+          // const valueid =
+          //   valueexpr instanceof Numeric
+          //     ? this.convertConstantToGateVariable(valueexpr)
+          //     : valueexpr;
           return {
             port: { id: x.portID.text, token: x.portID },
             value: {
-              id: valueid,
+              expr: this.expressionStack.pop(),
               token: x.value.children[0].start
             }
           };
@@ -804,15 +820,32 @@ class Listener extends vlgListener {
       ctx.ids
         .reverse()
         .map((x, i, a) => {
-          const valueexpr = this.expressionStack.pop();
-          const valueid =
-            valueexpr instanceof Numeric
-              ? this.convertConstantToGateVariable(valueexpr)
-              : valueexpr;
+          // const valueexpr = this.expressionStack.pop();
+          // let valueid;
+          // switch (true) {
+          //   case valueexpr instanceof Numeric:
+          //     valueid = this.convertConstantToGateVariable(valueexpr);
+          //     break;
+          //   case valueexpr instanceof Concatenation:
+          //     valueid = this.convertConcatenationToGateVariable(valueexpr);
+          //     break;
+          //   case valueexpr instanceof Operation:
+          //     this.addSemanticError(
+          //       x,
+          //       "Operations are not yet supported as a module parameter"
+          //     );
+          //     throw new Error("Operation not supported as module parameter");
+          //   case valueexpr instanceof Variable:
+          //     valueid = valueexpr;
+          //     break;
+          //   default:
+          //     this.addSemanticError(x, "Not supported as a module parameter");
+          //     throw new Error("invalid module connection list parameter");
+          // }
           return {
             port: { index: a.length - i - 1 },
             value: {
-              id: valueid,
+              expr: this.expressionStack.pop(),
               token: x.start
             }
           };
@@ -856,10 +889,14 @@ class Listener extends vlgListener {
           connection.port.token,
           `Invalid port: '${connection.port.id}' is not defined in module '${moduleID}'`
         );
-      if (!this.isWireOrPortOrReg(connection.value.id.name))
+
+      if (
+        connection.value.expr instanceof Variable &&
+        !this.isWireOrPortOrReg(connection.value.expr.name)
+      )
         this.addSemanticError(
           connection.value.token,
-          `Invalid value: '${connection.value.id.name}' is not a defined wire or port in module '${moduleID}
+          `Invalid value: '${connection.value.expr.name}' is not a defined wire or port in module '${moduleID}
         '`
         );
     });

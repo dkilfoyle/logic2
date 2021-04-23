@@ -83,9 +83,9 @@ simple_identifier_list: IDENTIFIER (',' IDENTIFIER)*;
 // 3. Instantiations ==============================================  
 
 module_instantiation:
-	moduleID = IDENTIFIER instanceID = IDENTIFIER (
+	moduleID = IDENTIFIER  (
 		params = parameter_value_assignment
-	)? (
+	)?  instanceID = IDENTIFIER (
 		named_module_connections_list
 		| ordered_module_connections_list
 	) ';';

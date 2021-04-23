@@ -123,6 +123,32 @@ class Variable extends Operand {
         );
     }
   }
+  getCompileBitSize(parameters, namespace, gateBitSizesID) {
+    let o0, o1;
+    let myBitSize = gateBitSizesID[this.name];
+    switch (this.offsetType) {
+      case "none":
+        return myBitSize;
+      case "index":
+        return 1; // TODO: how to handle arrays?
+      case "range":
+        o0 = this.offset[0].getValue(parameters, namespace);
+        o1 = this.offset[1].getValue(parameters, namespace);
+        if (o0 > myBitSize)
+          throw new Error(
+            `Variable.getValue: offset[0] (${o0}) is larger than gate (${this.name}) state size (${myBitSize})`
+          );
+        if (o1 > myBitSize)
+          throw new Error(
+            `Variable.getValue: offset[1] (${o1}) is larger than gate (${this.name}) state size (${myBitSize})`
+          );
+        return Math.abs(o0 - o1) + 1;
+      default:
+        throw new Error(
+          `Variable.getValue invalid offsetType (${this.offsetType})`
+        );
+    }
+  }
   getValue(gatesLookup, namespace = null) {
     let id = namespace ? namespace + "_" + this.name : this.id;
     const gate = gatesLookup[id];

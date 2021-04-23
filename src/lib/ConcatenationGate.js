@@ -23,9 +23,12 @@ class ConcatenationGate extends BaseComponent {
       );
       return acc + padded;
     }, "");
-    this.state.setValue(
-      concatstr.length * this.copynum + "'b" + concatstr.repeat(this.copynum)
-    );
+
+    const res =
+      concatstr.length * this.copynum + "'b" + concatstr.repeat(this.copynum);
+    this.state.setValue(res);
+    return this.state.getValue();
+
     // update is called each clock and processes inputs to call this.setValue
   }
   getSchematicName() {
