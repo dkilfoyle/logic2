@@ -119,6 +119,7 @@ export default {
       this.getAllGates
         .filter(gate => gate.type == "sevenseg")
         .forEach(gate => {
+          // TODO: refactor in a d3 centric way
           let segments = timestate[gate.id];
           ["a", "b", "c", "d", "e", "f", "g"].forEach((letter, i) => {
             const element = document.getElementById(

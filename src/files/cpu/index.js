@@ -6,7 +6,8 @@ export const SourceFiles = {
   RAM: require("./ram.v").default,
   PC: require("./pc.v").default,
   Controller: require("./controller.v").default,
-  ALU: require("./alu.v").default
+  ALU: require("./alu.v").default,
+  Bus: require("./bus.v").default
 };
 
 export const SourceTree = {
@@ -20,7 +21,8 @@ export const SourceTree = {
         { text: "RAM" },
         { text: "PC" },
         { text: "ALU" },
-        { text: "Controller" }
+        { text: "Controller" },
+        { text: "Bus" }
       ]
     },
     { text: "BenEater" }

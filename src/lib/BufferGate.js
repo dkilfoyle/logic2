@@ -34,12 +34,15 @@ class BufferGate extends BaseComponent {
       input.getValue(gatesLookup, input.namespace)
     );
 
-    if (this.inputMasks.length == 0) {
-      if (inputValues.length == 1) {
-        this.setValue(inputValues[0]);
-      }
-      // buffer gate with multiple inputs = concatenation of 1 bits
-      else
+    if (this.inputMasks.length != 0)
+      throw new Error(
+        `Buffer.update() for ${this.id} inputMasks not implemented yet`
+      );
+    if (inputValues.length == 1) {
+      this.setValue(inputValues[0]);
+    } else {
+      if (["number", "ledbar", "led", "leds", "sevenseg"].includes(this.type)) {
+        // display gate with multiple inputs = concatenation of 1 bits
         inputValues.forEach((x, i) => {
           if (x > 1)
             throw new Error(
@@ -47,10 +50,19 @@ class BufferGate extends BaseComponent {
             );
           this.setValue(x, i);
         });
-    } else {
-      throw new Error(
-        `Buffer.update() for ${this.id} inputMasks not implemented yet`
-      );
+      } else {
+        // buffer gate - if multiple inputs select the first non z
+        const nonz = inputValues.filter(x => !x.toString().includes("z"));
+        if (nonz.length == 1) this.setValue(nonz[0]);
+        else if (nonz.length == 0) this.setValue("z");
+        else {
+          this.setValue(nonz[0]);
+          // TODO: ? change default gate value to "x" and test for "x" or "z"
+          // throw new Error(
+          //   "buffer gate should not have more than 1 non-z value"
+          // );
+        }
+      }
     }
     return this.state.getValue();
   }

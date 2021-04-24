@@ -199,7 +199,8 @@ export default {
     // this.addFileTab("RAM");
     // this.addFileTab("PC");
     // this.addFileTab("Controller");
-    this.addFileTab("ALU");
+    this.addFileTab("Bus");
+    // this.addFileTab("ALU");
   },
   mounted() {
     setTimeout(() => this.about(), 3000);

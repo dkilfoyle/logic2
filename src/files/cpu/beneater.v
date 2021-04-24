@@ -239,6 +239,7 @@ module CPU(
   output [6:0] led2
 );
   wire [7:0] bus;
+  // TODO: display bus as leds
 
   wire [7:0] regAOut;
   wire [7:0] regBOut;
@@ -262,15 +263,16 @@ module CPU(
   Register #(8) instReg(.clk(clk), .D(bus), .Q(instRegOut), .EI(II));
   TriBuff #(4) triInstReg(.data(instRegOut[3:0]), .dataOut(bus[3:0]), .enable(IO));
 
-  ALU alu(.A(regAOut), .B(regBOut), .op(SU), .res({flag, aluOut}));
+  ALU alu(.A(regAOut), .B(regBOut), .op(SU), .co(flag), .res(aluOut)); 
   TriBuff #(8) triAlu(.data(aluOut), .enable(SO), .dataOut(bus));
 
   PC pc(.clk(clk), .rst(1'b0), .enable(CE), .jmp(J), .jmploc(bus[3:0]), .count(pcOut));
   TriBuff #(4) tripc(.data(pcOut), .dataOut(bus[3:0]), .enable(CO));
 
   Register #(4) mar(.clk(clk), .D(bus[3:0]), .Q(marOut), .EI(MI));
-
-  RAM ram(.clk(nclk), .address(marOut), .we(RI), .re(RO), .dataOut(bus));
+  // TODO: why can't have unconnected input // because of register dependency?
+  // TODO: inout port type
+  RAM ram(.clk(nclk), .address(marOut), .we(RI), .re(RO), .dataOut(bus), .dataIn(bus));
 
   Controller ic(
     .clk(clk),
@@ -278,14 +280,17 @@ module CPU(
     .instruction(instRegOut[7:4]),
     .ctrlwrd({HLT, MI, RI, RO, IO, II, AI, AO, SO, SU, BI, OI, CE, CO, J})
   );
+  // TODO: concat.js renderer for splitter gate - output ports
+  // TODO: $meta() for instruction to display text
 
   Register #(8) res(.clk(clk), .D(bus), .Q(busOut), .EI(OI));
+  // TODO: when is OI set?
 endmodule
 
 
 module Main (
   input clock,
-  output busOut
+  output [7:0] busOut
 );
 
   CPU cpu(.clkin(clock), .busOut(busOut));

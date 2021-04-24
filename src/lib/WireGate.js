@@ -19,10 +19,13 @@ class WireGate extends BaseComponent {
       // wire gate with multiple inputs = select one with non z value
       else {
         let nonz = inputValues.filter(x => !x.toString().includes("z"));
-        if (nonz.length == 0) this.setValue("z");
-        else if (nonz.length > 1)
-          throw new Error("Wire gate with more than 1 nonz input");
+        if (nonz.length != 1) this.setValue("z");
         else this.setValue(nonz[0]);
+        if (nonz.length > 1)
+          //throw new Error("Wire gate with more than 1 non-z input");
+          console.log(
+            `warning: ${this.id} wiregate has more than input non-z input`
+          );
       }
     } else {
       throw new Error(

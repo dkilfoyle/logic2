@@ -108,13 +108,14 @@ module Main(
   output [14:0] ctrlwrd
 );
 
+  wire HLT, MI, RI, RO, IO, II, AI, AO, SO, SU, BI, OI, CE, CO, J;
   // todo: parser - no "_" in variable names 
 
   Controller controller (
     .clk(clock),
     .enable(enable),
     .instruction(instruction),
-    .ctrlwrd(ctrlwrd)
+    .ctrlwrd({HLT, MI, RI, RO, IO, II, AI, AO, SO, SU, BI, OI, CE, CO, J})
   );
 
   // wire [14:0] ctrlwrdled;
