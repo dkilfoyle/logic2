@@ -198,8 +198,8 @@ export default {
     // this.addFileTab("TriBuff");
     // this.addFileTab("RAM");
     // this.addFileTab("PC");
-    // this.addFileTab("Controller");
-    this.addFileTab("Bus");
+    this.addFileTab("Controller");
+    // this.addFileTab("Bus");
     // this.addFileTab("ALU");
   },
   mounted() {
@@ -506,7 +506,7 @@ body {
 }
 
 .dk-SideBarPanel::-webkit-scrollbar-thumb {
-  background-color: #808080;
+  background-color: #80808081;
   /* border-left: #4a4a4a 1px solid; */
   fill-opacity: 0.5;
   border-radius: 6px;

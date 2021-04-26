@@ -56,7 +56,7 @@ module Main(
     .Qn(Qntf3)
   );
 
-  wire dec;
+  wire [2:0] dec;
   number(dec, Count0, Count1, Count2);
 
   test begin

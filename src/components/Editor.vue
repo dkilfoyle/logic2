@@ -4,17 +4,17 @@
       <nav class="level dktoolbar">
         <div class="level-left">
           <div class="level-item dkbuttongroup">
-            <button class="button is-small ">
+            <button class="button is-small editButton">
               <span class="icon is-small">
                 <i class="fa fa-cut"></i>
               </span>
             </button>
-            <button class="button is-small is-light">
+            <button class="button is-small editButton">
               <span class="icon is-small">
                 <i class="fa fa-copy"></i>
               </span>
             </button>
-            <button class="button is-small is-light">
+            <button class="button is-small editButton">
               <span class="icon is-small">
                 <i class="fa fa-paste"></i>
               </span>
@@ -22,22 +22,12 @@
           </div>
         </div>
         <div class="level-item">
-          <span v-if="$store.getters.isCompiled" class="tag is-success"
-            >Compiled</span
-          >
-          <span
-            v-else-if="$store.getters.currentFile.status == 'Compile Error'"
-            class="tag is-danger"
-            >Compile Error</span
-          >
-          <span
-            v-else-if="$store.getters.currentFile.status == 'Parse OK'"
-            class="tag is-info"
-            >Parsed OK</span
-          >
-          <span v-else class="tag is-danger"
-            >{{ syntaxErrors.length + semanticErrors.length }} Errors</span
-          >
+          <button :class="statusButton.buttonClass">
+            <span class="icon is-small">
+              <i :class="statusButton.iconClass"></i>
+            </span>
+            <span>{{ statusButton.text }}</span>
+          </button>
         </div>
         <div class="level-right">
           <div class="level-item dkbuttongroup">
@@ -124,6 +114,35 @@ export default {
     },
     monaco() {
       return this.$refs["editor"].monaco;
+    },
+    statusButton() {
+      switch (true) {
+        case this.$store.getters.isCompiled:
+          return {
+            buttonClass: "button is-small is-success-dark",
+            iconClass: "fa fa-check",
+            text: "Compiled"
+          };
+        case this.$store.getters.currentFile.status == "Compile Error":
+          return {
+            buttonClass: "button is-small is-danger",
+            iconClass: "fa fa-times",
+            text: "Compile Error"
+          };
+        case this.$store.getters.currentFile.status == "Parse OK":
+          return {
+            buttonClass: "button is-small is-success",
+            iconClass: "fa fa-check",
+            text: "Parsed"
+          };
+        default:
+          return {
+            buttonClass: "button is-small is-danger",
+            iconClass: "fa fa-times",
+            text: `${this.syntaxErrors.length +
+              this.semanticErrors.length} Errors`
+          };
+      }
     }
   },
   mounted() {
@@ -461,66 +480,6 @@ export default {
           walkResult
         });
     }
-    // lint(text) {
-    //   console.log("lint");
-    //   if (text.length == 0) return [];
-    //   const parseResult = parse(text);
-
-    //   let newDecorations = parseResult.errors.map(e => ({
-    //     range: new this.monaco.Range(
-    //       e.startLine,
-    //       e.startColumn,
-    //       e.endLine,
-    //       e.endColumn
-    //     ),
-    //     options: {
-    //       inlineClassName: "lintErrorUnderline",
-    //       glyphMarginClassName:
-    //         e.severity == "error"
-    //           ? "fa fa-exclamation-triangle marginError"
-    //           : "fa fa-exclamation-circle marginWarning",
-    //       glyphMarginHoverMessage: { value: e.msg }
-    //     }
-    //   }));
-
-    //   let walkResult = { errors: [] };
-    //   if (parseResult.errors.length == 0) {
-    //     walkResult = walk(parseResult.ast);
-    //     newDecorations = newDecorations.concat(
-    //       walkResult.errors.map(e => ({
-    //         range: new this.monaco.Range(
-    //           e.startLine,
-    //           e.startColumn,
-    //           e.endLine,
-    //           e.endColumn
-    //         ),
-    //         options: {
-    //           inlineClassName: "lintErrorUnderline",
-    //           glyphMarginClassName:
-    //             e.severity == "error"
-    //               ? "fa fa-exclamation-triangle marginError"
-    //               : "fa fa-exclamation-circle marginWarning",
-    //           glyphMarginHoverMessage: { value: e.msg }
-    //         }
-    //       }))
-    //     );
-
-    //     // TODO: convert walkResult.errors to add to newdecorations
-    //   }
-
-    //   // console.log("lint result: ", parseResult, walkResult);
-    //   this.lintDecorations = this.editor.deltaDecorations(
-    //     this.lintDecorations,
-    //     newDecorations
-    //   );
-
-    //   if (parseResult.errors.length == 0 && walkResult.errors.length == 0) {
-    //     this.$nextTick(() => {
-    //       this.$emit("passLint", { name: this.name, parseResult, walkResult });
-    //     });
-    //   } else
-    //     this.$emit("failLint", { name: this.name, parseResult, walkResult });
-    // }
   }
 };
 </script>
@@ -551,6 +510,18 @@ export default {
   background: #333333;
   padding: 5px;
   margin-bottom: 0px !important;
+}
+
+.editButton {
+  background-color: #777777 !important;
+  border-color: #777777 !important;
+  color: #d4d4d4 !important;
+}
+
+.is-success-dark {
+  background-color: #358651 !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
 }
 
 .dkbuttongroup {

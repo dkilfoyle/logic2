@@ -56,7 +56,7 @@ export function barData(v) {
       x: BAR_HEIGHT / 2,
       y: BAR_WIDTH + 2 * BAR_SPACE,
       rot: 0,
-      on: [2, 3, 4, 5, 6, 8, 9].indexOf(v) > -1
+      on: [2, 3, 4, 5, 6, 8, 9, "-"].indexOf(v) > -1
     },
     {
       // bottom left
@@ -95,7 +95,11 @@ export default class NumberRenderer extends window.d3.GenericNodeRenderer {
     //   this.addShapeToDefs(defs);
     //   this._defsAdded = true;
     // }
-    node.width = this.DEFULT_NODE_SIZE[0];
+    node.numDigits = parseInt(
+      "1".repeat(node.hwMeta.bitSize),
+      2
+    ).toString().length;
+    node.width = this.DEFULT_NODE_SIZE[0] * node.numDigits;
     node.height = this.DEFULT_NODE_SIZE[1];
   }
 
@@ -124,7 +128,7 @@ export default class NumberRenderer extends window.d3.GenericNodeRenderer {
 
     nodeG
       .append("rect")
-      .attr("width", 3 * DIGIT_WIDTH)
+      .attr("width", d => d.numDigits * DIGIT_WIDTH)
       .attr("height", DIGIT_HEIGHT)
       .attr("fill", "#000");
 
@@ -134,13 +138,19 @@ export default class NumberRenderer extends window.d3.GenericNodeRenderer {
       .attr("transform", `translate(${DIGIT_PADDING} ${DIGIT_PADDING})`);
 
     // NUMBER_SHAPE(cont);
-    updateNumber(cont, [0, 0, 0]);
+    updateNumber(cont, 0);
   }
 }
 
-export const updateNumber = (root, data) => {
+export const updateNumber = (root, x) => {
   // Create digits.
-  const digits = root.selectAll(".digit").data(data);
+  const digits = root.selectAll(".digit").data(d => {
+    const str = x.toString().padStart(d.numDigits, " ");
+    if (str.length > d.numDigits) return new Array(d.numDigits).fill("-");
+    return str
+      .split("")
+      .map(y => ([" ", "-", "x", "z", "b"].includes(y) ? y : +y));
+  });
 
   digits
     .enter()

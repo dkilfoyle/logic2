@@ -93,7 +93,6 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   console.log("parameters: ", stripReactive(newInstance.parameters));
 
   const gateBitSizesType = {
-    number: 10,
     ledbar: 10,
     sevenseg: 7
     // led: 1
@@ -326,7 +325,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
                 op.getCompileBitSize(parameters, namespace, gateBitSizesID)
             );
 
-      console.log("newGate: ", newGate);
+      // console.log("newGate: ", newGate);
       gateBitSizesID[gateID] = newGate.bitSize;
 
       if (op.op == "mux")
@@ -407,7 +406,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         wire.id,
         gateBitSizesID[wire.id]
       );
-      console.log("newGate: ", newWireGate);
+      // console.log("newGate: ", newWireGate);
       // inputs will be set in child instance
       logicGates.push(newWireGate);
       newInstance.gates.push(newWireGate.id);
@@ -439,7 +438,7 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
 
     const newSplitterGate = new SplitterGate(namespace, splitGateID, startBit);
     newSplitterGate.inputs.push(sourceGateVariable);
-    console.log("new splitter gate: ", newSplitterGate);
+    // console.log("new splitter gate: ", newSplitterGate);
     return newSplitterGate;
   };
 
@@ -543,20 +542,35 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     newInstance.initial = instanceModule.initial;
   }
 
+  // set reggate inputs by inspecting always blocks statements
+  // reggates ignore inputs when simulating, the inputs are used only by the schematic to illustrate the dependency
+  // TODO: Render in different line style
   const blockingAssignments = [];
+  let rhsCondition = null;
   const findBlockingAssignments = statements => {
     statements.forEach(s => {
+      // debugger;
       if (s.type == "conditional_statement") {
         findBlockingAssignments(s.thenBlock.statements);
         if (s.elseBlock) findBlockingAssignments(s.elseBlock.statements);
       }
       if (s.type == "case_statement") {
+        rhsCondition = s.casevar;
         s.caseclauses.forEach(clause =>
           findBlockingAssignments(clause.statements.statements)
         );
+        rhsCondition = null;
       }
       if (s.type == "blocking_assignment")
-        if (s.lhs.type != "concatenation") blockingAssignments.push(s);
+        if (s.lhs.type != "concatenation") {
+          blockingAssignments.push(s);
+          if (rhsCondition)
+            blockingAssignments.push({
+              lhs: s.lhs,
+              rhs: rhsCondition,
+              type: "conditionaldependency"
+            });
+        }
     });
   };
 
@@ -594,12 +608,18 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
           )
             lhsGate.inputs.push(new Variable(namespace, sensitivity.id.name));
         });
-        lhsGate.inputs.push(
-          ...rhsVars
-            .filter(x => x.name != lhsGate.name)
-            .map(x => new Variable(namespace, x.name))
-        );
-        console.log(lhsGate);
+        rhsVars
+          .filter(x => x.name != lhsGate.name)
+          .forEach(x => {
+            if (!lhsGate.inputs.some(i => i.name == x.name))
+              lhsGate.inputs.push(new Variable(namespace, x.name));
+          });
+        // lhsGate.inputs.push(
+        //   ...rhsVars
+        //     .filter(x => x.name != lhsGate.name)
+        //     .map(x => new Variable(namespace, x.name))
+        // );
+        // console.log(lhsGate);
       });
     });
   }

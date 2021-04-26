@@ -1,22 +1,25 @@
-/* eslint-disable no-debugger */
 <template>
-  <div class="dk-h-100">
-    <div class="dk-flex-col dk-h-100" v-if="$store.getters.isCompiled">
-      <div
-        class="dk-flex-row dk-align-center"
-        style="height:60px;padding:0 10px"
-      >
+  <div class="gates-page">
+    <div class="gates-container" v-if="$store.getters.isCompiled">
+      <div class="gates-toolbar">
         <instance-crumbs owner="gates"></instance-crumbs>
-        <span class="dk-push-right">
-          t = {{ $store.getters.currentFile.selectedTime }}</span
-        >
+        <div style="margin-left:auto;">
+          <button
+            class="button is-small is-rounded is-primary is-light"
+            @click="toggleStateFormat"
+          >
+            {{ $store.state.stateFormat }}
+          </button>
+          <button
+            class="button is-small is-rounded is-info is-light"
+            style="margin-left:5px"
+          >
+            t = {{ currentFile.selectedTime }}
+          </button>
+        </div>
       </div>
 
-      <div
-        id="gatestable"
-        class="dk-h-100"
-        style="padding-left:10px;padding-right:10px;overflow:auto;"
-      >
+      <div class="gates-table skinny-scroll">
         <b-table
           :data="gates"
           ref="table"
@@ -27,7 +30,13 @@
           :has-detailed-visible="row => row.type == 'array'"
           :row-class="(row, index) => getRowClass(row)"
         >
-          <b-table-column field="name" label="Name" sortable v-slot="props">
+          <b-table-column
+            field="name"
+            label="Name"
+            sortable
+            v-slot="props"
+            width="20%"
+          >
             <template v-if="showDetailIcon">
               {{ props.row.id }}
             </template>
@@ -37,39 +46,24 @@
               </a>
             </template></b-table-column
           >
-          <b-table-column field="type" label="Type" v-slot="props" sortable>
+          <b-table-column
+            field="type"
+            label="Type"
+            v-slot="props"
+            sortable
+            width="5%"
+          >
             <img
               :src="require('@/assets/' + props.row.type + '.svg')"
               class="gateicon"
             />
           </b-table-column>
 
-          <b-table-column field="inputs" label="Inputs" v-slot="props">
-            {{ props.row.inputs.map(x => x.id).join(", ") }}
-          </b-table-column>
-
-          <b-table-column field="state" label="State" numeric>
-            <template v-slot:header="{ column }">
-              <div class="level top">
-                <div class="level-item">{{ column.label }}</div>
-                <div class="level-item">
-                  <b-button
-                    style="margin-left:5px;width:20px"
-                    type="is-primary"
-                    size="is-small"
-                    @click="toggleStateFormat"
-                    >{{ $store.state.stateFormat.substring(0, 1) }}</b-button
-                  >
-                </div>
-              </div>
-            </template>
-
+          <b-table-column field="state" label="State" numeric width="30%">
             <template v-slot="props">
               <template v-if="$store.state.stateFormat == 'logic'">
                 <img
-                  v-if="
-                    $store.getters.getGateStateAtSelectedTime(props.row.id) == 0
-                  "
+                  v-if="getTimeState(props.row.id) == 0"
                   src="@/assets/icons8-0-52.png"
                   class="stateicon"/>
                 <img
@@ -80,7 +74,7 @@
               <template v-else>
                 {{
                   formatState(
-                    $store.getters.getGateStateAtSelectedTime(props.row.id),
+                    getTimeState(props.row.id),
                     $store.state.stateFormat,
                     props.row.displayType
                   )
@@ -94,6 +88,7 @@
             label="BitSize"
             v-slot="props"
             numeric
+            width="5%"
           >
             {{ props.row.bitSize }}
           </b-table-column>
@@ -102,9 +97,8 @@
             <template v-for="(item, index) in props.row.state">
               <tr
                 v-if="
-                  $store.getters.getGateStateAtSelectedTime(props.row.id)[
-                    index
-                  ] != 0 || $store.state.memoryDumpHideZeros
+                  getTimeState(props.row.id, index) != 0 ||
+                    $store.state.memoryDumpHideZeros
                 "
                 :key="index"
               >
@@ -119,9 +113,7 @@
                 <td class="has-text-right">
                   {{
                     formatState(
-                      $store.getters.getGateStateAtSelectedTime(props.row.id)[
-                        index
-                      ],
+                      getTimeState(props.row.id, index),
                       $store.state.stateFormat,
                       props.row.displayType
                     )
@@ -130,6 +122,15 @@
               </tr></template
             >
           </template>
+
+          <b-table-column
+            field="inputs"
+            label="Inputs"
+            v-slot="props"
+            width="40%"
+          >
+            {{ props.row.inputs.map(x => x.id).join(", ") }}
+          </b-table-column>
         </b-table>
       </div>
     </div>
@@ -157,6 +158,7 @@ import UtilsMixin from "../mixins/utils";
 import SelectionsMixin from "../mixins/selections";
 import InstanceCrumbs from "./InstanceCrumbs";
 import Numeric from "../lib/Numeric";
+import { mapGetters } from "vuex";
 
 export default {
   data() {
@@ -167,31 +169,62 @@ export default {
         octal: 8,
         decimal: 10,
         hex: 16
-      }
+      },
+      gates: [],
+      time: 0
     };
   },
   mixins: [UtilsMixin, SelectionsMixin],
   components: { InstanceCrumbs },
   computed: {
-    gates() {
-      if (this.$store.state.tableFollowsSchematic && this.selectedGateID) {
-        // eslint-disable-next-line no-debugger
-        let selectedGate = this.getGate(this.selectedGateID);
-        let topGates = [
-          this.selectedGateID,
-          ...selectedGate.inputs.map(input => input.id)
-        ];
-        // start off with the filteredinstance gates then remove selected gate and its inputs
-        let followGates = this.filteredInstanceGates.filter(
-          gateid => !topGates.includes(gateid)
-        );
-        // add the selectedgate and it's inputs back at the top
-        followGates.unshift(...topGates);
-        return followGates.map(g => this.getGate(g));
-      } else return this.filteredInstanceGates.map(g => this.getGate(g));
+    ...mapGetters([
+      "getGate",
+      "currentFile",
+      "isCompiled",
+      "isSimulated",
+      "getGateStateAtTime",
+      "selectedInstanceID"
+    ]),
+    compileStatus() {
+      return this.isCompiled && this.currentFile.compileResult.timestamp;
+    },
+    simulateStatus() {
+      return this.isSimulated && this.currentFile.simulateResult.timestamp;
+    }
+  },
+  watch: {
+    compileStatus(status) {
+      if (status) {
+        if (this.$store.state.tableFollowsSchematic && this.selectedGateID) {
+          // eslint-disable-next-line no-debugger
+          let selectedGate = this.getGate(this.selectedGateID);
+          let topGates = [
+            this.selectedGateID,
+            ...selectedGate.inputs.map(input => input.id)
+          ];
+          // start off with the filteredinstance gates then remove selected gate and its inputs
+          let followGates = this.filteredInstanceGates.filter(
+            gateid => !topGates.includes(gateid)
+          );
+          // add the selectedgate and it's inputs back at the top
+          followGates.unshift(...topGates);
+          this.gates = followGates.map(g => this.getGate(g));
+        } else
+          this.gates = this.filteredInstanceGates.map(g => this.getGate(g));
+      }
+    },
+    selectedInstanceID() {
+      this.gates = this.filteredInstanceGates.map(g => this.getGate(g));
     }
   },
   methods: {
+    getTimeState(id, index = null) {
+      if (this.simulateStatus) {
+        const res = this.getGateStateAtTime(id, this.currentFile.selectedTime);
+        const res2 = index != null ? res[index] : res;
+        return res2;
+      } else return 0;
+    },
     getRowClass(row) {
       if (!this.selectedGateID) return null;
       if (row.id == this.selectedGateID) return "has-background-danger-light";
@@ -231,6 +264,38 @@ export default {
 </script>
 
 <style>
+.gates-page {
+  height: 100%;
+}
+
+.gates-container {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.gates-toolbar {
+  display: grid;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  grid-template-columns: auto auto;
+}
+
+.gates-table {
+  font-size: 10pt;
+  overflow: auto;
+  margin-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 10px;
+}
+
+/* .b-table .table-wrapper.has-sticky-header {
+  height: inherit !important;
+  overflow: inherit !important;
+} */
+
 .gateicon {
   width: 1.5em;
   height: 1.5em;

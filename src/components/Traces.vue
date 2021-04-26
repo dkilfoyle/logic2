@@ -378,7 +378,10 @@ export default {
 
             that.$store.commit(
               "setSelectedTime",
-              Math.max(0, Math.floor(x.invert(mouse[0])))
+              Math.min(
+                Math.max(0, Math.floor(x.invert(mouse[0]))),
+                that.$store.getters.currentFile.simulateResult.maxTime
+              )
             );
           })
           .on("click", function() {

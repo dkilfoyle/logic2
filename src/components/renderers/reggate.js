@@ -36,9 +36,14 @@ export default class RegGateRenderer extends window.d3.GenericNodeRenderer {
   }
 
   prepare(node) {
+    node.numDigits = parseInt(
+      "1".repeat(node.hwMeta.bitSize),
+      2
+    ).toString().length;
+    // console.log(`${node.id} num of digits = ${node.numDigits}`);
     node.idWidth = sizeOfText(getLocalID(node.id)).width;
-    node.valWidth = sizeOfText("000").width;
-    node.txtHeight = sizeOfText("000").height;
+    node.valWidth = node.numDigits * DIGIT_WIDTH * 0.15; //sizeOfText("0".repeat(node.numDigits)).width;
+    node.txtHeight = sizeOfText("0").height;
     node.width = node.idWidth + node.valWidth + 10;
     node.height = node.txtHeight + 7;
     // console.log(node);
@@ -90,7 +95,7 @@ export default class RegGateRenderer extends window.d3.GenericNodeRenderer {
       .attr("transform", d => `translate(${6 + d.idWidth} 4) scale(0.15)`);
     num
       .append("rect")
-      .attr("width", 3 * DIGIT_WIDTH)
+      .attr("width", d => d.numDigits * DIGIT_WIDTH)
       .attr("height", DIGIT_HEIGHT)
       .attr("fill", "#000");
 
@@ -99,6 +104,6 @@ export default class RegGateRenderer extends window.d3.GenericNodeRenderer {
       .attr("class", "d3-hwschematic node-operator node-number2")
       .attr("transform", `translate(${DIGIT_PADDING} ${DIGIT_PADDING})`);
 
-    updateNumber(cont, [0, 0, 0]);
+    updateNumber(cont, 0); // new Array(nodeG.data().numDigits).fill(0));
   }
 }

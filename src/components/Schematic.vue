@@ -76,130 +76,6 @@ export default {
       height: null
     };
   },
-  watch: {
-    compileStatus(status) {
-      // console.log("compileStatus watcher: ", status);
-      if (status) this.buildNetlist();
-    },
-    getGatesStateAtSelectedTime(timestate) {
-      // eslint-disable-next-line no-debugger
-      if (Object.keys(timestate).length === 0) return;
-
-      var COLOR_ON = "#00c853";
-      var COLOR_OFF = "white";
-
-      this.getAllGates
-        .filter(gate => gate.type == "leds")
-        .forEach(gate => {
-          updateLeds(
-            d3.select(`#svgSchematic .${gate.id}_internal`),
-            timestate[gate.id],
-            gate.bitSize,
-            gate.meta
-          );
-        });
-
-      this.getAllGates
-        .filter(gate => gate.type == "ledbar")
-        .forEach(gate => {
-          d3.select("#svgSchematic #" + gate.id + "_gate_LEDBAR")
-            .selectAll(".bar")
-            .data(
-              gate.inputs.length == 1
-                ? timestate[gate.inputs[0].id]
-                    .toString(2)
-                    .split("")
-                    .map(x => +x)
-                : gate.inputs.map(input => timestate[input.id])
-            )
-            .attr("id", d => d)
-            .attr("fill", d => (d ? COLOR_ON : COLOR_OFF));
-        });
-
-      this.getAllGates
-        .filter(gate => gate.type == "sevenseg")
-        .forEach(gate => {
-          // TODO: refactor in a d3 centric way
-          let segments = timestate[gate.id];
-          ["a", "b", "c", "d", "e", "f", "g"].forEach((letter, i) => {
-            const element = document.getElementById(
-              gate.id + "_gate_seg" + letter
-            );
-            if (element) {
-              element.classList.remove("segment-0");
-              element.classList.remove("segment-1");
-              element.classList.add("segment-" + ((segments >> i) % 2));
-            }
-          });
-        });
-
-      this.getAllGates
-        .filter(gate => gate.type == "number")
-        .forEach(gate => {
-          updateNumber(
-            d3.select(`#svgSchematic #${gate.id}_gate_NUMBER`),
-            timestate[gate.id]
-              .toString()
-              .padStart(3, "0")
-              .split("")
-              .map(x => parseInt(x))
-          );
-        });
-
-      this.getAllGates
-        .filter(gate => gate.type == "array")
-        .forEach(gate => {
-          updateTable(
-            `${gate.id}_internal`,
-            timestate[gate.id].map((x, i) => [i, x])
-          );
-        });
-
-      this.getAllGates
-        .filter(gate => gate.type == "reg")
-        .forEach(gate => {
-          // d3.select(`.${gate.id}_internal`)
-          //   .select("#val")
-          //   .text(timestate[gate.id].toString().padStart(3, "0"));
-          updateNumber(
-            d3.select(`.${gate.id}_internal`),
-            timestate[gate.id]
-              .toString()
-              .padStart(3, "0")
-              .split("")
-              .map(x => +x)
-          );
-        });
-
-      // animate the links, controls, and responses
-      for (const [gateid, gatevalue] of Object.entries(
-        this.getGatesStateAtSelectedTime
-      )) {
-        const querystr = "#svgSchematic ." + gateid + "_link";
-        const elements = document.querySelectorAll(querystr);
-        elements.forEach(element =>
-          element.setAttribute(
-            "class",
-            `${gateid}_link link-${
-              gatevalue == 0 ? 0 : typeof gatevalue == "string" ? "x" : 1
-            }`
-          )
-        );
-        let gate = this.getGate(gateid);
-        if (gate.type == "control" || gate.type == "response") {
-          const querystr = "#svgSchematic ." + gateid + "_external";
-          const element = document.querySelector(querystr);
-          if (element)
-            element.setAttribute(
-              "class",
-              `node-external-port ${gateid}_external external-${
-                gatevalue == 0 ? 0 : 1
-              }`
-            );
-        }
-      }
-    }
-  },
   computed: {
     ...mapGetters([
       "getAllInstances",
@@ -215,7 +91,19 @@ export default {
       return this.isCompiled && this.currentFile.compileResult.timestamp;
     },
     simulateStatus() {
-      return this.isSimulated && this.currentFile.simulateResult.timestamp;
+      return (
+        this.isSimulated &&
+        this.currentFile.simulateResult.timestamp +
+          this.currentFile.selectedTime
+      );
+    }
+  },
+  watch: {
+    compileStatus(status) {
+      if (status) this.buildNetlist();
+    },
+    simulateStatus(status) {
+      if (status) this.animateGates();
     }
   },
   mounted() {
@@ -256,6 +144,87 @@ export default {
       .style("opacity", 0);
   },
   methods: {
+    animateGates() {
+      const timestate = this.getGatesStateAtSelectedTime;
+      if (Object.keys(timestate).length === 0) return;
+
+      var COLOR_ON = "#00c853";
+      var COLOR_OFF = "white";
+
+      this.getAllGates.forEach(gate => {
+        switch (gate.type) {
+          case "leds":
+            updateLeds(
+              d3.select(`#svgSchematic .${gate.id}_internal`),
+              timestate[gate.id],
+              gate.bitSize,
+              gate.meta
+            );
+            break;
+          case "ledbar":
+            d3.select("#svgSchematic #" + gate.id + "_gate_LEDBAR")
+              .selectAll(".bar")
+              .data(
+                gate.inputs.length == 1
+                  ? timestate[gate.inputs[0].id]
+                      .toString(2)
+                      .split("")
+                      .map(x => +x)
+                  : gate.inputs.map(input => timestate[input.id])
+              )
+              .attr("id", d => d)
+              .attr("fill", d => (d ? COLOR_ON : COLOR_OFF));
+            break;
+          case "sevenseg":
+            // TODO: refactor in a d3 centric way
+            ["a", "b", "c", "d", "e", "f", "g"].forEach((letter, i) => {
+              const element = document.getElementById(
+                gate.id + "_gate_seg" + letter
+              );
+              if (element) {
+                element.classList.remove("segment-0");
+                element.classList.remove("segment-1");
+                element.classList.add(
+                  "segment-" + ((timestate[gate.id] >> i) % 2)
+                );
+              }
+            });
+            break;
+          case "number":
+            updateNumber(
+              d3.select(`#svgSchematic #${gate.id}_gate_NUMBER`),
+              timestate[gate.id]
+            );
+            break;
+          case "array":
+            updateTable(
+              `${gate.id}_internal`,
+              timestate[gate.id].map((x, i) => [i, x])
+            );
+            break;
+          case "reg":
+            updateNumber(d3.select(`.${gate.id}_internal`), timestate[gate.id]);
+            break;
+          case "control":
+          case "response":
+            d3.select(`#svgSchematic .${gate.id}_external`).attr(
+              "class",
+              `node-external-port ${gate.id}_external external-${
+                timestate[gate.id] == 0 ? 0 : 1
+              }`
+            );
+            break;
+        }
+        // animate edges
+        d3.selectAll(`svgSchematic .${gate.id}_link`).attr(
+          "class",
+          `${gate.id}_link link-${
+            timestate[gate.id] == 0 ? 0 : typeof gatevalue == "string" ? "x" : 1
+          }`
+        );
+      });
+    },
+
     getEdgeTooltip(id) {
       // id will be in form of name or name[range] where range might be [a], [a:b]
 

@@ -13,7 +13,9 @@ class SplitterGate extends BaseComponent {
   update(gatesLookup, namespace) {
     if (this.inputs.length != 1)
       throw new Error("SplitterGate invalid number of inputs");
-    this.state.setValue(this.inputs[0].getValue(gatesLookup, namespace));
+    const newValue = this.inputs[0].getValue(gatesLookup, namespace);
+    this.state.setValue(newValue);
+    return newValue;
     // update is called each clock and processes inputs to call this.setValue
   }
   getSchematicName() {

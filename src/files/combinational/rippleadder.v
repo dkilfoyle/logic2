@@ -16,7 +16,7 @@ endmodule
 module Display(
   input a0, b0, a1, b1, a2, b2, a3, b3, S0, S1, S2, S3
 );
-  wire a,b,s;
+  wire [3:0] a,b,s;
   number(a, a0, a1, a2, a3);
   number(b, b0, b1, b2, b3);
   number(s, S0, S1, S2, S3);
