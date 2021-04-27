@@ -216,10 +216,14 @@ export default {
             break;
         }
         // animate edges
-        d3.selectAll(`svgSchematic .${gate.id}_link`).attr(
+        d3.selectAll(`#svgSchematic .${gate.id}_link`).attr(
           "class",
           `${gate.id}_link link-${
-            timestate[gate.id] == 0 ? 0 : typeof gatevalue == "string" ? "x" : 1
+            timestate[gate.id] === 0
+              ? 0
+              : typeof timestate[gate.id] == "string"
+              ? "x"
+              : 1
           }`
         );
       });
@@ -420,8 +424,8 @@ export default {
           ports: []
         };
 
-        // single output unless response
-        if (["response"].includes(gate.type) == false) {
+        // single output port unless response or splitter
+        if (["response", "splitter"].includes(gate.type) == false) {
           // console.log("gate: ", gate);
           gateNet.ports.push({
             direction: "OUTPUT",
@@ -434,14 +438,15 @@ export default {
         }
 
         const getInputPortDescription = (type, i) => {
-          if (gate.type == "mux" && i == 0)
-            return { side: "SOUTH", portIndex: 0 };
-          if ((gate.type == "reg") | (gate.type == "array"))
+          if (type == "mux" && i == 0) return { side: "SOUTH", portIndex: 0 };
+          if ((type == "reg") | (gate.type == "array"))
             return { side: "NORTH", portIndex: i };
-          if (gate.type == "led") return { side: "SOUTH", portIndex: i };
+          if (type == "led") return { side: "SOUTH", portIndex: i };
+          if (type == "splitter") return { side: "WEST", portIndex: 20 };
           return { side: "WEST", portIndex: i };
         };
 
+        // build input ports for this gate and the edges that connect from source to each input
         gate.inputs.forEach((input, i) => {
           gateNet.ports.push({
             direction: "INPUT",
@@ -450,25 +455,29 @@ export default {
               name: this.getLocalId(gate.id)
             },
             properties: getInputPortDescription(gate.type, i)
-            // gate.type == "mux" && i == 0
-            //   ? { side: "SOUTH", portIndex: 0 }
-            //   : (gate.type == "reg") | (gate.type == "array")
-            //   ? { side: "NORTH", portIndex: i }
-            //   : {
-            //       side: "WEST",
-            //       portIndex: gate.inputs.length > 1 ? i + 1 : 0
-            //     }
           });
+
+          let inputGate = this.getGate(input.id);
+          let inputSource, inputSourcePort;
+          switch (inputGate.type) {
+            case "portbuffer":
+              inputSource = inputGate.namespace;
+              inputSourcePort = input.id;
+              break;
+            case "splitter":
+              inputSource = input.id + "_gate";
+              inputSourcePort = input.id + "_splitPort_" + gate.name;
+              break;
+            default:
+              inputSource = input.id + "_gate";
+              inputSourcePort = input.id;
+          }
 
           let gate2gate = {
             id: input.id + "-" + gate.id + "_input_" + i,
             type: "gate2gate",
-            source: this.getAllGates.some(
-              x => x.type == "portbuffer" && x.id == input.id
-            )
-              ? this.getGate(input.id).namespace // input.namespace // if the gate input is a port then source is the instance,
-              : input.id + "_gate", // else source is a gate
-            sourcePort: input.id,
+            source: inputSource,
+            sourcePort: inputSourcePort,
             target: gate.id + "_gate",
             targetPort: gate.id + "_input_" + i,
             // hwMeta: { name: null, cssClass: gate.id + "_link" }
@@ -485,6 +494,20 @@ export default {
           currentNet.edges.push(gate2gate);
           // console.log("-- g2g: ", gate2gate.id, this.stripReactive(gate2gate));
         });
+
+        // splitter gate has multiple output ports of form gateid_splitPort_targetid
+        if (gate.type == "splitter") {
+          gate.splitterOutputs.forEach((output, i) => {
+            gateNet.ports.push({
+              direction: "OUTPUT",
+              id: gate.id + "_splitPort_" + output.id,
+              hwMeta: {
+                name: this.getLocalId(gate.id)
+              },
+              properties: { side: "WEST", portIndex: i } // TODO: Why wrong height if side EAST
+            });
+          });
+        }
 
         currentNet.children.push(gateNet);
         // console.log("-- Gate: ", gate.id, this.stripReactive(gateNet));

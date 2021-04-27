@@ -420,6 +420,8 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     //                                   | -------> concat.component[2]
     let startBit = 0;
     const splitGateID = "split" + counter;
+    const newSplitterGate = new SplitterGate(namespace, splitGateID, 0);
+    newSplitterGate.inputs.push(sourceGateVariable);
 
     [...concatenation.components].reverse().forEach(component => {
       const componentGate = [...logicGates, ...outputGates].find(
@@ -434,10 +436,13 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
       );
       startBit += componentGate.bitSize;
       if (componentGate.inputs > 1) throw new Error("Invalid number of inputs");
+      newSplitterGate.splitterOutputs.push(
+        new Variable(namespace, component.name)
+      );
     });
 
-    const newSplitterGate = new SplitterGate(namespace, splitGateID, startBit);
-    newSplitterGate.inputs.push(sourceGateVariable);
+    newSplitterGate.state = new Numeric(0, startBit);
+
     // console.log("new splitter gate: ", newSplitterGate);
     return newSplitterGate;
   };

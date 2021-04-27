@@ -12,7 +12,7 @@ export default class ConcatNodeRenderer extends window.d3.GenericNodeRenderer {
 
   prepare(node) {
     node.width = 3;
-    node.height = node.ports.length * 3.5;
+    node.height = node.ports.length * 4.5;
   }
 
   render(root, nodeG) {
@@ -55,7 +55,5 @@ export default class ConcatNodeRenderer extends window.d3.GenericNodeRenderer {
       }
       return "translate(" + d.x + " " + d.y + ")";
     });
-
-    // this.renderPorts(nodeG);
   }
 }

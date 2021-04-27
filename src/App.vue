@@ -194,11 +194,11 @@ export default {
     // this.addFileTab("RippleCounter");
     // this.addFileTab("SumProducts");
     // this.addFileTab("RegFile");
-    // this.addFileTab("BenEater");
+    this.addFileTab("BenEater");
     // this.addFileTab("TriBuff");
     // this.addFileTab("RAM");
     // this.addFileTab("PC");
-    this.addFileTab("Controller");
+    // this.addFileTab("Controller");
     // this.addFileTab("Bus");
     // this.addFileTab("ALU");
   },

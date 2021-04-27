@@ -6,6 +6,7 @@ class SplitterGate extends BaseComponent {
     super(namespace, name, "splitter", bitSize, defaultValue);
     this.inputMasks = [];
     this.copynum = 1;
+    this.splitterOutputs = [];
   }
   clear() {
     this.state.setValue("x");
