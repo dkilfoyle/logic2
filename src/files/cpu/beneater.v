@@ -75,14 +75,14 @@ module RAM(
   reg [7:0] memBuffer;
 
   initial begin
-    Memory[0] <= 8'b0001_1010; // LDA 10
-    Memory[1] <= 8'b0010_1011; // ADD 11
+    Memory[0] <= 8'b0001_1010; // LDA 10        => A = 3
+    Memory[1] <= 8'b0010_1011; // ADD 11        => B = 2, A = 5
     Memory[2] <= 8'b0100_0110; // JMP 6
     Memory[3] <= 8'b0011_1100; // SUBT 12
     Memory[4] <= 8'b0010_1101; // ADD 13
     Memory[5] <= 8'b1110_0000; // OUT
-    Memory[6] <= 8'b0001_1110; // LDA 14
-    Memory[7] <= 8'b0010_1111; // ADD 15
+    Memory[6] <= 8'b0001_1110; // LDA 14        => A = 10
+    Memory[7] <= 8'b0010_1111; // ADD 15        => B = 11, A = 21
     Memory[8] <= 8'b1110_0000; // OUT
     Memory[9] <= 8'b1111_0000; // HLT
     Memory[10] <= 8'b0000_0011; // 3
@@ -193,7 +193,7 @@ module Controller (
       inststage = resetstage ? 3'b000 : inststage + 1;
       resetstage = 1'b0;
       case(inststage) //HLT, MI, RI, RO, IO, II, AI, AO, SO, SU, BI, OI, CE, CO, J;
-          3'b000: // stage 0 (Pre-fectch)
+          3'b000: // stage 0 (Fetch PC)
             begin
               ctrlwrd = (1 << mi) | (1 << co); // push PC onto BUS, read BUS into MAR
             end
@@ -222,15 +222,15 @@ module Controller (
                 default: ctrlwrd = 0;
               endcase
             end
-          3'b100:// stage 4 (ALU action)
+          3'b100: // stage 4 (ALU action)
             begin
               case(instruction)
-                ADD: ctrlwrd = (1 << so) | (1 << ai);              // ADD - push ALU onto BUS, read BUS into Reg A
-                SUB: ctrlwrd = (1 << so) | (1 << su) | (1 << ai);  // SUB - ALU op = SU, push ALU onto BUS, read BUS into Reg A
+                ADD: ctrlwrd = (1 << so) | (1 << ai);               // ADD - push ALU onto BUS, read BUS into Reg A
+                SUB: ctrlwrd = (1 << so) | (1 << su) | (1 << ai);   // SUB - ALU op = SU, push ALU onto BUS, read BUS into Reg A
                 default: ctrlwrd = 0;
               endcase
               resetstage = 1'b1;
-            end                  
+            end
           default: ctrlwrd = 0;
       endcase                          
   end
@@ -261,7 +261,7 @@ endmodule
 
 module CPU(
   input clkin,
-  output [7:0] busOut);
+  output [7:0] res);
 
   wire [7:0] bus;
   wire [7:0] busLeds;
@@ -289,6 +289,10 @@ module CPU(
   Register #(8) instReg(.clk(clk), .D(bus), .Q(instRegOut), .EI(II));
 
   ALU alu(.A(regAOut), .B(regBOut), .op(SU), .co(flag), .res(aluOut)); 
+
+  // TODO: flagged stage join aluOut to regA.D
+  // input to regA.D would be a mux(controlsignal, bus, aluOut)
+
   PC pc(.clk(clk), .rst(1'b0), .enable(CE), .jmp(J), .jmploc(bus[3:0]), .count(pcOut));
   
   BusController busController(
@@ -312,16 +316,16 @@ module CPU(
   );
   // TODO: $meta() for instruction to display text
 
-  Register #(8) res(.clk(clk), .D(bus), .Q(busOut), .EI(OI));
+  Register #(8) resReg(.clk(clk), .D(bus), .Q(res), .EI(OI));
 endmodule
 
 
 module Main (
   input clock,
-  output [7:0] busOut
+  output [7:0] res
 );
 
-  CPU cpu(.clkin(clock), .busOut(busOut));
+  CPU cpu(.clkin(clock), .res(res));
 
   test begin
     #60;

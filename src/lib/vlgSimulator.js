@@ -26,12 +26,13 @@ const evaluateSensitivities = (sensitivities, namespace) => {
     if (sens.type == "everytime") return true;
     const current = sens.id.getValue(gatesLookup, namespace);
     const edge =
-      sens.last == 0 && current == 1
+      sens.last == 0 && current == 1 //&& iteration == 0
         ? "posedge"
         : sens.last == 1 && current == 0
         ? "negedge"
         : "same";
     sens.last = current;
+    debugger;
     return sens.type == edge || (sens.type == "changed" && edge != "same");
   });
 };
@@ -188,6 +189,23 @@ const simulate = (
     // 1. One pass through only positive clock edge always using inputs based on state at end of the previous cycle
     // 2. Multiple runs through all gates and all always(*)
 
+    // let alwaysRes = instances.every(instance => {
+    //   return instance.always.reduce(
+    //     (acc, curAlways) =>
+    //       acc && evaluateSensitivities(curAlways.sensitivities, instance.id, i)
+    //         ? evaluateStatementTree(curAlways.statementTree, instance.id)
+    //         : true,
+    //     true
+    //   );
+    // });
+    // if (!alwaysRes) return false;
+
+    // TODO: Different simulation algorithms for each time cycle
+    // 1. current
+    //      setcontrols iterateuntilnochange(always, gates)
+    // 2. setcontrols iterate(gates) always iterate(gates)
+    // 3. simulateInstance(instance) iterate(instancegates) always simulateInstance(childinstances) iterate(instancegates)
+
     // run each always section for each instance
     // need to process gates before (to set always inputs) and after (to propogate always effects)
     let changing = true;
@@ -205,7 +223,8 @@ const simulate = (
       let alwaysRes = instances.every(instance => {
         return instance.always.reduce(
           (acc, curAlways) =>
-            acc && evaluateSensitivities(curAlways.sensitivities, instance.id)
+            acc &&
+            evaluateSensitivities(curAlways.sensitivities, instance.id, i)
               ? evaluateStatementTree(curAlways.statementTree, instance.id)
               : true,
           true
@@ -225,6 +244,19 @@ const simulate = (
           return true;
         }
       });
+
+      // let alwaysRes = instances.every(instance => {
+      //   return instance.always.reduce(
+      //     (acc, curAlways) =>
+      //       acc &&
+      //       evaluateSensitivities(curAlways.sensitivities, instance.id, i)
+      //         ? evaluateStatementTree(curAlways.statementTree, instance.id)
+      //         : true,
+      //     true
+      //   );
+      // });
+      // if (!alwaysRes) return false;
+
       // } catch (e) {
       // logger(chalk.red(e));
       // console.log(e);
@@ -233,6 +265,17 @@ const simulate = (
       // }
       i++;
     }
+
+    // let alwaysRes = instances.every(instance => {
+    //   return instance.always.reduce(
+    //     (acc, curAlways) =>
+    //       acc && evaluateSensitivities(curAlways.sensitivities, instance.id, i)
+    //         ? evaluateStatementTree(curAlways.statementTree, instance.id)
+    //         : true,
+    //     true
+    //   );
+    // });
+    // if (!alwaysRes) return false;
 
     console.log(`Clock = ${clock}, iterations = ${i}`);
 
