@@ -198,10 +198,11 @@ export default {
     // this.addFileTab("TriBuff");
     // this.addFileTab("RAM");
     // this.addFileTab("PC");
-    // this.addFileTab("Controller");
+    this.addFileTab("Controller");
+    this.addFileTab("Concatenation");
     // this.addFileTab("Bus");
     // this.addFileTab("ALU");
-    this.addFileTab("Register");
+    // this.addFileTab("Register");
   },
   mounted() {
     setTimeout(() => this.about(), 3000);

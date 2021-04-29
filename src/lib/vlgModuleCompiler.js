@@ -314,36 +314,45 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     }
 
     if (op instanceof Operation || op instanceof TernOperation) {
-      const newGate =
-        op.op == "assign"
-          ? new BufferGate(namespace, gateID, "buffer", netBitSize) // TODO: if gateID is an output newGate = gates.get(gateID+"-out")??
-          : new LogicGate(
-              namespace,
-              gateID,
-              op.op,
-              netBitSize ||
-                op.getCompileBitSize(parameters, namespace, gateBitSizesID)
-            );
+      let newGateOp = null;
+      if (
+        namespace == "main" &&
+        instanceModule.ports.some(p => gateID == p.id)
+      ) {
+        newGateOp = outputGates.find(g => g.name == gateID);
+      } else
+        newGateOp =
+          op.op == "assign"
+            ? new BufferGate(namespace, gateID, "buffer", netBitSize) // TODO: if gateID is an output newGate = gates.get(gateID+"-out")??
+            : new LogicGate(
+                namespace,
+                gateID,
+                op.op,
+                netBitSize ||
+                  op.getCompileBitSize(parameters, namespace, gateBitSizesID)
+              );
 
       // console.log("newGate: ", newGate);
-      gateBitSizesID[gateID] = newGate.bitSize;
+      gateBitSizesID[gateID] = newGateOp.bitSize;
 
       if (op.op == "mux")
-        newGate.inputs = [
+        newGateOp.inputs = [
           walkOperationTree(namespace, id, op.test, netBitSize),
           walkOperationTree(namespace, id, op.lhs1, netBitSize),
           walkOperationTree(namespace, id, op.lhs0, netBitSize)
         ];
       else
-        newGate.inputs = op.rhs
+        newGateOp.inputs = op.rhs
           ? [
               walkOperationTree(namespace, id, op.lhs, netBitSize),
               walkOperationTree(namespace, id, op.rhs, netBitSize)
             ]
           : [walkOperationTree(namespace, id, op.lhs, netBitSize)];
 
-      logicGates.push(newGate);
-      newInstance.gates.push(newGate.id);
+      if (newGateOp.type != "response") {
+        logicGates.push(newGateOp);
+        newInstance.gates.push(newGateOp.id);
+      }
       return new Variable(namespace, gateID, null);
     }
     throw new Error(
@@ -359,7 +368,10 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
     // intermediary gates will be same bitsize as the assign lhs
     // except for new gate instantiations inside a concatenation
 
-    if (net.operationTree instanceof Variable)
+    if (
+      net.operationTree instanceof Variable ||
+      net.operationTree instanceof Concatenation
+    )
       walkOperationTree(
         namespace,
         net.id,
@@ -428,17 +440,18 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
         g => g.namespace == namespace && g.name == component.name
       );
       if (!componentGate) throw new Error("unable to build concatenation");
-      componentGate.inputs.push(
-        new Variable(namespace, splitGateID, [
-          new Numeric(startBit + componentGate.bitSize - 1),
-          new Numeric(startBit)
-        ])
-      );
-      startBit += componentGate.bitSize;
-      if (componentGate.inputs > 1) throw new Error("Invalid number of inputs");
-      newSplitterGate.splitterOutputs.push(
+      const newSplitterSource = new Variable(namespace, splitGateID, [
+        new Numeric(startBit + componentGate.bitSize - 1),
+        new Numeric(startBit)
+      ]);
+      componentGate.inputs.push(newSplitterSource);
+      newSplitterGate.splitterSources.push(newSplitterSource);
+      newSplitterGate.splitterTargets.push(
         new Variable(namespace, component.name)
       );
+
+      startBit += componentGate.bitSize;
+      if (componentGate.inputs > 1) throw new Error("Invalid number of inputs");
     });
 
     newSplitterGate.state = new Numeric(0, startBit);
@@ -593,7 +606,21 @@ const createInstance = (parentNamespace, instanceDeclaration) => {
   };
 
   if (instanceModule.always) {
-    newInstance.always = [...instanceModule.always];
+    // copy always template in module definition, create an instance specific lastValues for evaluteSensitivites
+    // newInstance.always = [...instanceModule.always];
+    newInstance.always = instanceModule.always.map(moduleAlways => {
+      return {
+        sensitivities: moduleAlways.sensitivities.map(moduleSens => {
+          return {
+            id: moduleSens.id,
+            type: moduleSens.type,
+            lastValue: null
+          };
+        }),
+        statementTree: moduleAlways.statementTree
+      };
+    });
+
     instanceModule.always.forEach(a => {
       // debugger;
       findBlockingAssignments(a.statementTree.statements);
