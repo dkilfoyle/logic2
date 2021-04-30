@@ -198,7 +198,8 @@ export default {
     // this.addFileTab("TriBuff");
     // this.addFileTab("RAM");
     // this.addFileTab("PC");
-    this.addFileTab("Controller");
+    // this.addFileTab("Controller");
+    this.addFileTab("Simplify");
     // this.addFileTab("Concatenation");
     // this.addFileTab("Bus");
     // this.addFileTab("ALU");
@@ -429,7 +430,9 @@ export default {
       } else this.termWriteln(chalk.bgRed(" ERROR ") + "  Simulation aborted");
     },
     about() {
-      this.termWriteln(chalk.bold.cyan("Logic2: A logic circuit simulator"));
+      this.termWriteln(
+        chalk.bold.cyan("Logic2: A logic circuit simulator (v0.2 May 2021)")
+      );
       this.termWriteln(chalk.yellow("https://github.com/dkilfoyle/logic2"));
     }
   }
