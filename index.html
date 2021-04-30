@@ -1,0 +1,58 @@
+<!DOCTYPE html><html lang=en><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><link rel=icon href=/logic2/favicon.ico><link href=https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css rel=stylesheet><link href=https://unpkg.com/ionicons@4.5.5/dist/css/ionicons.min.css rel=stylesheet><link rel=stylesheet href=https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css><script type=module src=https://unpkg.com/ionicons@5.0.0/dist/ionicons/ionicons.esm.js></script><script src=./d3.js></script><script src=./elk.bundled.js></script><script src=./d3-hwschematic.js></script><title>logic2</title><style>#loading-wrapper {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+      }
+  
+      #loading-text {
+        display: block;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        color: rgb(20, 121, 60);
+        width: 100px;
+        height: 30px;
+        margin: -7px 0 0 -45px;
+        text-align: center;
+        /* font-family: 'PT Sans Narrow', sans-serif; */
+        font-family: "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+        font-size: 20px;
+      }
+  
+      #loading-content {
+        display: block;
+        position: relative;
+        left: 50%;
+        top: 50%;
+        width: 170px;
+        height: 170px;
+        margin: -85px 0 0 -85px;
+        border: 3px solid #F00;
+      }
+  
+      #loading-content {
+        border: 3px solid transparent;
+        border-top-color: rgb(121, 61, 185);
+        border-bottom-color: rgb(121, 61, 185);
+        border-radius: 50%;
+        -webkit-animation: loader 2s linear infinite;
+        -moz-animation: loader 2s linear infinite;
+        -o-animation: loader 2s linear infinite;
+        animation: loader 2s linear infinite;
+      }
+  
+      @keyframes loader {
+        0% {
+          -webkit-transform: rotate(0deg);
+          -ms-transform: rotate(0deg);
+          transform: rotate(0deg);
+        }
+  
+        100% {
+          -webkit-transform: rotate(360deg);
+          -ms-transform: rotate(360deg);
+          transform: rotate(360deg);
+        }
+      }</style><link href=/logic2/js/chunk-0b65ffb6.3515c674.js rel=prefetch><link href=/logic2/js/chunk-2d0a3577.103c8a47.js rel=prefetch><link href=/logic2/js/chunk-2d0a43df.85cf4b06.js rel=prefetch><link href=/logic2/js/chunk-2d0aa90c.eb5ec9cf.js rel=prefetch><link href=/logic2/js/chunk-2d0aab07.544fce83.js rel=prefetch><link href=/logic2/js/chunk-2d0abc00.a982961f.js rel=prefetch><link href=/logic2/js/chunk-2d0ae937.293ae831.js rel=prefetch><link href=/logic2/js/chunk-2d0aeb45.6f6c95fd.js rel=prefetch><link href=/logic2/js/chunk-2d0af08c.ffa123d5.js rel=prefetch><link href=/logic2/js/chunk-2d0afa49.3aa985e2.js rel=prefetch><link href=/logic2/js/chunk-2d0b2762.9922ab75.js rel=prefetch><link href=/logic2/js/chunk-2d0b6187.46d183b8.js rel=prefetch><link href=/logic2/js/chunk-2d0ba136.8f5ef0f9.js rel=prefetch><link href=/logic2/js/chunk-2d0bb267.a9fb13e9.js rel=prefetch><link href=/logic2/js/chunk-2d0bcec1.88e7b467.js rel=prefetch><link href=/logic2/js/chunk-2d0bdf38.9d1c0afd.js rel=prefetch><link href=/logic2/js/chunk-2d0bff92.7e3f2915.js rel=prefetch><link href=/logic2/js/chunk-2d0c0494.6cdb553e.js rel=prefetch><link href=/logic2/js/chunk-2d0c0a09.2ec1ba15.js rel=prefetch><link href=/logic2/js/chunk-2d0c4313.54e0193b.js rel=prefetch><link href=/logic2/js/chunk-2d0c46d1.524003d3.js rel=prefetch><link href=/logic2/js/chunk-2d0c512b.aee55b70.js rel=prefetch><link href=/logic2/js/chunk-2d0cf16e.3c832286.js rel=prefetch><link href=/logic2/js/chunk-2d0d056d.6cd4fbb2.js rel=prefetch><link href=/logic2/js/chunk-2d0d0645.329dfb61.js rel=prefetch><link href=/logic2/js/chunk-2d0d2f22.2efdeec4.js rel=prefetch><link href=/logic2/js/chunk-2d0d61fd.bb176310.js rel=prefetch><link href=/logic2/js/chunk-2d0d7e63.19f60769.js rel=prefetch><link href=/logic2/js/chunk-2d0e1b57.068930de.js rel=prefetch><link href=/logic2/js/chunk-2d0e1fbe.c78950d1.js rel=prefetch><link href=/logic2/js/chunk-2d0e22d6.4275622b.js rel=prefetch><link href=/logic2/js/chunk-2d0e57ec.c76dca83.js rel=prefetch><link href=/logic2/js/chunk-2d0e6553.326a5893.js rel=prefetch><link href=/logic2/js/chunk-2d0e6c86.1cade724.js rel=prefetch><link href=/logic2/js/chunk-2d0ea098.6cab0e15.js rel=prefetch><link href=/logic2/js/chunk-2d0f0a11.864b636f.js rel=prefetch><link href=/logic2/js/chunk-2d208ac5.fa7099bf.js rel=prefetch><link href=/logic2/js/chunk-2d209408.0fb90cc2.js rel=prefetch><link href=/logic2/js/chunk-2d20f745.69222c89.js rel=prefetch><link href=/logic2/js/chunk-2d20ff23.5e0146c6.js rel=prefetch><link href=/logic2/js/chunk-2d2138c7.b4921213.js rel=prefetch><link href=/logic2/js/chunk-2d216f3b.5a89b9b2.js rel=prefetch><link href=/logic2/js/chunk-2d217e5b.041d0b9f.js rel=prefetch><link href=/logic2/js/chunk-2d21b84a.ebafb1c6.js rel=prefetch><link href=/logic2/js/chunk-2d21dcd2.e91e53ec.js rel=prefetch><link href=/logic2/js/chunk-2d21f327.25a54bd8.js rel=prefetch><link href=/logic2/js/chunk-2d2214b3.3a6a73d6.js rel=prefetch><link href=/logic2/js/chunk-2d221799.3134e208.js rel=prefetch><link href=/logic2/js/chunk-2d221814.710d412d.js rel=prefetch><link href=/logic2/js/chunk-2d221a34.01bf253f.js rel=prefetch><link href=/logic2/js/chunk-2d22502a.1d827e48.js rel=prefetch><link href=/logic2/js/chunk-2d226775.968713fa.js rel=prefetch><link href=/logic2/js/chunk-2d229411.22b01025.js rel=prefetch><link href=/logic2/js/chunk-2d2295e9.92fd756e.js rel=prefetch><link href=/logic2/js/chunk-2d22c171.404cff55.js rel=prefetch><link href=/logic2/js/chunk-2d22c2b8.e6838beb.js rel=prefetch><link href=/logic2/js/chunk-2d22ca58.56109482.js rel=prefetch><link href=/logic2/js/chunk-2d2311f7.536ce1ec.js rel=prefetch><link href=/logic2/js/chunk-2d237ee7.5b7e6771.js rel=prefetch><link href=/logic2/js/chunk-2d238465.52bb5089.js rel=prefetch><link href=/logic2/js/chunk-30597b4a.36ce1551.js rel=prefetch><link href=/logic2/js/chunk-74bc3147.1805f759.js rel=prefetch><link href=/logic2/js/chunk-7532b3ea.3af1886d.js rel=prefetch><link href=/logic2/js/chunk-e13e4362.ed68ea6f.js rel=prefetch><link href=/logic2/css/app.75b2613b.css rel=preload as=style><link href=/logic2/css/chunk-vendors.e0e113e9.css rel=preload as=style><link href=/logic2/js/app.fd9bd9b1.js rel=preload as=script><link href=/logic2/js/chunk-vendors.3cb85bba.js rel=preload as=script><link href=/logic2/css/chunk-vendors.e0e113e9.css rel=stylesheet><link href=/logic2/css/app.75b2613b.css rel=stylesheet></head><body><noscript><strong>We're sorry but logic2 doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript><div id=app><div id=loading-wrapper><div id=loading-text>LOADING</div><div id=loading-content></div></div></div><script src=/logic2/js/chunk-vendors.3cb85bba.js></script><script src=/logic2/js/app.fd9bd9b1.js></script></body></html>
