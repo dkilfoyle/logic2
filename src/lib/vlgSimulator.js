@@ -3,7 +3,7 @@ const Chalk = require("chalk");
 let options = { enabled: true, level: 2 };
 const chalk = new Chalk.Instance(options);
 
-let gatesLookup, modulesLookup, instancesLookup;
+let gatesLookup, instancesLookup;
 
 let logger;
 
@@ -21,19 +21,21 @@ const indexBy = (array, prop) =>
 
 const getLocalId = x => x.substr(x.lastIndexOf("_") + 1);
 
-const evaluateSensitivities = (sensitivities, namespace) => {
-  return sensitivities.some(sens => {
+const evaluateSensitivities = (always, namespace) => {
+  return always.sensitivities.some(sens => {
     if (sens.type == "everytime") return true;
+
     const current = sens.id.getValue(gatesLookup, namespace);
-    const edge =
-      sens.last == 0 && current == 1 //&& iteration == 0
-        ? "posedge"
-        : sens.last == 1 && current == 0
-        ? "negedge"
-        : "same";
-    sens.last = current;
-    debugger;
-    return sens.type == edge || (sens.type == "changed" && edge != "same");
+    const last = sens.lastValue;
+    let edge = "";
+
+    if (last == current) edge = "same";
+    else if (current > last) edge = "posedge";
+    else edge = "negedge";
+
+    const res = sens.type == edge || (sens.type == "changed" && edge != "same");
+    sens.lastValue = current;
+    return res;
   });
 };
 
@@ -104,7 +106,7 @@ const simulate = (
   gates,
   parameters,
   instances,
-  modules,
+  testClock,
   mylogger
 ) => {
   logger = mylogger;
@@ -118,7 +120,7 @@ const simulate = (
 
   gatesLookup = { ...indexBy(gates, "id"), ...parameters };
   instancesLookup = indexBy(instances, "id");
-  modulesLookup = indexBy(modules, "id");
+  // modulesLookup = indexBy(modules, "id");
 
   // reset all gates to state = 0
   // TODO: should set state to 'x'??
@@ -135,10 +137,7 @@ const simulate = (
   });
   if (!initialRes) return false;
 
-  const maxClock = modulesLookup.Main.clock.reduce(
-    (acc, val) => Math.max(val.time, acc),
-    0
-  );
+  const maxClock = testClock.reduce((acc, val) => Math.max(val.time, acc), 0);
 
   if (gatesLookup["main_clock"]) gatesLookup["main_clock"].setValue(1);
 
@@ -152,8 +151,11 @@ const simulate = (
 
     newSimulation.time.push(clock);
 
+    // TODO: Progressbar message
+    // if (clock % Math.floor(maxClock / 20) == 0) logger(".", false);
+
     // assign control values if matching time point
-    let setupRes = modulesLookup.Main.clock.every(c => {
+    let setupRes = testClock.every(c => {
       return c.time == clock
         ? c.assignments.every(a => {
             // can only assign values to control types
@@ -189,17 +191,6 @@ const simulate = (
     // 1. One pass through only positive clock edge always using inputs based on state at end of the previous cycle
     // 2. Multiple runs through all gates and all always(*)
 
-    // let alwaysRes = instances.every(instance => {
-    //   return instance.always.reduce(
-    //     (acc, curAlways) =>
-    //       acc && evaluateSensitivities(curAlways.sensitivities, instance.id, i)
-    //         ? evaluateStatementTree(curAlways.statementTree, instance.id)
-    //         : true,
-    //     true
-    //   );
-    // });
-    // if (!alwaysRes) return false;
-
     // TODO: Different simulation algorithms for each time cycle
     // 1. current
     //      setcontrols iterateuntilnochange(always, gates)
@@ -208,76 +199,72 @@ const simulate = (
 
     // run each always section for each instance
     // need to process gates before (to set always inputs) and after (to propogate always effects)
-    let changing = true;
-    let i = 0;
-    while (changing && i < 15) {
-      let oldValues = gates.map(x => x.getValue());
-      if (i == 0) {
-        instancesLookup["main"].gates.forEach(gid => {
-          const gate = gatesLookup[gid];
-          if (gate.type == "control")
-            gate.state.lastBitArray = [...gate.state.bitArray];
-        });
-      }
 
-      let alwaysRes = instances.every(instance => {
-        return instance.always.reduce(
-          (acc, curAlways) =>
-            acc &&
-            evaluateSensitivities(curAlways.sensitivities, instance.id, i)
-              ? evaluateStatementTree(curAlways.statementTree, instance.id)
-              : true,
-          true
-        );
-      });
-      if (!alwaysRes) return false;
-
-      // run gate evaluation and instance always for this time step (not t=0)
-      // try {
-      // todo: what about array gates????
-      const newValues = gates.map(gate => gate.update(gatesLookup));
-      changing = newValues.some((newVal, i) => {
-        if (newVal != oldValues[i]) {
-          // console.log(
-          //   `${gates[i].id} changed from ${oldValues[i]} to ${newVal}}`
-          // );
-          return true;
+    const updateGates = () => {
+      let anyChanges = false;
+      gates.forEach(gate => {
+        const oldValue = gate.getValue();
+        let newValue;
+        try {
+          newValue = gate.update(gatesLookup);
+        } catch (e) {
+          const msg = `Simulation Exception. Unable to update gate ${gate.id}: ${e}`;
+          console.log("Simulation update error: ", e);
+          logger(msg);
+          throw new Error(msg);
+        }
+        if (newValue != oldValue) {
+          anyChanges = true;
+          // console.log(`${gate.id} changed from ${oldValue} to ${newValue}`);
         }
       });
+      return anyChanges;
+    };
 
-      // let alwaysRes = instances.every(instance => {
-      //   return instance.always.reduce(
-      //     (acc, curAlways) =>
-      //       acc &&
-      //       evaluateSensitivities(curAlways.sensitivities, instance.id, i)
-      //         ? evaluateStatementTree(curAlways.statementTree, instance.id)
-      //         : true,
-      //     true
-      //   );
-      // });
-      // if (!alwaysRes) return false;
+    // const updateGatesUntilNoChanges = () => {
+    //   let i = 0;
+    //   while (updateGates() && i < 15) {
+    //     i++;
+    //   }
+    //   return true;
+    // };
 
-      // } catch (e) {
-      // logger(chalk.red(e));
-      // console.log(e);
-      // debugger;
-      // return false;
-      // }
+    const evaluateAlways = () => {
+      instances.forEach(instance => {
+        instance.always.forEach(curAlways => {
+          const sensitivityTest = evaluateSensitivities(curAlways, instance.id);
+
+          if (sensitivityTest) {
+            const evalutateSuccess = evaluateStatementTree(
+              curAlways.statementTree,
+              instance.id
+            );
+            if (!evalutateSuccess) {
+              const msg = `Error evaluating always block in instance ${instance.id}`;
+              console.log(msg, curAlways);
+              throw new Error(msg);
+            }
+          }
+        });
+      });
+    };
+
+    let anyChanges = true;
+    var i = 0;
+    while (anyChanges && i < 15) {
+      updateGates();
+      evaluateAlways();
+      // anyChanges = updateGates();
+      updateGates();
       i++;
     }
 
-    // let alwaysRes = instances.every(instance => {
-    //   return instance.always.reduce(
-    //     (acc, curAlways) =>
-    //       acc && evaluateSensitivities(curAlways.sensitivities, instance.id, i)
-    //         ? evaluateStatementTree(curAlways.statementTree, instance.id)
-    //         : true,
-    //     true
-    //   );
-    // });
-    // if (!alwaysRes) return false;
+    // // simulation cycle
+    // if (!updateGatesUntilNoChanges()) return false;
+    // if (!evaluateAlways()) return false;
+    // if (!updateGatesUntilNoChanges()) return false;
 
-    console.log(`Clock = ${clock}, iterations = ${i}`);
+    // console.log(`Clock = ${clock}, iterations = ${i}`);
 
     // and store gate results in newSimulation
     gates.forEach(g => {
@@ -287,20 +274,7 @@ const simulate = (
     });
     newSimulation.clock.push(clock % 2);
 
-    // update always last
-    // instances.forEach(instance => {
-    //   instance.always.forEach(curAlways =>
-    //     curAlways.sensitivities.forEach(sensitivity => {
-    //       if (sensitivity.type != "everytime")
-    //         sensitivity.last = sensitivity.id.getValue(
-    //           gatesLookup,
-    //           instance.id
-    //         );
-    //     })
-    //   );
-    // });
-
-    modulesLookup.Main.clock.forEach((x, index, all) => {
+    testClock.forEach((x, index, all) => {
       if (x.time != clock) return;
 
       const lineChar = index == all.length - 1 ? "└" : "├";

@@ -198,10 +198,12 @@ export default {
     // this.addFileTab("TriBuff");
     // this.addFileTab("RAM");
     // this.addFileTab("PC");
-    // this.addFileTab("Controller");
+    this.addFileTab("Controller");
+    // this.addFileTab("Concatenation");
     // this.addFileTab("Bus");
     // this.addFileTab("ALU");
-    this.addFileTab("Register");
+    // this.addFileTab("Register");
+    // this.addFileTab("DFlipFlopPC");
   },
   mounted() {
     setTimeout(() => this.about(), 3000);
@@ -289,8 +291,8 @@ export default {
       // this.onLuminoActivated({ id: "Scratch_editor" });
       this.$store.commit("setCurrentFileTab", "Scratch"); // unnecessary because luminoActivated is called?
     },
-    termWriteln(str) {
-      this.$refs.terminal.setContent(str);
+    termWriteln(str, ln = true) {
+      this.$refs.terminal.setContent(str, ln);
     },
     onFailLint() {
       // console.log("onFailLint: ", e);
@@ -410,7 +412,9 @@ export default {
         this.$store.getters.currentFile.compileResult.gates,
         this.$store.getters.currentFile.compileResult.parameters,
         this.$store.getters.currentFile.compileResult.instances,
-        this.$store.getters.currentFile.walkResult.modules,
+        this.$store.getters.currentFile.walkResult.modules.find(
+          m => m.id == "Main"
+        ).clock,
         this.termWriteln
       );
 

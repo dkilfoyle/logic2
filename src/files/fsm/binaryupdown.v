@@ -77,7 +77,7 @@ module Main(
 		.Q(Q0cur)
   );
 
-  wire dec;
+  wire [1:0] dec;
   number(dec, Q0cur, Q1cur);
 
   test begin

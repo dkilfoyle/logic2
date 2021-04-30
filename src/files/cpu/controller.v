@@ -118,14 +118,25 @@ module Main(
     .ctrlwrd({HLT, MI, RI, RO, IO, II, AI, AO, SO, SU, BI, OI, CE, CO, J})
   );
 
-  // wire [14:0] ctrlwrdled;
-  // ledbar(ctrlwrdled, ctrlwrd);
+  assign ctrlwrd = {HLT, MI, RI, RO, IO, II, AI, AO, SO, SU, BI, OI, CE, CO, J};
 
   test begin
     #0    { enable=0, instruction=4'b0000 }; // NOP
     #2    { enable=1, instruction=4'b0001 }; // LDA
+    #4;   // LDA Stage 1  ro, ii, ce
+    #6;   // LDA Stage 2  mi, io
+    #8;   // LDA Stage 3  ro, ai
+    #10;  // LDA Stage 4  
     #12   { enable=1, instruction=4'b0010 }; // ADD
+    #14;   // ADD Stage 1  ro, ii, ce
+    #16;   // ADD Stage 2  mi, io
+    #18;   // ADD Stage 3  ro, bi
+    #20;   // ADD Stage 4  so, ai
     #22   { enable=1, instruction=4'b0011 }; // SUB
+    #24;   // SUB Stage 1  ro, ii, ce
+    #26;   // SUB Stage 2  mi, io
+    #28;   // SUB Stage 3  ro, bi
+    #30;   // SUB Stage 4  so, ai, su
     #32   { enable=1, instruction=4'b0101 }; // OUT
     #42   { enable=1, instruction=4'b0110 }; // JMP
     #52   { enable=1, instruction=4'b0000 }; // NOP

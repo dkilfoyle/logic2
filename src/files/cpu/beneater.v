@@ -75,22 +75,22 @@ module RAM(
   reg [7:0] memBuffer;
 
   initial begin
-    Memory[0] <= 8'b0001_1010; // LDA 10        => A = 3
-    Memory[1] <= 8'b0010_1011; // ADD 11        => B = 2, A = 5
-    Memory[2] <= 8'b0100_0110; // JMP 6
-    Memory[3] <= 8'b0011_1100; // SUBT 12
-    Memory[4] <= 8'b0010_1101; // ADD 13
-    Memory[5] <= 8'b1110_0000; // OUT
-    Memory[6] <= 8'b0001_1110; // LDA 14        => A = 10
-    Memory[7] <= 8'b0010_1111; // ADD 15        => B = 11, A = 21
-    Memory[8] <= 8'b1110_0000; // OUT
-    Memory[9] <= 8'b1111_0000; // HLT
-    Memory[10] <= 8'b0000_0011; // 3
-    Memory[11] <= 8'b0000_0010; // 2
-    Memory[12] <= 8'b0000_0001; // 1
-    Memory[13] <= 8'b0000_0101; // 5
-    Memory[14] <= 8'b0000_1010; // 10
-    Memory[15] <= 8'b0000_1011; // 11
+    Memory[0]  <= 8'b0001_1010; // LDA 10
+    Memory[1]  <= 8'b0010_1011; // ADD 11
+    Memory[2]  <= 8'b0100_1100; // STA 12
+    Memory[3]  <= 8'b0001_1011; // LDA 11
+    Memory[4]  <= 8'b0100_1010; // STA 10
+    Memory[5]  <= 8'b0001_1100; // LDA 12
+    Memory[6]  <= 8'b0100_1011; // STA 11
+    Memory[7]  <= 8'b1110_0000; // OUT
+    Memory[8]  <= 8'b0110_0000; // JMP 0
+    Memory[9]  <= 8'b1111_0000; // HLT
+    Memory[10] <= 8'b0000_0001; // 1
+    Memory[11] <= 8'b0000_0001; // 1
+    Memory[12] <= 8'b0000_0000; // 0
+    Memory[13] <= 8'b0000_0000; // 0
+    Memory[14] <= 8'b0000_0000; // 0
+    Memory[15] <= 8'b0000_0000; // 0
   end
 
   always @(posedge clk)
@@ -118,13 +118,13 @@ module PC(
   initial
     count <= 4'b0000;
   
-  always @(posedge CLK)
+  always @(posedge CLK) // if clk and enable
     if (rst)
       count <= 4'b0000;
     else
       count <= count + 1;
 
-  always @(posedge clk)
+  always @(posedge clk) // regardless enable
     if (jmp)
       count <= jmploc;
 endmodule
@@ -154,8 +154,10 @@ module Controller (
   localparam LDA = 4'b0001; // Load register A from memory.
   localparam ADD = 4'b0010; // Add specified memory pointer to register A. Store the result in register A.
   localparam SUB = 4'b0011; // Subtract specified memory from register A. Store the result in register A.
+  localparam STA = 4'b0100; // Store A in RAM
+  localparam LDI = 4'b0101; // Load an immediate value into A
+  localparam JMP = 4'b0110; // Jump at some code location
   localparam OUT = 4'b1110; // Send register A to UART port. The instruction will block until the transfer completes.
-  localparam JMP = 4'b0100; // Jump at some code location
   localparam HLT = 4'b1111; // Halt CPU control clock;
   
   // TODO: Not yet implemented
@@ -193,22 +195,24 @@ module Controller (
       inststage = resetstage ? 3'b000 : inststage + 1;
       resetstage = 1'b0;
       case(inststage) //HLT, MI, RI, RO, IO, II, AI, AO, SO, SU, BI, OI, CE, CO, J;
-          3'b000: // stage 0 (Fetch PC)
+          3'b000: // stage 0 (Fetch PC => MAR contains PC)
             begin
               ctrlwrd = (1 << mi) | (1 << co); // push PC onto BUS, read BUS into MAR
             end
-          3'b001: // stage 1 (Fetch instruction)
+          3'b001: // stage 1 (Fetch instruction => InsReg contains instruction in ram @ mar)
             begin
               ctrlwrd = (1 << ro) | (1 << ii) | (1 << ce); // inc PC, push RAM @ MAR onto BUS, read BUS into IR
             end
           3'b010: // stage 2 (Decode instruction)
             begin
               case(instruction)
-                LDA: ctrlwrd = (1 << mi) | (1 << io); // LDA - push instruction address onto BUS, read BUS into MAR
-                ADD: ctrlwrd = (1 << mi) | (1 << io); // ADD - push instruction address onto BUS, read BUS into MAR
-                SUB: ctrlwrd = (1 << mi) | (1 << io); // SUB - push instruction address onto BUS, read BUS into MAR
-                OUT: ctrlwrd = (1 << ao) | (1 << oi); // OUT - push RegA onto BUS, read BUS into output buffer
+                LDA: ctrlwrd = (1 << io) | (1 << mi); // LDA - push instruction 4LSB (address) onto BUS, read BUS 4LSB into MAR
+                ADD: ctrlwrd = (1 << io) | (1 << mi); // ADD - push instruction 4LSB (address) onto BUS, read BUS 4LSB into MAR
+                SUB: ctrlwrd = (1 << io) | (1 << mi); // SUB - push instruction 4LSB (address) onto BUS, read BUS 4LSB into MAR
+                STA: ctrlwrd = (1 << io) | (1 << mi); // STA - push instruction 4LSB (address) onto BUS, read BUS 4LSB into MAR
+                LDI: ctrlwrd = (1 << io) | (1 << ai); // STA - push instruction 4LSB (immediate) onto BUS, read BUS into RegA
                 JMP: ctrlwrd = (1 << io) | (1 << j);  // JMP - PC input j, push instruction address onto BUS
+                OUT: ctrlwrd = (1 << ao) | (1 << oi); // OUT - push RegA onto BUS, read BUS into output buffer
                 HLT: ctrlwrd = (1 << hlt); // HLT
                 default: ctrlwrd = 0; 
               endcase 
@@ -219,6 +223,7 @@ module Controller (
                 LDA: ctrlwrd = (1 << ro) | (1 << ai); // LDA - push RAM @ MAR onto BUS, read BUS into RegA
                 ADD: ctrlwrd = (1 << ro) | (1 << bi); // ADD - push RAM @ MAR onto BUS, read BUS into RegB
                 SUB: ctrlwrd = (1 << ro) | (1 << bi); // SUB - push RAM @ MAR onto BUS, read BUS into RegB
+                STA: ctrlwrd = (1 << ao) | (1 << ri); // STA - push RegA onto BUS, read BUS into RAM 
                 default: ctrlwrd = 0;
               endcase
             end
@@ -328,6 +333,9 @@ module Main (
   CPU cpu(.clkin(clock), .res(res));
 
   test begin
-    #60;
+    #100;
+    #200;
+    #300;
+    #400;
   end
 endmodule

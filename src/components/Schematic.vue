@@ -215,17 +215,32 @@ export default {
             );
             break;
         }
+        if (gate.type == "splitter") {
+          // animate splitter edges
+          d3.selectAll(`#svgSchematic .${gate.id}_link`).attr(
+            "class",
+            (d, i) => {
+              let val = new Numeric(timestate[gate.id], 16)._getValue(
+                gate.splitterSources[gate.splitterSources.length - 1 - i].offset
+              );
+              return `${gate.id}_link link-${
+                val === 0 ? 0 : typeof val == "string" ? "x" : 1
+              }`;
+            }
+          );
+        }
         // animate edges
-        d3.selectAll(`#svgSchematic .${gate.id}_link`).attr(
-          "class",
-          `${gate.id}_link link-${
-            timestate[gate.id] === 0
-              ? 0
-              : typeof timestate[gate.id] == "string"
-              ? "x"
-              : 1
-          }`
-        );
+        else
+          d3.selectAll(`#svgSchematic .${gate.id}_link`).attr(
+            "class",
+            `${gate.id}_link link-${
+              timestate[gate.id] === 0
+                ? 0
+                : typeof timestate[gate.id] == "string"
+                ? "x"
+                : 1
+            }`
+          );
       });
     },
 
@@ -443,11 +458,19 @@ export default {
             return { side: "NORTH", portIndex: i };
           if (type == "led") return { side: "SOUTH", portIndex: i };
           if (type == "splitter") return { side: "WEST", portIndex: 20 };
+          if (type == "concatenation") return { side: "WEST", portIndex: 20 };
           return { side: "WEST", portIndex: i };
         };
 
         // build input ports for this gate and the edges that connect from source to each input
         gate.inputs.forEach((input, i) => {
+          let inputGate = this.getGate(input.id);
+
+          // let ports = null;
+          // if (gate.type == "concatenation")
+          //   ports = [...gateNet.ports].reverse();
+          // else ports = gateNet.ports;
+
           gateNet.ports.push({
             direction: "INPUT",
             id: gate.id + "_input_" + i,
@@ -457,7 +480,6 @@ export default {
             properties: getInputPortDescription(gate.type, i)
           });
 
-          let inputGate = this.getGate(input.id);
           let inputSource, inputSourcePort;
           switch (inputGate.type) {
             case "portbuffer":
@@ -495,9 +517,13 @@ export default {
           // console.log("-- g2g: ", gate2gate.id, this.stripReactive(gate2gate));
         });
 
+        if (gate.type == "concatenation") {
+          gateNet.ports.reverse();
+        }
+
         // splitter gate has multiple output ports of form gateid_splitPort_targetid
         if (gate.type == "splitter") {
-          gate.splitterOutputs.forEach((output, i) => {
+          gate.splitterTargets.forEach((output, i) => {
             gateNet.ports.push({
               direction: "OUTPUT",
               id: gate.id + "_splitPort_" + output.id,

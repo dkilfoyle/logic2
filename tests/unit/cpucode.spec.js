@@ -228,7 +228,7 @@ describe("PC", () => {
 
 describe("Controller", () => {
   const numInstances = 2;
-  const numGates = 15;
+  const numGates = 32;
   const testGate = "main_ctrlwrd";
   const testOutput = [
     0,

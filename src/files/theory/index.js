@@ -2,7 +2,8 @@ export const SourceFiles = {
   Simplify: require("./simplify.v").default,
   SumProducts: require("./sumproducts.v").default,
   DeMorgans: require("./demorgan.v").default,
-  TruthTable: require("./truthtemplate.v").default
+  TruthTable: require("./truthtemplate.v").default,
+  Concatenation: require("./concatenation.v").default
 };
 
 export const SourceTree = {
@@ -11,6 +12,7 @@ export const SourceTree = {
     { text: "Simplify" },
     { text: "SumProducts" },
     { text: "DeMorgans" },
-    { text: "TruthTable" }
+    { text: "TruthTable" },
+    { text: "Concatenation" }
   ]
 };
