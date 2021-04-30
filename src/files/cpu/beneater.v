@@ -333,6 +333,9 @@ module Main (
   CPU cpu(.clkin(clock), .res(res));
 
   test begin
-    #14;
+    #100;
+    #200;
+    #300;
+    #400;
   end
 endmodule

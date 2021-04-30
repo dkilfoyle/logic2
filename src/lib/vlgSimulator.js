@@ -3,7 +3,7 @@ const Chalk = require("chalk");
 let options = { enabled: true, level: 2 };
 const chalk = new Chalk.Instance(options);
 
-let gatesLookup, modulesLookup, instancesLookup;
+let gatesLookup, instancesLookup;
 
 let logger;
 
@@ -106,7 +106,7 @@ const simulate = (
   gates,
   parameters,
   instances,
-  modules,
+  testClock,
   mylogger
 ) => {
   logger = mylogger;
@@ -120,7 +120,7 @@ const simulate = (
 
   gatesLookup = { ...indexBy(gates, "id"), ...parameters };
   instancesLookup = indexBy(instances, "id");
-  modulesLookup = indexBy(modules, "id");
+  // modulesLookup = indexBy(modules, "id");
 
   // reset all gates to state = 0
   // TODO: should set state to 'x'??
@@ -137,10 +137,7 @@ const simulate = (
   });
   if (!initialRes) return false;
 
-  const maxClock = modulesLookup.Main.clock.reduce(
-    (acc, val) => Math.max(val.time, acc),
-    0
-  );
+  const maxClock = testClock.reduce((acc, val) => Math.max(val.time, acc), 0);
 
   if (gatesLookup["main_clock"]) gatesLookup["main_clock"].setValue(1);
 
@@ -154,8 +151,11 @@ const simulate = (
 
     newSimulation.time.push(clock);
 
+    // TODO: Progressbar message
+    // if (clock % Math.floor(maxClock / 20) == 0) logger(".", false);
+
     // assign control values if matching time point
-    let setupRes = modulesLookup.Main.clock.every(c => {
+    let setupRes = testClock.every(c => {
       return c.time == clock
         ? c.assignments.every(a => {
             // can only assign values to control types
@@ -274,7 +274,7 @@ const simulate = (
     });
     newSimulation.clock.push(clock % 2);
 
-    modulesLookup.Main.clock.forEach((x, index, all) => {
+    testClock.forEach((x, index, all) => {
       if (x.time != clock) return;
 
       const lineChar = index == all.length - 1 ? "└" : "├";
