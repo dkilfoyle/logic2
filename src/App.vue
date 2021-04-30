@@ -162,7 +162,7 @@ import UtilsMixin from "./mixins/utils";
 import vlgParse from "./lib/vlgAntlrParser.js"; // build ast
 import vlgWalk from "./lib/vlgAntlrListener.js"; // convert ast into module definitions
 import vlgCompile from "./lib/vlgModuleCompiler.js"; // compile module definitions into instances and gates
-import vlgSimulate from "./lib/vlgSimulator.js"; // run simulation over gate array
+import vlgSimulator from "./lib/worker"; // run simulation over gate array
 
 export default {
   name: "App",
@@ -206,7 +206,17 @@ export default {
     // this.addFileTab("DFlipFlopPC");
   },
   mounted() {
-    setTimeout(() => this.about(), 3000);
+    setTimeout(() => this.about(), 1500);
+    vlgSimulator.worker.onmessage = event => {
+      var simulateResult = event.data;
+      this.termWriteln(
+        chalk.cyan.inverse(" DONE ") + "  Simulated successfully"
+      );
+
+      this.$store.commit("setSimulateResult", simulateResult);
+      this.$store.commit("setStatus", "Simulation OK");
+      console.log("Simulation: ", simulateResult);
+    };
   },
   watch: {
     currentFileTab() {
@@ -407,26 +417,36 @@ export default {
           chalk.yellow(this.$store.getters.currentFile.name)
       );
 
-      const simulateResult = vlgSimulate(
-        this.$store.state.evals_per_step,
-        this.$store.getters.currentFile.compileResult.gates,
-        this.$store.getters.currentFile.compileResult.parameters,
-        this.$store.getters.currentFile.compileResult.instances,
-        this.$store.getters.currentFile.walkResult.modules.find(
-          m => m.id == "Main"
-        ).clock,
-        this.termWriteln
-      );
+      vlgSimulator.send({ store: this.$store });
 
-      if (simulateResult) {
-        this.termWriteln(
-          chalk.cyan.inverse(" DONE ") + "  Simulated successfully"
-        );
+      // vlgSimulator.send([
+      //   this.$store.state.evals_per_step,
+      //   this.$store.getters.currentFile.compileResult.gates,
+      //   this.$store.getters.currentFile.compileResult.parameters,
+      //   this.$store.getters.currentFile.compileResult.instances,
+      //   this.$store.getters.currentFile.walkResult.modules.find(
+      //     m => m.id == "Main"
+      //   ).clock
+      // ]);
 
-        this.$store.commit("setSimulateResult", simulateResult);
-        this.$store.commit("setStatus", "Simulation OK");
-        console.log("Simulation: ", simulateResult);
-      } else this.termWriteln(chalk.bgRed(" ERROR ") + "  Simulation aborted");
+      // {        EVALS_PER_STEP: this.$store.state.evals_per_step,
+      // gates: this.$store.getters.currentFile.compileResult.gates,
+      // parameters: this.$store.getters.currentFile.compileResult.parameters,
+      // instances: this.$store.getters.currentFile.compileResult.instances,
+      // testClock: this.$store.getters.currentFile.walkResult.modules.find(
+      //   m => m.id == "Main"
+      // ).clock
+      // logger: this.termWriteln
+
+      // if (simulateResult) {
+      //   this.termWriteln(
+      //     chalk.cyan.inverse(" DONE ") + "  Simulated successfully"
+      //   );
+
+      //   this.$store.commit("setSimulateResult", simulateResult);
+      //   this.$store.commit("setStatus", "Simulation OK");
+      //   console.log("Simulation: ", simulateResult);
+      // } else this.termWriteln(chalk.bgRed(" ERROR ") + "  Simulation aborted");
     },
     about() {
       this.termWriteln(chalk.bold.cyan("Logic2: A logic circuit simulator"));

@@ -1,1 +1,2 @@
 /src/grammar/*.js
+/src/lib/worker/*.js
