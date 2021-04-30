@@ -672,11 +672,11 @@ body {
 }
 
 .segment-0 {
-  fill: #d1d3d4;
+  fill: #e4e4e4;
 }
 
 .segment-1 {
-  fill: red;
+  fill: rgb(55, 151, 10);
 }
 
 .d3-hwschematic {

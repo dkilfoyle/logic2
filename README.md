@@ -50,9 +50,7 @@ npm run serve
 
 4. All programs must have a "main" module which is automatically instanced and serves as the entry point.
 
-
     a) The main module automatically includes a "clock" input.
-
     b) The inputs to the main module will be external "control" gates eg buttons/sensors
 
 5. The main module should include a testbench section to define the value of the control gates at different time points
@@ -66,26 +64,19 @@ npm run serve
     end
    ```
 
+6. Limited support for verilog behavioural modelling - initial and always blocks, if/case statements
+
 ## TODO
 
-1. More sample code circuits
-    1. 4 bit ripple adder (done)
-    2. 4 to 1 multiplexer with bit vector select line
-    3. Ripple counter (done)
-    4. Shift register (done)
-    5. FSMs (done)
-2. More custom nodes eg bits to number (done), led bar (done)
-3. Reuse intermediary gates
-4. Support bit vector type
-5. More linting (WIP)
-6. Custom schematic node renderer eg seven segment (done)
-7. d3-hwschematic - how can import without webworker problem
-8. d3-hwschematic - remove need for custom line exports.GenericNodeRenderer = GenericNodeRenderer;
-9. Future?
-    1. Truth tables and Karnaugh maps to generate optimised logic gates (done)
-    2. Custom d3-based traces view instead of dygraphs (done)
-    3. bit vector eg 4 bit ripple adder with vector input/output
-    4. behavioural logic eg d flip flop (initial support done)
+1. Ben Eater 8 bit CPU simulation - done
+    1. Add $compile to generate Ben Eater machine code
+    2. Convert bus to module with custom $display port positions
+    3. Move tristate buffer into individual registers
+2. Speed up simulation and compilation
+    1. Gates should be lookup, not array.find/filter
+    2. WebWorker? - failed - can't pass class objects
+    3. Simulation progress monitor
+3. More advanced CPU designs - currently simulation too slow, makes this infeasible
 
 ## Acknowledgements
 
