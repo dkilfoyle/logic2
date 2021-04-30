@@ -254,7 +254,8 @@ const simulate = (
     while (anyChanges && i < 15) {
       updateGates();
       evaluateAlways();
-      anyChanges = updateGates();
+      // anyChanges = updateGates();
+      updateGates();
       i++;
     }
 

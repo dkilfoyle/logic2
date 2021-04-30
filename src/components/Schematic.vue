@@ -217,20 +217,17 @@ export default {
         }
         if (gate.type == "splitter") {
           // animate splitter edges
-          d3.selectAll(`#svgSchematic .${gate.id}_link`)
-            .data(
-              [...gate.splitterSources].reverse().map(ss => {
-                const tsn = new Numeric(timestate[gate.id], 16);
-                return tsn._getValue(ss.offset);
-              })
-            )
-            .attr(
-              "class",
-              d =>
-                `${gate.id}_link link-${
-                  d === 0 ? 0 : typeof d == "string" ? "x" : 1
-                }`
-            );
+          d3.selectAll(`#svgSchematic .${gate.id}_link`).attr(
+            "class",
+            (d, i) => {
+              let val = new Numeric(timestate[gate.id], 16)._getValue(
+                gate.splitterSources[gate.splitterSources.length - 1 - i].offset
+              );
+              return `${gate.id}_link link-${
+                val === 0 ? 0 : typeof val == "string" ? "x" : 1
+              }`;
+            }
+          );
         }
         // animate edges
         else

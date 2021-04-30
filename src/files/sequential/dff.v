@@ -34,9 +34,11 @@ module Main(
   DFFE dffe(.clk(clock), .dIn(A), .dEnable(E), .q2(q1));
 
   test begin
-    #0  { E=1 };
-    #1  { A=1, E=0 };
-    #7  { E=1 };
+    #1  { A=0, E=0 };
+    #2  { E=1 };
+    #4  { E=0 };
+    #5  { A=1 };
+    #6  { E=1 };
     #9  { A=0, E=0 };
     #12;
   end

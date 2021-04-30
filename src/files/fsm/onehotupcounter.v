@@ -1,5 +1,7 @@
 // One-hot up counter from Chapter 7.5.5 of Introduction to Logic Circuits and Logic Design LaMeres
 
+// TODO: Not working. Need to fix flip flop ? simulator issue
+
 module DFlipFlop (
   input d, c, clear, preset,
   output Q, Qn);
