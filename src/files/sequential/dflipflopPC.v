@@ -1,5 +1,7 @@
 // Master-slave d-flipflop with active low preset and clear
 
+// TODO: Not working ? simulator issue
+
 module DFlipFlop (
   input d, c, clear, preset,
   output Q, Qn);
