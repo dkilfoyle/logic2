@@ -69,8 +69,8 @@
 
 <script>
 import MonacoEditor from "vue-monaco";
-import parse from "../lib/vlgAntlrParser.js";
-import walk from "../lib/vlgAntlrListener.js";
+// import parse from "../lib/vlgAntlrParser.js";
+// import walk from "../lib/vlgAntlrListener.js";
 
 import UtilsMixin from "../mixins/utils";
 
@@ -440,45 +440,45 @@ export default {
     },
     lint(text) {
       if (text.length == 0) return [];
-      const parseResult = parse(text);
+      // const parseResult = parse(text);
 
-      this.syntaxErrors = parseResult.errors.map(e => ({
-        severity: this.monaco.MarkerSeverity.Error,
-        startLineNumber: e.startLine,
-        startColumn: e.startColumn,
-        endLineNumber: e.endLineNumber,
-        endColumn: e.endColumn,
-        message: e.msg
-      }));
+      // this.syntaxErrors = parseResult.errors.map(e => ({
+      //   severity: this.monaco.MarkerSeverity.Error,
+      //   startLineNumber: e.startLine,
+      //   startColumn: e.startColumn,
+      //   endLineNumber: e.endLineNumber,
+      //   endColumn: e.endColumn,
+      //   message: e.msg
+      // }));
 
-      let walkResult = { errors: [] };
-      if (parseResult.errors.length == 0) {
-        walkResult = walk(parseResult.ast);
+      // let walkResult = { errors: [] };
+      // if (parseResult.errors.length == 0) {
+      //   walkResult = walk(parseResult.ast);
 
-        this.semanticErrors = walkResult.errors.map(e => ({
-          severity: this.monaco.MarkerSeverity.Warning,
-          startLineNumber: e.startLine,
-          startColumn: e.startColumn,
-          endLineNumber: e.endLineNumber,
-          endColumn: e.endColumn,
-          message: e.msg
-        }));
-      }
+      //   this.semanticErrors = walkResult.errors.map(e => ({
+      //     severity: this.monaco.MarkerSeverity.Warning,
+      //     startLineNumber: e.startLine,
+      //     startColumn: e.startColumn,
+      //     endLineNumber: e.endLineNumber,
+      //     endColumn: e.endColumn,
+      //     message: e.msg
+      //   }));
+      // }
 
-      if (this.syntaxErrors.length == 0 && this.semanticErrors.length == 0) {
-        this.$nextTick(() => {
-          this.$emit("passLint", {
-            name: this.name,
-            parseResult,
-            walkResult
-          });
-        });
-      } else
-        this.$emit("failLint", {
-          name: this.name,
-          parseResult,
-          walkResult
-        });
+      // if (this.syntaxErrors.length == 0 && this.semanticErrors.length == 0) {
+      //   this.$nextTick(() => {
+      //     this.$emit("passLint", {
+      //       name: this.name,
+      //       parseResult,
+      //       walkResult
+      //     });
+      //   });
+      // } else
+      //   this.$emit("failLint", {
+      //     name: this.name,
+      //     parseResult,
+      //     walkResult
+      //   });
     }
   }
 };

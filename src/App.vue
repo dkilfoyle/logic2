@@ -159,10 +159,10 @@ const chalk = new Chalk.Instance(options);
 
 import UtilsMixin from "./mixins/utils";
 
-import vlgParse from "./lib/vlgAntlrParser.js"; // build ast
-import vlgWalk from "./lib/vlgAntlrListener.js"; // convert ast into module definitions
-import vlgCompile from "./lib/vlgModuleCompiler.js"; // compile module definitions into instances and gates
-import vlgSimulator from "./lib/worker"; // run simulation over gate array
+// import vlgCompile from "./lib/compile.js"; // compile module definitions into instances and gates
+// import vlgSimulator from "./lib/worker"; // run simulation over gate array
+
+import workerInterface from "./lib/workerInterface.js";
 
 export default {
   name: "App",
@@ -208,15 +208,18 @@ export default {
   },
   mounted() {
     setTimeout(() => this.about(), 1500);
-    vlgSimulator.worker.onmessage = event => {
-      var simulateResult = event.data;
-      this.termWriteln(
-        chalk.cyan.inverse(" DONE ") + "  Simulated successfully"
-      );
+    workerInterface.worker.onmessage = event => {
+      console.log("App.vue: incoming message from worker: ", event.data);
+      if (event.data.type == "log")
+        console.log("Worker: ", event.data.msg, event.data.data);
+      // var simulateResult = event.data;
+      // this.termWriteln(
+      //   chalk.cyan.inverse(" DONE ") + "  Simulated successfully"
+      // );
 
-      this.$store.commit("setSimulateResult", simulateResult);
-      this.$store.commit("setStatus", "Simulation OK");
-      console.log("Simulation: ", simulateResult);
+      // this.$store.commit("setSimulateResult", simulateResult);
+      // this.$store.commit("setStatus", "Simulation OK");
+      // console.log("Simulation: ", simulateResult);
     };
   },
   watch: {
@@ -319,22 +322,22 @@ export default {
       // compile turns [modules] into instances and gates
       // needed for updating of gates table and schematic
 
-      if (this.$store.getters.currentFile.autoCompile) {
-        let compileResult = null;
-        try {
-          compileResult = vlgCompile(e.walkResult.modules);
-        } catch (e) {
-          // this.termWriteln(chalk.red("Compile exception: ") + e);
-          console.log("lint exception: ", e);
-          this.$store.commit("setStatus", "Compile Error");
-          this.$store.commit("setCompileResult", { ...compileResult });
-          return;
-        }
-        this.$store.commit("setStatus", "Compile OK");
-        this.$store.commit("setCompileResult", { ...compileResult });
-      } else {
-        this.$store.commit("setStatus", "Parse OK");
-      }
+      // if (this.$store.getters.currentFile.autoCompile) {
+      //   let compileResult = null;
+      //   try {
+      //     compileResult = vlgCompile(e.walkResult.modules);
+      //   } catch (e) {
+      //     // this.termWriteln(chalk.red("Compile exception: ") + e);
+      //     console.log("lint exception: ", e);
+      //     this.$store.commit("setStatus", "Compile Error");
+      //     this.$store.commit("setCompileResult", { ...compileResult });
+      //     return;
+      //   }
+      //   this.$store.commit("setStatus", "Compile OK");
+      //   this.$store.commit("setCompileResult", { ...compileResult });
+      // } else {
+      //   this.$store.commit("setStatus", "Parse OK");
+      // }
 
       // console.log("app onPassLint: walkResult = ", e.walkResult);
     },
@@ -344,69 +347,79 @@ export default {
           chalk.yellow(this.$store.state.currentFileTab)
       );
 
-      const parseResult = vlgParse(this.$store.getters.currentFile.code);
-      this.$store.commit("setParseResult", { ...parseResult });
-      if (parseResult.errors.length > 0) {
-        // this.$store.commit("setParseState", te = "parseError";
-        this.termWriteln(
-          chalk.red("└── Syntax error(s): ") + parseResult.errors.length
-        );
-        return;
-      }
+      // const parseResult = vlgParse(this.$store.getters.currentFile.code);
+      // this.$store.commit("setParseResult", { ...parseResult });
+      // if (parseResult.errors.length > 0) {
+      //   // this.$store.commit("setParseState", te = "parseError";
+      //   this.termWriteln(
+      //     chalk.red("└── Syntax error(s): ") + parseResult.errors.length
+      //   );
+      //   return;
+      // }
 
-      const walkResult = vlgWalk(parseResult.ast);
-      this.$store.commit("setWalkResult", { ...walkResult });
-      if (walkResult.errors.length > 0) {
-        // this.currentFile.state = "walkError";
-        this.termWriteln(
-          chalk.red("└── Semantic error(s): ") + walkResult.errors.length
-        );
-        return;
-      }
+      // const walkResult = vlgWalk(parseResult.ast);
+      // this.$store.commit("setWalkResult", { ...walkResult });
+      // if (walkResult.errors.length > 0) {
+      //   // this.currentFile.state = "walkError";
+      //   this.termWriteln(
+      //     chalk.red("└── Semantic error(s): ") + walkResult.errors.length
+      //   );
+      //   return;
+      // }
 
-      this.termWriteln(
-        chalk.green(
-          `├── Parsed ${walkResult.modules.length} modules: ${chalk.white(
-            walkResult.modules.map(x => x.id).join(", ")
-          )}`
-        )
-      );
+      // this.termWriteln(
+      //   chalk.green(
+      //     `├── Parsed ${walkResult.modules.length} modules: ${chalk.white(
+      //       walkResult.modules.map(x => x.id).join(", ")
+      //     )}`
+      //   )
+      // );
 
-      let compileResult = null;
-      try {
-        compileResult = vlgCompile(walkResult.modules);
-      } catch (e) {
-        // eslint-disable-next-line no-debugger
-        debugger;
-        console.log(e, compileResult);
-        this.$store.commit("setStatus", "Compile Error");
-        this.termWriteln(chalk.red("└── Compile exception: ") + e.msg);
-        return;
-      }
-      this.$store.commit("setCompileResult", { ...compileResult });
-      this.$store.commit("setStatus", "Compile OK");
-      console.log("Compiled: ", this.stripReactive(compileResult));
+      workerInterface.send({
+        command: "parse",
+        filename: this.$store.state.currentFileTab,
+        code: this.$store.getters.currentFile.code
+      });
 
-      this.termWriteln(
-        chalk.green(
-          `├── Generated ${
-            compileResult.instances.length
-          } instances: ${chalk.white(
-            compileResult.instances.map(x => x.id).join(", ")
-          )}`
-        )
-      );
-      this.termWriteln(
-        chalk.green(
-          `└── Generated ${compileResult.gates.length} gates: ${chalk.white(
-            compileResult.gates.map(x => x.id).join(", ")
-          )}`
-        )
-      );
+      workerInterface.send({
+        command: "compile"
+      });
 
-      this.termWriteln(
-        chalk.green.inverse(" DONE ") + "  Compiled successfully"
-      );
+      // let compileResult = null;
+      // try {
+      //   compileResult = vlgCompile(walkResult.modules);
+      // } catch (e) {
+      //   // eslint-disable-next-line no-debugger
+      //   debugger;
+      //   console.log(e, compileResult);
+      //   this.$store.commit("setStatus", "Compile Error");
+      //   this.termWriteln(chalk.red("└── Compile exception: ") + e.msg);
+      //   return;
+      // }
+      // this.$store.commit("setCompileResult", { ...compileResult });
+      // this.$store.commit("setStatus", "Compile OK");
+      // console.log("Compiled: ", this.stripReactive(compileResult));
+
+      // this.termWriteln(
+      //   chalk.green(
+      //     `├── Generated ${
+      //       compileResult.instances.length
+      //     } instances: ${chalk.white(
+      //       compileResult.instances.map(x => x.id).join(", ")
+      //     )}`
+      //   )
+      // );
+      // this.termWriteln(
+      //   chalk.green(
+      //     `└── Generated ${compileResult.gates.length} gates: ${chalk.white(
+      //       compileResult.gates.map(x => x.id).join(", ")
+      //     )}`
+      //   )
+      // );
+
+      // this.termWriteln(
+      //   chalk.green.inverse(" DONE ") + "  Compiled successfully"
+      // );
 
       // this.currentFile.timestamp = Date.now();
       // this.currentFile.simulation = { ready: false };
@@ -417,8 +430,6 @@ export default {
         chalk.bold.cyan("• Simulating: ") +
           chalk.yellow(this.$store.getters.currentFile.name)
       );
-
-      vlgSimulator.send({ store: this.$store });
 
       // vlgSimulator.send([
       //   this.$store.state.evals_per_step,
