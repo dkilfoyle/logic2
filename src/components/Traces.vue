@@ -75,10 +75,10 @@ export default {
     }
   },
   watch: {
-    filteredInstanceGates: function() {
+    filteredInstanceGate_ids: function() {
       if (!this.$store.getters.isSimulated) return;
       this.$nextTick(() => {
-        // console.log("filteredInstanceGates watcher: ", gates);
+        // console.log("filteredInstanceGate_ids watcher: ", gates);
         this.drawTraces();
       });
     }
@@ -126,7 +126,7 @@ export default {
         values: this.$store.getters.currentFile.simulateResult.clock,
         options: { xAxis: true }
       };
-      let gates = this.filteredInstanceGates.map(id => ({
+      let gates = this.filteredInstanceGate_ids.map(id => ({
         id,
         values: this.$store.getters.currentFile.simulateResult.gates[id].map(
           val => +val
@@ -143,7 +143,7 @@ export default {
 
       const chartHeight = this.height - this.margins.top - this.margins.bottom;
       const chartWidth = this.width - this.margins.left - this.margins.right;
-      const traceN = this.filteredInstanceGates.length + 1; // + 1 for clock
+      const traceN = this.filteredInstanceGate_ids.length + 1; // + 1 for clock
       const traceHeight = Math.min(
         chartHeight - (traceN * this.margins.pad) / traceN,
         this.maxTraceHeight

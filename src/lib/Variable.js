@@ -31,6 +31,7 @@ class Variable extends Operand {
     super("variable");
     this.namespace = namespace;
     this.name = name;
+    this.id = namespace == null ? null : namespace + "_" + name;
     // valid offset checking
     if (offset != null) {
       if (Array.isArray(offset)) {
@@ -56,11 +57,11 @@ class Variable extends Operand {
   instance(namespace) {
     return new Variable(namespace, this.name, this.offset);
   }
-  get id() {
-    if (this.namespace === null)
-      throw new Error(`Variable.id ${this.name} missing namespace`);
-    return this.namespace + "_" + this.name;
-  }
+  // get id() {
+  //   if (this.namespace === null)
+  //     throw new Error(`Variable.id ${this.name} missing namespace`);
+  //   return this.namespace + "_" + this.name;
+  // }
   getOffsetString(gatesLookup, namespace = null) {
     return this.offsetType == "index"
       ? "[" + this.getRange(gatesLookup, namespace) + "]"

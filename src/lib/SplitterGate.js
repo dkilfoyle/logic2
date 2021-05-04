@@ -8,6 +8,7 @@ class SplitterGate extends BaseComponent {
     this.copynum = 1;
     this.splitterTargets = [];
     this.splitterSources = [];
+    this.schematicName = "SPLITTERGATE";
   }
   clear() {
     this.state.setValue("x");
@@ -19,9 +20,6 @@ class SplitterGate extends BaseComponent {
     this.state.setValue(newValue);
     return newValue;
     // update is called each clock and processes inputs to call this.setValue
-  }
-  getSchematicName() {
-    return "SPLITTERGATE";
   }
 }
 

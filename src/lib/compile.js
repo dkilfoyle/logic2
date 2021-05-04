@@ -680,7 +680,7 @@ const compile = currentFile => {
   currentFile.compileResult.instances = {};
   currentFile.compileResult.parameters = {};
   currentFile.compileResult.status = "";
-  currentFile.compileResult.timeStamp = "";
+  currentFile.compileResult.timestamp = null;
 
   // create an instance of main module
   const mainInstantiation = {
@@ -696,11 +696,12 @@ const compile = currentFile => {
       "",
       mainInstantiation
     );
-    currentFile.compileResult.status = "ok";
-    currentFile.compileResult.tmeStamp = Date.now();
+    currentFile.compileResult.status = "pass";
+    currentFile.compileResult.timestamp = Date.now();
   } catch (e) {
     currentFile.compileResult.status = "fail";
     currentFile.compileResult.e = e;
+    currentFile.compileResult.timestamp = null;
   }
 
   currentFile.parseResult.modules["Main"].display.forEach(d => {

@@ -8,6 +8,7 @@ class BaseComponent {
   constructor(namespace, name, type, bitSize, defaultValue = 0) {
     this.name = name;
     this.namespace = namespace;
+    this.id = namespace + "_" + name;
 
     if (!type)
       throw new Error(
@@ -17,11 +18,8 @@ class BaseComponent {
     this.inputs = [];
     this.defaultValue = defaultValue;
     this.state = new Numeric(this.defaultValue, bitSize);
+    this.schematicName = this.type.toUpperCase();
   }
-  get id() {
-    return this.namespace + "_" + this.name;
-  }
-
   clear(def) {
     this.state.clear(def != undefined ? def : this.defaultValue);
   }
@@ -37,9 +35,6 @@ class BaseComponent {
   }
   getLocalId() {
     return this.id.substr(this.id.lastIndexOf("_") + 1);
-  }
-  getSchematicName() {
-    return this.type.toUpperCase();
   }
   get bitSize() {
     return this.state.bitSize;

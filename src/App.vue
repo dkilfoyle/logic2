@@ -158,9 +158,7 @@ let options = { enabled: true, level: 2 };
 const chalk = new Chalk.Instance(options);
 
 import UtilsMixin from "./mixins/utils";
-
-// import vlgCompile from "./lib/compile.js"; // compile module definitions into instances and gates
-// import vlgSimulator from "./lib/worker"; // run simulation over gate array
+import { mapGetters } from "vuex";
 
 import workerInterface from "./lib/workerInterface.js";
 
@@ -186,6 +184,9 @@ export default {
       cursorPosition: { lineNumber: "", column: "" }
     };
   },
+  computed: {
+    ...mapGetters(["currentFile", "parseTimestamp"])
+  },
   created() {
     // this.addFileTab("Scratch");
     // this.addFileTab("LW");
@@ -210,21 +211,44 @@ export default {
     setTimeout(() => this.about(), 1500);
     workerInterface.worker.onmessage = event => {
       console.log("App.vue: incoming message from worker: ", event.data);
-      if (event.data.type == "log")
-        console.log("Worker: ", event.data.msg, event.data.data);
+      switch (event.data.type) {
+        case "log":
+          this.writeLn(event.data.msg);
+          break;
+        case "parseResult":
+          console.log("App received parseResult", event.data.payload);
+          this.$store.commit("setParseResult", event.data.payload);
+          break;
+        case "compileResult":
+          console.log("App received compileResult", event.data.payload);
+          this.$store.commit("setCompileResult", event.data.payload);
+          break;
+        case "simulateResult":
+          console.log("App received simulateResult", event.data.payload);
+          this.$store.commit("setSimulateResult", event.data.payload);
+          break;
+        default:
+          console.log(
+            "App recieved unrecognized command from worker",
+            event.data
+          );
+      }
       // var simulateResult = event.data;
       // this.termWriteln(
       //   chalk.cyan.inverse(" DONE ") + "  Simulated successfully"
       // );
-
-      // this.$store.commit("setSimulateResult", simulateResult);
-      // this.$store.commit("setStatus", "Simulation OK");
-      // console.log("Simulation: ", simulateResult);
     };
   },
   watch: {
     currentFileTab() {
       this.$store.commit("setSelectedInstanceID", "main");
+    },
+    parseTimestamp(timestamp) {
+      if (timestamp && this.$store.getters.currentFile.autoCompile) {
+        workerInterface.send({
+          command: "compile"
+        });
+      }
     }
   },
   methods: {
@@ -312,35 +336,7 @@ export default {
       // console.log("onFailLint: ", e);
       this.$store.commit("setStatus", "Parse Error");
     },
-    onPassLint(e) {
-      // console.log("onPassLint: ", e);
-
-      // if simulate on pass lint
-      this.$store.commit("setParseResult", { ...e.parseResult });
-      this.$store.commit("setWalkResult", { ...e.walkResult });
-
-      // compile turns [modules] into instances and gates
-      // needed for updating of gates table and schematic
-
-      // if (this.$store.getters.currentFile.autoCompile) {
-      //   let compileResult = null;
-      //   try {
-      //     compileResult = vlgCompile(e.walkResult.modules);
-      //   } catch (e) {
-      //     // this.termWriteln(chalk.red("Compile exception: ") + e);
-      //     console.log("lint exception: ", e);
-      //     this.$store.commit("setStatus", "Compile Error");
-      //     this.$store.commit("setCompileResult", { ...compileResult });
-      //     return;
-      //   }
-      //   this.$store.commit("setStatus", "Compile OK");
-      //   this.$store.commit("setCompileResult", { ...compileResult });
-      // } else {
-      //   this.$store.commit("setStatus", "Parse OK");
-      // }
-
-      // console.log("app onPassLint: walkResult = ", e.walkResult);
-    },
+    onPassLint() {},
     compile() {
       this.termWriteln(
         chalk.bold.green("• Compiling: ") +

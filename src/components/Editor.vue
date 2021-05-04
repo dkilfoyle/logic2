@@ -69,10 +69,9 @@
 
 <script>
 import MonacoEditor from "vue-monaco";
-// import parse from "../lib/vlgAntlrParser.js";
-// import walk from "../lib/vlgAntlrListener.js";
-
 import UtilsMixin from "../mixins/utils";
+import { mapGetters } from "vuex";
+import workerInterface from "../lib/workerInterface.js";
 
 String.prototype.regexIndexOf = function(regex, startpos) {
   var indexOf = this.substring(startpos || 0).search(regex);
@@ -100,8 +99,6 @@ export default {
   mixins: [UtilsMixin],
   data() {
     return {
-      syntaxErrors: [],
-      semanticErrors: [],
       monacoOptions: {
         glyphMargin: true,
         fontSize: 14
@@ -109,6 +106,7 @@ export default {
     };
   },
   computed: {
+    ...mapGetters(["currentFile", "isParsed", "parseStatus", "isCompiled"]),
     editor() {
       return this.$refs["editor"].getEditor();
     },
@@ -117,19 +115,19 @@ export default {
     },
     statusButton() {
       switch (true) {
-        case this.$store.getters.isCompiled:
+        case this.isCompiled:
           return {
             buttonClass: "button is-small is-success-dark",
             iconClass: "fa fa-check",
             text: "Compiled"
           };
-        case this.$store.getters.currentFile.status == "Compile Error":
+        case this.isParsed && !this.isCompiled:
           return {
             buttonClass: "button is-small is-danger",
             iconClass: "fa fa-times",
             text: "Compile Error"
           };
-        case this.$store.getters.currentFile.status == "Parse OK":
+        case this.isParsed:
           return {
             buttonClass: "button is-small is-success",
             iconClass: "fa fa-check",
@@ -143,6 +141,41 @@ export default {
               this.semanticErrors.length} Errors`
           };
       }
+    },
+    syntaxErrors() {
+      if (!this.parseStatus) return [];
+      return this.currentFile.parseResult.syntaxErrors.map(e => ({
+        severity: this.monaco.MarkerSeverity.Error,
+        startLineNumber: e.startLine,
+        startColumn: e.startColumn,
+        endLineNumber: e.endLineNumber,
+        endColumn: e.endColumn,
+        message: e.msg
+      }));
+    },
+    semanticErrors() {
+      if (!this.parseStatus) return [];
+      return this.currentFile.parseResult.semanticErrors.map(e => ({
+        severity: this.monaco.MarkerSeverity.Error,
+        startLineNumber: e.startLine,
+        startColumn: e.startColumn,
+        endLineNumber: e.endLineNumber,
+        endColumn: e.endColumn,
+        message: e.msg
+      }));
+    },
+    errors() {
+      return [...this.syntaxErrors, ...this.semanticErrors];
+    }
+  },
+  watch: {
+    errors() {
+      // eslint-disable-next-line no-debugger
+      this.monaco.editor.setModelMarkers(
+        this.editor.getModel(),
+        "miniVerilog",
+        [...this.syntaxErrors, ...this.semanticErrors]
+      );
     }
   },
   mounted() {
@@ -153,30 +186,25 @@ export default {
       this.editor.layout();
     },
     onChange(val) {
-      // console.log("onChange");
-      // this.lint(val);
       this.$emit("input", val);
     },
     onEditorDidMount(editor) {
       editor.onDidChangeCursorPosition(e =>
         this.$emit("onDidChangeCursorPosition", e.position)
       );
-      // console.log("editorDidMount");
-      // this.lint(editor.getValue());
-      // this.onChange(editor.getValue());
     },
     onEditorWillMount() {
       const monaco = this.monaco;
+      // const that = this;
 
       monaco.editor.onDidCreateModel(model => {
         const validate = () => {
-          console.log("validating");
           const text = model.getValue();
-          this.lint(text);
-          monaco.editor.setModelMarkers(model, "miniVerilog", [
-            ...this.syntaxErrors,
-            ...this.semanticErrors
-          ]);
+          workerInterface.send({
+            command: "parse",
+            filename: "", //that.currentFile.filename,
+            code: text
+          });
         };
 
         var handle = null;
@@ -437,48 +465,6 @@ export default {
           return { suggestions: suggestions };
         }
       });
-    },
-    lint(text) {
-      if (text.length == 0) return [];
-      // const parseResult = parse(text);
-
-      // this.syntaxErrors = parseResult.errors.map(e => ({
-      //   severity: this.monaco.MarkerSeverity.Error,
-      //   startLineNumber: e.startLine,
-      //   startColumn: e.startColumn,
-      //   endLineNumber: e.endLineNumber,
-      //   endColumn: e.endColumn,
-      //   message: e.msg
-      // }));
-
-      // let walkResult = { errors: [] };
-      // if (parseResult.errors.length == 0) {
-      //   walkResult = walk(parseResult.ast);
-
-      //   this.semanticErrors = walkResult.errors.map(e => ({
-      //     severity: this.monaco.MarkerSeverity.Warning,
-      //     startLineNumber: e.startLine,
-      //     startColumn: e.startColumn,
-      //     endLineNumber: e.endLineNumber,
-      //     endColumn: e.endColumn,
-      //     message: e.msg
-      //   }));
-      // }
-
-      // if (this.syntaxErrors.length == 0 && this.semanticErrors.length == 0) {
-      //   this.$nextTick(() => {
-      //     this.$emit("passLint", {
-      //       name: this.name,
-      //       parseResult,
-      //       walkResult
-      //     });
-      //   });
-      // } else
-      //   this.$emit("failLint", {
-      //     name: this.name,
-      //     parseResult,
-      //     walkResult
-      //   });
     }
   }
 };

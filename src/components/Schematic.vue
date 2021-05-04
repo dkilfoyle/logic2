@@ -31,6 +31,7 @@ import ConstantGateRenderer from "./renderers/constantgate.js";
 import ArrayRenderer from "./renderers/array.js";
 // import { barData } from "./renderers/number.js";
 import Numeric from "../lib/Numeric";
+import Variable from "../lib/Variable.js";
 
 import { updateTable } from "./renderers/array.js";
 import { updateLeds } from "./renderers/leds.js";
@@ -258,7 +259,7 @@ export default {
       let num;
       if (this.isSimulated) {
         const value = this.getGatesStateAtSelectedTime[name];
-        const bitsize = this.getGate(name).state.bitSize;
+        const bitsize = this.getGate(name).state.bitArray.length;
         num = new Numeric(value, bitsize);
         // eslint-disable-next-line no-debugger
         // debugger;
@@ -356,8 +357,8 @@ export default {
       this.g.bindData(this.elkData).then(() => {
         // add click handlers to all non-port gates
         // console.log("buildNetList bind data: ", this.elkData);
-        this.getAllInstances.forEach(instance =>
-          instance.gates.forEach(gateID => {
+        Object.values(that.getAllInstances).forEach(instance =>
+          instance.gate_ids.forEach(gateID => {
             const node = this.g.root.select(
               `.${gateID}_internal, .${gateID}_external`
             );
@@ -395,7 +396,7 @@ export default {
 
       // build gates of this instance and edges for each of the gates inputs
       // gate inputs might be another gate or an input port
-      currentInstance.gates.forEach((gateId, gateCount) => {
+      currentInstance.gate_ids.forEach((gateId, gateCount) => {
         const gate = this.getGate(gateId);
 
         let metaVal;
@@ -404,10 +405,13 @@ export default {
             metaVal = gate.arraySize;
             break;
           case "concatenation":
-            metaVal = { copynum: gate.copynum, bitSize: gate.state.bitSize };
+            metaVal = {
+              copynum: gate.copynum,
+              bitSize: gate.state.bitArray.length
+            };
             break;
           default:
-            metaVal = gate.getValue();
+            metaVal = Object.assign(new Numeric(0, 0), gate.state).getValue();
         }
 
         const gateNet = {
@@ -424,7 +428,7 @@ export default {
               gate.type == "portbuffer" ||
               gate.type == "response"
                 ? this.getLocalId(gate.id)
-                : gate.getSchematicName(),
+                : gate.schematicName,
             val: metaVal, //currentInstance.parameters, currentInstance.id),
             bitSize: gate.bitSize, //currentInstance.parameters, currentInstance.id),
             meta: gate.meta,
@@ -506,7 +510,7 @@ export default {
             hwMeta: {
               name:
                 input.id +
-                input.getOffsetString(
+                Object.assign(new Variable("", ""), input).getOffsetString(
                   this.currentFile.compileResult.parameters,
                   currentInstance.id
                 ),
@@ -541,7 +545,7 @@ export default {
 
       // build any sub-instances
       // build edges to connect currentNet mapped values to the sub-instance input ports
-      currentInstance.instances.forEach(childInstanceID => {
+      currentInstance.instance_ids.forEach(childInstanceID => {
         const childInstance = this.getInstance(childInstanceID);
         // console.log("-- childInstance: ", childInstanceID, childInstance);
         const childNet = {
@@ -562,7 +566,7 @@ export default {
           edges: []
         };
 
-        childInstance.outputs.forEach(output => {
+        childInstance.output_ids.forEach(output => {
           // console.log(`---- Port Output: ${this.getLocalId(output)} = ${output}`);
           // eslint-disable-next-line no-debugger
           let port = {
@@ -586,7 +590,10 @@ export default {
             hwMeta: {
               name:
                 portGate.inputs[0].id +
-                portGate.inputs[0].getOffsetString(
+                Object.assign(
+                  new Variable("", ""),
+                  portGate.inputs[0]
+                ).getOffsetString(
                   this.currentFile.compileResult.parameters,
                   currentInstance.id
                 ),
@@ -598,7 +605,7 @@ export default {
         });
 
         // Build ports for childinstance and connect to currentinstance gates
-        childInstance.inputs.forEach((input, i) => {
+        childInstance.input_ids.forEach((input, i) => {
           // console.log(`---- Port Input: ${this.getLocalId(input)} = ${input}`);
           let port = {
             id: input,
@@ -616,13 +623,16 @@ export default {
             hwMeta: {
               name:
                 portGate.inputs[0].id +
-                portGate.inputs[0].getOffsetString(
+                Object.assign(
+                  new Variable("", ""),
+                  portGate.inputs[0]
+                ).getOffsetString(
                   this.currentFile.compileResult.parameters,
                   currentInstance.id
                 ),
               cssClass: portGate.inputs[0].id + "_link"
             },
-            source: currentInstance.inputs.includes(portGate.inputs[0].id) // is the input to the port gate itself a port of the parent instance rather than a local gate
+            source: currentInstance.input_ids.includes(portGate.inputs[0].id) // is the input to the port gate itself a port of the parent instance rather than a local gate
               ? currentInstance.id
               : portGate.inputs[0].id + "_gate", // TODO: source might be a gate or a port - ie a pass through, is this handled??
             sourcePort: portGate.inputs[0].id,

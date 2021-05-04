@@ -6,6 +6,7 @@ class ConcatenationGate extends BaseComponent {
     super(namespace, name, "concatenation", bitSize, defaultValue);
     this.inputMasks = [];
     this.copynum = 1;
+    this.schematicName = "CONCATENATIONGATE";
   }
   clear() {
     this.state.setValue("x");
@@ -30,9 +31,6 @@ class ConcatenationGate extends BaseComponent {
     return this.state.getValue();
 
     // update is called each clock and processes inputs to call this.setValue
-  }
-  getSchematicName() {
-    return "CONCATENATIONGATE"; //"CONCATENATIONGATE";
   }
 }
 

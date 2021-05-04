@@ -40,7 +40,7 @@
           >
         </div>
 
-        <template v-for="g in filteredInstanceGates">
+        <template v-for="g in filteredInstanceGate_ids">
           <dygraph
             class="dygraphtrace"
             :key="g"
@@ -97,7 +97,7 @@ export default {
     }
   },
   watch: {
-    filteredInstanceGates: function() {
+    filteredInstanceGate_ids: function() {
       if (!this.$store.getters.isSimulated) return;
       this.$nextTick(() => {
         this.syncTraces();

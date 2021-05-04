@@ -116,11 +116,11 @@ export default {
       const parent = node.substring(0, node.lastIndexOf("_"));
       return this.$store.getters
         .getInstance(parent)
-        .instances.filter(x => x != node);
+        .instance_ids.filter(x => x != node);
     },
     getChildren(node) {
       return this.$store.getters.getInstance(node)
-        ? this.$store.getters.getInstance(node).instances
+        ? this.$store.getters.getInstance(node).instance_ids
         : [];
     },
     selectBreadcrumb(node) {

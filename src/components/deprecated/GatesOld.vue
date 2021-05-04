@@ -34,7 +34,7 @@
 
           <tbody>
             <tr
-              v-for="g in filteredInstanceGates"
+              v-for="g in filteredInstanceGate_ids"
               :key="g"
               @click="$store.commit('setSelectedGate', g)"
               :style="

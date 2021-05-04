@@ -3,39 +3,39 @@ import { mapGetters } from "vuex";
 export default {
   computed: {
     ...mapGetters([
-      "getSelectedInstanceInputs",
-      "getSelectedInstanceOutputs",
-      "getSelectedInstanceGates",
+      "getSelectedInstanceInput_ids",
+      "getSelectedInstanceOutput_ids",
+      "getSelectedInstanceGate_ids",
       "selectedInstanceID",
       "selectedGateID",
       "isCompiled",
       "getGate"
     ]),
-    filteredInstanceGates: function() {
+    filteredInstanceGate_ids: function() {
       if (!this.isCompiled) return [];
       switch (this.$store.state.showWhichGates) {
         case "all":
-          return this.allInstanceGates;
+          return this.allInstanceGate_ids;
         case "wires":
-          return [...this.getSelectedInstanceGates];
+          return [...this.getSelectedInstanceGate_ids];
         case "outputs":
-          return [...this.getSelectedInstanceOutputs];
+          return [...this.getSelectedInstanceOutput_ids];
         case "inputs":
-          return [...this.getSelectedInstanceInputs];
+          return [...this.getSelectedInstanceInput_ids];
         case "ports":
           return [
-            ...this.getSelectedInstanceInputs,
-            ...this.getSelectedInstanceOutputs
+            ...this.getSelectedInstanceInput_ids,
+            ...this.getSelectedInstanceOutput_ids
           ];
       }
       return [];
     },
-    allInstanceGates: function() {
+    allInstanceGate_ids: function() {
       return [
         ...new Set([
-          ...this.getSelectedInstanceInputs,
-          ...this.getSelectedInstanceGates,
-          ...this.getSelectedInstanceOutputs
+          ...this.getSelectedInstanceInput_ids,
+          ...this.getSelectedInstanceGate_ids,
+          ...this.getSelectedInstanceOutput_ids
         ])
       ];
     }

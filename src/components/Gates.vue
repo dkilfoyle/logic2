@@ -38,11 +38,11 @@
             width="20%"
           >
             <template v-if="showDetailIcon">
-              {{ props.row.id }}
+              {{ props.row.name }}
             </template>
             <template v-else>
               <a @click="toggleDetail(props.row)">
-                {{ props.row.id }}
+                {{ props.row.name }}
               </a>
             </template></b-table-column
           >
@@ -90,7 +90,7 @@
             numeric
             width="5%"
           >
-            {{ props.row.bitSize }}
+            {{ props.row.state.bitArray.length }}
           </b-table-column>
 
           <template slot="detail" slot-scope="props">
@@ -203,18 +203,18 @@ export default {
             ...selectedGate.inputs.map(input => input.id)
           ];
           // start off with the filteredinstance gates then remove selected gate and its inputs
-          let followGates = this.filteredInstanceGates.filter(
+          let followGates = this.filteredInstanceGate_ids.filter(
             gateid => !topGates.includes(gateid)
           );
           // add the selectedgate and it's inputs back at the top
           followGates.unshift(...topGates);
           this.gates = followGates.map(g => this.getGate(g));
         } else
-          this.gates = this.filteredInstanceGates.map(g => this.getGate(g));
+          this.gates = this.filteredInstanceGate_ids.map(g => this.getGate(g));
       }
     },
     selectedInstanceID() {
-      this.gates = this.filteredInstanceGates.map(g => this.getGate(g));
+      this.gates = this.filteredInstanceGate_ids.map(g => this.getGate(g));
     }
   },
   methods: {
