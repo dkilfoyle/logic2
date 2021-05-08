@@ -30,12 +30,7 @@ const isBuffer = x =>
     "constant"
   ].includes(x);
 
-const createInstance = (
-  moduleDefinitions,
-  compileResult,
-  parentNamespace,
-  instanceDeclaration
-) => {
+const createInstance = (moduleDefinitions, compileResult, parentNamespace, instanceDeclaration) => {
   let { gates, instances, parameters } = compileResult;
   // console.groupCollapsed(
   //   "createInstance: ",
@@ -43,10 +38,7 @@ const createInstance = (
   //   instanceDeclaration.module
   // );
   // console.log("instanceDeclaration: ", { ...instanceDeclaration });
-  const namespace =
-    parentNamespace == ""
-      ? "main"
-      : parentNamespace + "_" + instanceDeclaration.id;
+  const namespace = parentNamespace == "" ? "main" : parentNamespace + "_" + instanceDeclaration.id;
   const instanceModule = moduleDefinitions[instanceDeclaration.module];
   // console.log("instanceModule: ", { ...instanceModule });
 
@@ -74,10 +66,7 @@ const createInstance = (
       parameters[namespace + "_" + entry[0]] = new ParameterGate(
         namespace,
         entry[0],
-        instanceDeclaration.instanceParameters[i].getValue(
-          parameters,
-          parentNamespace
-        )
+        instanceDeclaration.instanceParameters[i].getValue(parameters, parentNamespace)
       );
     } else
       parameters[namespace + "_" + entry[0]] = new ParameterGate(
@@ -113,9 +102,7 @@ const createInstance = (
     ...instanceModule.ports,
     ...instanceModule.regs
   ].reduce((acc, x) => {
-    const dim = x.bitDim
-      ? x.bitDim.map(y => y.getValue(parameters, newInstance.id))
-      : null;
+    const dim = x.bitDim ? x.bitDim.map(y => y.getValue(parameters, newInstance.id)) : null;
     return { ...acc, [x.id]: dim ? Math.abs(dim[1] - dim[0]) + 1 : 1 };
   }, {});
 
@@ -182,15 +169,11 @@ const createInstance = (
         | varMap[port.id] |
     */
     if (port.direction == "output") {
-      const connection = instanceDeclaration.connections.find(
-        x => x.port.id == port.id
-      );
+      const connection = instanceDeclaration.connections.find(x => x.port.id == port.id);
       if (connection) {
         // portGate.id already has -out appended
         // port.id -----> port.id-out
-        portGate.inputs.push(
-          new Variable(namespace, port.id, null, gateBitSizesID[port.id])
-        );
+        portGate.inputs.push(new Variable(namespace, port.id, null, gateBitSizesID[port.id]));
 
         newInstance.output_ids.push(portGate.id);
       }
@@ -241,10 +224,7 @@ const createInstance = (
             getGateDefaultValue(gateDef)
           )
         : null;
-      if (!newGate)
-        throw new Error(
-          `Invalid gate type ${gateDef.gateType} in id ${gateDef.id}`
-        );
+      if (!newGate) throw new Error(`Invalid gate type ${gateDef.gateType} in id ${gateDef.id}`);
       newGate.inputs = gateDef.inputs.map(x => x.instance(namespace));
       if (gateDef.meta) newGate.meta = gateDef.meta;
       logicGates[newGate.id] = newGate;
@@ -280,9 +260,7 @@ const createInstance = (
       );
       const copyNum = op.copynum.getValue(parameters, namespace);
       const bitSize = walkedComponents.reduce((acc, comp) => {
-        const compBitSize =
-          comp.getCompileBitSize(parameters, namespace, gateBitSizesID) *
-          copyNum;
+        const compBitSize = comp.getCompileBitSize(parameters, namespace, gateBitSizesID) * copyNum;
         // console.log("compBitSize: ", op, comp, compBitSize);
         return acc + compBitSize;
       }, 0);
@@ -297,12 +275,7 @@ const createInstance = (
     }
 
     if (op instanceof Numeric) {
-      const newGate = new ConstantGate(
-        namespace,
-        gateID,
-        netBitSize,
-        op.getValue()
-      );
+      const newGate = new ConstantGate(namespace, gateID, netBitSize, op.getValue());
       newInstance.gate_ids.push(newGate.id);
       logicGates[newGate.id] = newGate;
       gateBitSizesID[gateID] = newGate.bitSize;
@@ -311,10 +284,7 @@ const createInstance = (
 
     if (op instanceof Operation || op instanceof TernOperation) {
       let newGateOp = null;
-      if (
-        namespace == "main" &&
-        instanceModule.ports.some(p => gateID == p.id)
-      ) {
+      if (namespace == "main" && instanceModule.ports.some(p => gateID == p.id)) {
         newGateOp = Object.values(outputGates).find(g => g.name == gateID);
       } else
         newGateOp =
@@ -324,8 +294,7 @@ const createInstance = (
                 namespace,
                 gateID,
                 op.op,
-                netBitSize ||
-                  op.getCompileBitSize(parameters, namespace, gateBitSizesID)
+                netBitSize || op.getCompileBitSize(parameters, namespace, gateBitSizesID)
               );
 
       // console.log("newGate: ", newGate);
@@ -351,9 +320,7 @@ const createInstance = (
       }
       return new Variable(namespace, gateID, null);
     }
-    throw new Error(
-      "Unknown expression type - not variable, numeric, concatenation or operation"
-    );
+    throw new Error("Unknown expression type - not variable, numeric, concatenation or operation");
   };
 
   instanceModule.netAssignments.forEach(net => {
@@ -364,10 +331,7 @@ const createInstance = (
     // intermediary gates will be same bitsize as the assign lhs
     // except for new gate instantiations inside a concatenation
 
-    if (
-      net.operationTree instanceof Variable ||
-      net.operationTree instanceof Concatenation
-    )
+    if (net.operationTree instanceof Variable || net.operationTree instanceof Concatenation)
       walkOperationTree(
         namespace,
         net.id,
@@ -382,9 +346,7 @@ const createInstance = (
     var newGate;
     if (reg.arrayDim) {
       // array of regs = memory
-      let arrayDim = reg.arrayDim.map(x =>
-        x.getValue(parameters, newInstance.id)
-      );
+      let arrayDim = reg.arrayDim.map(x => x.getValue(parameters, newInstance.id));
       newGate = new ArrayGate(
         namespace,
         reg.id,
@@ -401,26 +363,18 @@ const createInstance = (
   });
 
   // silently instantiate a WireGate for any outputs or wires that have not been declared as as gate (LogicGate, BufferGate or Reg)
-  [
-    ...instanceModule.wires,
-    ...instanceModule.ports.filter(p => p.direction == "output")
-  ].forEach(wire => {
-    if (
-      newInstance.gate_ids.some(gid => gid == `${namespace}_${wire.id}`) ==
-      false
-    ) {
-      // wire has not been declared as a gate
-      const newWireGate = new WireGate(
-        namespace,
-        wire.id,
-        gateBitSizesID[wire.id]
-      );
-      // console.log("newGate: ", newWireGate);
-      // inputs will be set in child instance
-      logicGates[newWireGate.id] = newWireGate;
-      newInstance.gate_ids.push(newWireGate.id);
+  [...instanceModule.wires, ...instanceModule.ports.filter(p => p.direction == "output")].forEach(
+    wire => {
+      if (newInstance.gate_ids.some(gid => gid == `${namespace}_${wire.id}`) == false) {
+        // wire has not been declared as a gate
+        const newWireGate = new WireGate(namespace, wire.id, gateBitSizesID[wire.id]);
+        // console.log("newGate: ", newWireGate);
+        // inputs will be set in child instance
+        logicGates[newWireGate.id] = newWireGate;
+        newInstance.gate_ids.push(newWireGate.id);
+      }
     }
-  });
+  );
 
   const createSplitterGate = (concatenation, sourceGateVariable, counter) => {
     //  eg assign {a,b,c} = sourceGate
@@ -444,9 +398,7 @@ const createInstance = (
       ]);
       componentGate.inputs.push(newSplitterSource);
       newSplitterGate.splitterSources.push(newSplitterSource);
-      newSplitterGate.splitterTargets.push(
-        new Variable(namespace, component.name)
-      );
+      newSplitterGate.splitterTargets.push(new Variable(namespace, component.name));
 
       startBit += componentGate.bitSize;
       if (componentGate.inputs > 1) throw new Error("Invalid number of inputs");
@@ -483,9 +435,7 @@ const createInstance = (
   // TODO: ? move pushing outputGatse to after module instantiation
 
   const isPortDirection = (portid, direction, moduleid) => {
-    return moduleDefinitions[moduleid].ports.some(
-      p => p.id == portid && p.direction == direction
-    );
+    return moduleDefinitions[moduleid].ports.some(p => p.id == portid && p.direction == direction);
   };
 
   const logicGateCount = Object.keys(logicGates).length;
@@ -498,9 +448,7 @@ const createInstance = (
       // eg mymodule(.input1(~clk))
       // will generate iconnect0 gate and return variable to it
       instDef.connections
-        .filter(connection =>
-          isPortDirection(connection.port.id, "input", instDef.module)
-        )
+        .filter(connection => isPortDirection(connection.port.id, "input", instDef.module))
         .forEach(connection => {
           connection.value.gateVariable = walkOperationTree(
             namespace, // connection sources are in the parent namespace
@@ -511,12 +459,7 @@ const createInstance = (
         });
 
       // recursively create the instance - generating all child isntance gates
-      var childInstance = createInstance(
-        moduleDefinitions,
-        compileResult,
-        namespace,
-        instDef
-      );
+      var childInstance = createInstance(moduleDefinitions, compileResult, namespace, instDef);
       newInstance.instance_ids.push(childInstance.id);
 
       let counter = 0;
@@ -525,9 +468,7 @@ const createInstance = (
       // and then add the connection output port to the target gate's inputs
       // this is the same as "assign targetgate = outputport-out"
       instDef.connections
-        .filter(connection =>
-          isPortDirection(connection.port.id, "output", instDef.module)
-        )
+        .filter(connection => isPortDirection(connection.port.id, "output", instDef.module))
         .forEach(connection => {
           if (connection.value.expr instanceof Variable) {
             const targetGate = Object.values({
@@ -538,20 +479,12 @@ const createInstance = (
               throw new Error("shouldnt be here - unable to find target gate");
             }
             targetGate.inputs.push(
-              new Variable(
-                namespace + "_" + instDef.id,
-                connection.port.id + "-out",
-                null
-              )
+              new Variable(namespace + "_" + instDef.id, connection.port.id + "-out", null)
             );
           } else if (connection.value.expr instanceof Concatenation) {
             const newGate = createSplitterGate(
               connection.value.expr,
-              new Variable(
-                namespace + "_" + instDef.id,
-                connection.port.id + "-out",
-                null
-              ),
+              new Variable(namespace + "_" + instDef.id, connection.port.id + "-out", null),
               counter
             );
             gates[newGate.id] = newGate; // push directly to gates as already had gates.push[...logicGates]
@@ -586,9 +519,7 @@ const createInstance = (
       }
       if (s.type == "case_statement") {
         rhsCondition = s.casevar;
-        s.caseclauses.forEach(clause =>
-          findBlockingAssignments(clause.statements.statements)
-        );
+        s.caseclauses.forEach(clause => findBlockingAssignments(clause.statements.statements));
         rhsCondition = null;
       }
       if (s.type == "blocking_assignment")
@@ -610,10 +541,7 @@ const createInstance = (
       findRhsVars(operand.lhs);
       if (operand.rhs) findRhsVars(operand.rhs);
     }
-    if (
-      operand instanceof Variable &&
-      !parameters[namespace + "_" + operand.name]
-    )
+    if (operand instanceof Variable && !parameters[namespace + "_" + operand.name])
       rhsVars.push(operand);
   };
 
@@ -674,13 +602,15 @@ const createInstance = (
   return newInstance;
 };
 
-const compile = currentFile => {
-  currentFile.compileResult = {};
-  currentFile.compileResult.gates = {};
-  currentFile.compileResult.instances = {};
-  currentFile.compileResult.parameters = {};
-  currentFile.compileResult.status = "";
-  currentFile.compileResult.timestamp = null;
+const compile = (currentFile, silent = true) => {
+  currentFile.compileResult = {
+    gates: {},
+    instances: {},
+    parameters: {},
+    status: "",
+    timestamp: null,
+    silent
+  };
 
   // create an instance of main module
   const mainInstantiation = {
@@ -705,7 +635,7 @@ const compile = currentFile => {
   }
 
   currentFile.parseResult.modules["Main"].display.forEach(d => {
-    currentFile.compileResult.gates[d.id] = d.type;
+    currentFile.compileResult.gates[d.id].displayType = d.type;
   });
 
   // console.log("Instances: ", currentFile.instances);

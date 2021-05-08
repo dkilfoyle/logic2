@@ -27,12 +27,7 @@
         class="dk-SideBarPanel"
       ></instance-tree>
 
-      <settings
-        id="settings"
-        class="dk-SideBarPanel"
-        area="left"
-        icon="fa fa-wrench"
-      ></settings>
+      <settings id="settings" class="dk-SideBarPanel" area="left" icon="fa fa-wrench"></settings>
 
       <template v-for="openFile in $store.getters.openEditorFiles">
         <Editor
@@ -47,8 +42,6 @@
           icon="ion-md-document"
           :ref="openFile.name + '_editor'"
           v-model="openFile.code"
-          @passLint="onPassLint"
-          @failLint="onFailLint"
           @onDidChangeCursorPosition="onChangeCursorPosition"
           @onDidChangeModelContent="onChangeEditorModelContent"
           @compile="compile"
@@ -66,8 +59,6 @@
           label="Truth Table"
           icon="ion-md-document"
           :ref="openFile.name + '_truthtable'"
-          @passLint="onPassLint"
-          @failLint="onFailLint"
           @compile="compile"
           @simulate="simulate"
         ></TruthTable>
@@ -133,9 +124,7 @@
       <span id="statusbar-filename" area="statusbar" align="right">{{
         $store.state.currentFileTab
       }}</span>
-      <span id="statusbar-compile" area="statusbar">{{
-        $store.getters.currentFile.status
-      }}</span>
+      <span id="statusbar-compile" area="statusbar">{{ $store.getters.currentFile.status }}</span>
     </Lumino>
   </div>
 </template>
@@ -211,27 +200,25 @@ export default {
     setTimeout(() => this.about(), 1500);
     workerInterface.worker.onmessage = event => {
       console.log("App.vue: incoming message from worker: ", event.data);
+      let result = event.data.payload;
       switch (event.data.type) {
         case "log":
           this.writeLn(event.data.msg);
           break;
         case "parseResult":
-          console.log("App received parseResult", event.data.payload);
-          this.$store.commit("setParseResult", event.data.payload);
+          console.log("App received parseResult", result);
+          this.onParseResult(result);
           break;
         case "compileResult":
-          console.log("App received compileResult", event.data.payload);
-          this.$store.commit("setCompileResult", event.data.payload);
+          console.log("App received compileResult", result);
+          this.onCompileResult(result);
           break;
         case "simulateResult":
           console.log("App received simulateResult", event.data.payload);
           this.$store.commit("setSimulateResult", event.data.payload);
           break;
         default:
-          console.log(
-            "App recieved unrecognized command from worker",
-            event.data
-          );
+          console.log("App recieved unrecognized command from worker", event.data);
       }
       // var simulateResult = event.data;
       // this.termWriteln(
@@ -242,23 +229,58 @@ export default {
   watch: {
     currentFileTab() {
       this.$store.commit("setSelectedInstanceID", "main");
-    },
-    parseTimestamp(timestamp) {
-      if (timestamp && this.$store.getters.currentFile.autoCompile) {
-        workerInterface.send({
-          command: "compile"
-        });
-      }
     }
   },
   methods: {
+    onParseResult(parseResult) {
+      this.$store.commit("setParseResult", parseResult);
+      if (!parseResult.silent) {
+        if (parseResult.syntaxErrors.length > 0)
+          this.termWriteln(chalk.red("└── Syntax error(s): ") + parseResult.syntaxErrors.length);
+        else if (parseResult.semanticErrors.length > 0)
+          this.termWriteln(
+            chalk.red("└── Semantic error(s): ") + parseResult.semanticErrors.length
+          );
+        else
+          this.termWriteln(
+            chalk.green(
+              `├── Parsed ${Object.keys(parseResult.modules).length} modules: ${chalk.white(
+                Object.values(parseResult.modules)
+                  .map(x => x.id)
+                  .join(", ")
+              )}`
+            )
+          );
+      } else {
+        // if silent and autocompile
+        if (parseResult.status == "pass" && this.$store.getters.currentFile.autoCompile)
+          workerInterface.send({
+            command: "compile"
+          });
+      }
+    },
+    onCompileResult(compileResult) {
+      this.$store.commit("setCompileResult", compileResult);
+      if (!compileResult.silent) {
+        if (compileResult.status == "fail")
+          this.termWriteln(chalk.red("└── Compile exception: ") + compileResult.e.msg);
+        else {
+          this.termWriteln(
+            chalk.green(`├── Generated ${Object.keys(compileResult.instances).length} instances`)
+          );
+          this.termWriteln(
+            chalk.green(`└── Generated ${Object.keys(compileResult.gates).length} gates`)
+          );
+          this.termWriteln(chalk.green.inverse(" DONE ") + "  Compiled successfully");
+        }
+      }
+    },
+
     onChangeCursorPosition(pos) {
       this.cursorPosition = pos;
     },
     addFileTab(sourceName) {
-      const newSourceName = Object.keys(this.$store.state.openFiles).includes(
-        sourceName
-      )
+      const newSourceName = Object.keys(this.$store.state.openFiles).includes(sourceName)
         ? sourceName + this.sourceCounter++
         : sourceName;
       if (sourceName.startsWith("TruthTable")) {
@@ -299,8 +321,7 @@ export default {
       if (e.id == "traces2") {
         this.$refs.traces2.resize(e.msg.width, e.msg.height);
       }
-      if (e.id == "schematic")
-        this.$refs.schematic.resize(e.msg.width, e.msg.height);
+      if (e.id == "schematic") this.$refs.schematic.resize(e.msg.width, e.msg.height);
 
       // console.log(this.$refs.lumino.shellWidget._dockPanel.saveLayout());
     },
@@ -309,18 +330,12 @@ export default {
       if (e.id.endsWith("_editor")) {
         this.$refs[e.id][0].resize();
         this.$refs[e.id][0].editor.focus();
-        this.$store.commit(
-          "setCurrentFileTab",
-          e.id.substring(0, e.id.indexOf("_editor"))
-        );
+        this.$store.commit("setCurrentFileTab", e.id.substring(0, e.id.indexOf("_editor")));
       }
       if (e.id.endsWith("_truthtable")) {
         this.$refs[e.id][0].resize();
         this.$refs[e.id][0].focus();
-        this.$store.commit(
-          "setCurrentFileTab",
-          e.id.substring(0, e.id.indexOf("_truthtable"))
-        );
+        this.$store.commit("setCurrentFileTab", e.id.substring(0, e.id.indexOf("_truthtable")));
       }
     },
     onLuminoDeleted(e) {
@@ -332,99 +347,21 @@ export default {
     termWriteln(str, ln = true) {
       this.$refs.terminal.setContent(str, ln);
     },
-    onFailLint() {
-      // console.log("onFailLint: ", e);
-      this.$store.commit("setStatus", "Parse Error");
-    },
-    onPassLint() {},
     compile() {
       this.termWriteln(
-        chalk.bold.green("• Compiling: ") +
-          chalk.yellow(this.$store.state.currentFileTab)
+        chalk.bold.green("• Compiling: ") + chalk.yellow(this.$store.state.currentFileTab)
       );
-
-      // const parseResult = vlgParse(this.$store.getters.currentFile.code);
-      // this.$store.commit("setParseResult", { ...parseResult });
-      // if (parseResult.errors.length > 0) {
-      //   // this.$store.commit("setParseState", te = "parseError";
-      //   this.termWriteln(
-      //     chalk.red("└── Syntax error(s): ") + parseResult.errors.length
-      //   );
-      //   return;
-      // }
-
-      // const walkResult = vlgWalk(parseResult.ast);
-      // this.$store.commit("setWalkResult", { ...walkResult });
-      // if (walkResult.errors.length > 0) {
-      //   // this.currentFile.state = "walkError";
-      //   this.termWriteln(
-      //     chalk.red("└── Semantic error(s): ") + walkResult.errors.length
-      //   );
-      //   return;
-      // }
-
-      // this.termWriteln(
-      //   chalk.green(
-      //     `├── Parsed ${walkResult.modules.length} modules: ${chalk.white(
-      //       walkResult.modules.map(x => x.id).join(", ")
-      //     )}`
-      //   )
-      // );
-
       workerInterface.send({
-        command: "parse",
+        command: "parseAndCompile",
         filename: this.$store.state.currentFileTab,
-        code: this.$store.getters.currentFile.code
+        code: this.$store.getters.currentFile.code,
+        silent: false
       });
-
-      workerInterface.send({
-        command: "compile"
-      });
-
-      // let compileResult = null;
-      // try {
-      //   compileResult = vlgCompile(walkResult.modules);
-      // } catch (e) {
-      //   // eslint-disable-next-line no-debugger
-      //   debugger;
-      //   console.log(e, compileResult);
-      //   this.$store.commit("setStatus", "Compile Error");
-      //   this.termWriteln(chalk.red("└── Compile exception: ") + e.msg);
-      //   return;
-      // }
-      // this.$store.commit("setCompileResult", { ...compileResult });
-      // this.$store.commit("setStatus", "Compile OK");
-      // console.log("Compiled: ", this.stripReactive(compileResult));
-
-      // this.termWriteln(
-      //   chalk.green(
-      //     `├── Generated ${
-      //       compileResult.instances.length
-      //     } instances: ${chalk.white(
-      //       compileResult.instances.map(x => x.id).join(", ")
-      //     )}`
-      //   )
-      // );
-      // this.termWriteln(
-      //   chalk.green(
-      //     `└── Generated ${compileResult.gates.length} gates: ${chalk.white(
-      //       compileResult.gates.map(x => x.id).join(", ")
-      //     )}`
-      //   )
-      // );
-
-      // this.termWriteln(
-      //   chalk.green.inverse(" DONE ") + "  Compiled successfully"
-      // );
-
-      // this.currentFile.timestamp = Date.now();
-      // this.currentFile.simulation = { ready: false };
     },
     simulate() {
       this.showTerminal = true;
       this.termWriteln(
-        chalk.bold.cyan("• Simulating: ") +
-          chalk.yellow(this.$store.getters.currentFile.name)
+        chalk.bold.cyan("• Simulating: ") + chalk.yellow(this.$store.getters.currentFile.name)
       );
 
       // vlgSimulator.send([
@@ -457,9 +394,7 @@ export default {
       // } else this.termWriteln(chalk.bgRed(" ERROR ") + "  Simulation aborted");
     },
     about() {
-      this.termWriteln(
-        chalk.bold.cyan("Logic2: A logic circuit simulator (v0.2 May 2021)")
-      );
+      this.termWriteln(chalk.bold.cyan("Logic2: A logic circuit simulator (v0.2 May 2021)"));
       this.termWriteln(chalk.yellow("https://github.com/dkilfoyle/logic2"));
     }
   }

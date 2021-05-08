@@ -11,12 +11,23 @@ addEventListener("message", event => {
   console.log("Worker received message", event.data);
   switch (event.data.command) {
     case "parse":
-      parse(currentFile, event.data.filename, event.data.code);
+      parse(currentFile, event.data.filename, event.data.code, event.data.silent);
       console.log("Worker Parse result", currentFile.parseResult);
       postMessage({ type: "parseResult", payload: currentFile.parseResult });
       break;
     case "compile":
-      compile(currentFile);
+      compile(currentFile, event.data.silent);
+      console.log("Worker Compile result", currentFile.compileResult);
+      postMessage({
+        type: "compileResult",
+        payload: currentFile.compileResult
+      });
+      break;
+    case "parseAndCompile":
+      parse(currentFile, event.data.filename, event.data.code, event.data.silent);
+      console.log("Worker Parse result", currentFile.parseResult);
+      postMessage({ type: "parseResult", payload: currentFile.parseResult });
+      compile(currentFile, event.data.silent);
       console.log("Worker Compile result", currentFile.compileResult);
       postMessage({
         type: "compileResult",

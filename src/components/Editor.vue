@@ -40,11 +40,7 @@
                 <i class="fa fa-refresh"></i>
               </span>
             </button>
-            <button
-              class="button is-primary is-small"
-              @click="$emit('simulate')"
-              title="Simulate"
-            >
+            <button class="button is-primary is-small" @click="$emit('simulate')" title="Simulate">
               <span class="icon is-small">
                 <i class="fa fa-play"></i>
               </span>
@@ -137,8 +133,7 @@ export default {
           return {
             buttonClass: "button is-small is-danger",
             iconClass: "fa fa-times",
-            text: `${this.syntaxErrors.length +
-              this.semanticErrors.length} Errors`
+            text: `${this.syntaxErrors.length + this.semanticErrors.length} Errors`
           };
       }
     },
@@ -171,11 +166,10 @@ export default {
   watch: {
     errors() {
       // eslint-disable-next-line no-debugger
-      this.monaco.editor.setModelMarkers(
-        this.editor.getModel(),
-        "miniVerilog",
-        [...this.syntaxErrors, ...this.semanticErrors]
-      );
+      this.monaco.editor.setModelMarkers(this.editor.getModel(), "miniVerilog", [
+        ...this.syntaxErrors,
+        ...this.semanticErrors
+      ]);
     }
   },
   mounted() {
@@ -189,9 +183,7 @@ export default {
       this.$emit("input", val);
     },
     onEditorDidMount(editor) {
-      editor.onDidChangeCursorPosition(e =>
-        this.$emit("onDidChangeCursorPosition", e.position)
-      );
+      editor.onDidChangeCursorPosition(e => this.$emit("onDidChangeCursorPosition", e.position));
     },
     onEditorWillMount() {
       const monaco = this.monaco;
@@ -202,6 +194,7 @@ export default {
           const text = model.getValue();
           workerInterface.send({
             command: "parse",
+            silent: true,
             filename: "", //that.currentFile.filename,
             code: text
           });
@@ -243,19 +236,12 @@ export default {
         folding: {
           offSide: false,
           syntaxMarkers: {
-            start: new RegExp(
-              "^(?:\\s*|.*(?!\\/[\\/\\*])[^\\w])(?:begin|module|case)\\b"
-            ),
-            end: new RegExp(
-              "^(?:\\s*|.*(?!\\/[\\/\\*])[^\\w])(?:end|endmodule|endcase)\\b"
-            )
+            start: new RegExp("^(?:\\s*|.*(?!\\/[\\/\\*])[^\\w])(?:begin|module|case)\\b"),
+            end: new RegExp("^(?:\\s*|.*(?!\\/[\\/\\*])[^\\w])(?:end|endmodule|endcase)\\b")
           }
         }
       };
-      monaco.languages.setLanguageConfiguration(
-        "miniVerilog",
-        miniVerilogConfig
-      );
+      monaco.languages.setLanguageConfiguration("miniVerilog", miniVerilogConfig);
 
       // Register a tokens provider for the language
       monaco.languages.setMonarchTokensProvider("miniVerilog", {
@@ -324,18 +310,12 @@ export default {
             // delimiters and operators
             // eslint-disable-next-line no-useless-escape
             [/[{}()\[\]]/, "@brackets"],
-            [
-              /@symbols/,
-              { cases: { "@operators": "operator", "@default": "" } }
-            ],
+            [/@symbols/, { cases: { "@operators": "operator", "@default": "" } }],
 
             // @ annotations.
             // As an example, we emit a debugging log message on these tokens.
             // Note: message are supressed during the first load -- change some lines to see them.
-            [
-              /@\s*[a-zA-Z_$][\w$]*/,
-              { token: "annotation", log: "annotation token: $0" }
-            ],
+            [/@\s*[a-zA-Z_$][\w$]*/, { token: "annotation", log: "annotation token: $0" }],
 
             // numbers
             [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
@@ -406,45 +386,34 @@ export default {
               label: "testing",
               kind: monaco.languages.CompletionItemKind.Keyword,
               insertText: "testing(${1:condition})",
-              insertTextRules:
-                monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
+              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
             },
             {
               label: "beginend",
               kind: monaco.languages.CompletionItemKind.Snippet,
               insertText: ["begin", "\t$0", "end"].join("\n"),
-              insertTextRules:
-                monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
               documentation: "begin end section"
             },
             {
               label: "test",
               kind: monaco.languages.CompletionItemKind.Snippet,
-              insertText: ["test begin", "\t#${1:time} { $0 };", "end"].join(
-                "\n"
-              ),
-              insertTextRules:
-                monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              insertText: ["test begin", "\t#${1:time} { $0 };", "end"].join("\n"),
+              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
               documentation: "test section"
             },
             {
               label: "case",
               kind: monaco.languages.CompletionItemKind.Snippet,
-              insertText: ["case(${1:condition})", "\t$0", "endcase"].join(
-                "\n"
-              ),
-              insertTextRules:
-                monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              insertText: ["case(${1:condition})", "\t$0", "endcase"].join("\n"),
+              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
               documentation: "case statement"
             },
             {
               label: "ifelse",
               kind: monaco.languages.CompletionItemKind.Snippet,
-              insertText: ["if (${1:condition})", "\t$0", "else", "\t"].join(
-                "\n"
-              ),
-              insertTextRules:
-                monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              insertText: ["if (${1:condition})", "\t$0", "else", "\t"].join("\n"),
+              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
               documentation: "If-Else Statement"
             },
             {
@@ -457,8 +426,7 @@ export default {
                 "\t",
                 "end module"
               ].join("\n"),
-              insertTextRules:
-                monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
               documentation: "Module declaration"
             }
           ];

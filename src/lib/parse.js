@@ -1,6 +1,6 @@
 import { parseToAST, walkAST } from "./vlgAntlrParser.js"; // build ast
 
-const parse = (currentFile, filename, code) => {
+const parse = (currentFile, filename, code, silent = true) => {
   currentFile.filename = filename;
 
   const parseResult = parseToAST(code);
@@ -12,7 +12,8 @@ const parse = (currentFile, filename, code) => {
     semanticErrors: walkResult.errors,
     modules: walkResult.modules,
     timestamp: errors == 0 ? Date.now() : null,
-    status: errors == 0 ? "pass" : "fail"
+    status: errors == 0 ? "pass" : "fail",
+    silent
   };
 };
 
