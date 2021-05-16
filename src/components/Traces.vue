@@ -2,29 +2,17 @@
 <template>
   <div class="dk-h-100">
     <div class="dk-flex-col" v-show="isSimulated">
-      <div
-        class="dk-flex-row dk-align-center"
-        style="height:60px;padding:0 10px"
-      >
+      <div class="dk-flex-row dk-align-center" style="height:60px;padding:0 10px">
         <instance-crumbs owner="traces"></instance-crumbs>
-        <span class="dk-push-right">
-          t = {{ $store.getters.currentFile.selectedTime }}</span
-        >
+        <span class="dk-push-right"> t = {{ $store.getters.currentFile.selectedTime }}</span>
       </div>
 
       <div class="traces" id="mytraces" ref="traces"></div>
     </div>
-    <div
-      class="dk-flex-col dk-h-100 dk-justify-center dk-align-center"
-      v-show="!isSimulated"
-    >
+    <div class="dk-flex-col dk-h-100 dk-justify-center dk-align-center" v-show="!isSimulated">
       <h4>
         Simulate
-        <button
-          class="button is-primary is-small"
-          @click="$emit('simulate')"
-          title="Simulate"
-        >
+        <button class="button is-primary is-small" @click="$emit('simulate')" title="Simulate">
           <span class="icon is-small">
             <i class="fa fa-play"></i>
           </span>
@@ -66,19 +54,23 @@ export default {
     ...mapGetters(["isInput", "isOutput", "isSimulated"]),
     clock: function() {
       if (!this.isSimulated) return [0];
-      return this.$store.getters.currentFile.simulateResult.clock.map(
-        (x, i) => [i, x]
-      );
+      return this.$store.getters.currentFile.simulateResult.clock.map((x, i) => [i, x]);
     },
     maxTraceHeight: function() {
       return this.$store.state.traceHeight;
+    },
+    redrawString: function() {
+      return (
+        this.$store.getters.currentFile.simulateResult.timestamp +
+        this.$store.state.showWhichGates +
+        this.selectedInstanceID
+      );
     }
   },
   watch: {
-    filteredInstanceGate_ids: function() {
+    redrawString: function() {
       if (!this.$store.getters.isSimulated) return;
       this.$nextTick(() => {
-        // console.log("filteredInstanceGate_ids watcher: ", gates);
         this.drawTraces();
       });
     }
@@ -95,10 +87,7 @@ export default {
     const chart = this.svg
       .append("g")
       .attr("class", "chart")
-      .attr(
-        "transform",
-        `translate(${this.margins.left}, ${this.margins.top})`
-      );
+      .attr("transform", `translate(${this.margins.left}, ${this.margins.top})`);
 
     chart.append("g").attr("class", "grid");
 
@@ -128,9 +117,7 @@ export default {
       };
       let gates = this.filteredInstanceGate_ids.map(id => ({
         id,
-        values: this.$store.getters.currentFile.simulateResult.gates[id].map(
-          val => +val
-        ),
+        values: this.$store.getters.currentFile.simulateResult.gates[id].map(val => +val),
         options: { xAxis: false }
       }));
       gates.forEach(gate => {
@@ -261,10 +248,7 @@ export default {
 
       function updateGrid() {
         d3.select(".grid")
-          .attr(
-            "transform",
-            `translate(0, ${traceTop(traceN - 2) + traceHeight})`
-          )
+          .attr("transform", `translate(0, ${traceTop(traceN - 2) + traceHeight})`)
           .call(makeGridlines(x));
       }
 
@@ -346,10 +330,7 @@ export default {
         d3.select(".context")
           .transition()
           .duration(1000)
-          .attr(
-            "transform",
-            `translate(0, ${traceTop(traceN - 1) + that.margins.pad})`
-          );
+          .attr("transform", `translate(0, ${traceTop(traceN - 1) + that.margins.pad})`);
       }
 
       function updateCrosshair() {
@@ -414,9 +395,7 @@ export default {
       }
       const x = this.$store.getters.selectedInstanceID.substring(
         0,
-        this.$store.getters.selectedInstanceID.indexOf("_" + node) +
-          node.length +
-          1
+        this.$store.getters.selectedInstanceID.indexOf("_" + node) + node.length + 1
       );
       this.$store.commit("setSelectedInstanceID", x);
     },

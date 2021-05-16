@@ -11,9 +11,7 @@ class BaseComponent {
     this.id = namespace + "_" + name;
 
     if (!type)
-      throw new Error(
-        `Gate.constructor(${namespace}, ${name}, ??) must specify gate type`
-      );
+      throw new Error(`Gate.constructor(${namespace}, ${name}, ??) must specify gate type`);
     this.type = type;
     this.inputs = [];
     this.defaultValue = defaultValue;

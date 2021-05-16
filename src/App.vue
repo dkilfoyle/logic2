@@ -124,6 +124,11 @@
       <span id="statusbar-filename" area="statusbar" align="right">{{
         $store.state.currentFileTab
       }}</span>
+      <span id="statusbar-progress" area="statusbar" align="center">
+        <b-progress style="width:200px;margin-top:3px" :value="simulateProgress" show-value
+          >Simulation</b-progress
+        >
+      </span>
       <span id="statusbar-compile" area="statusbar">{{ $store.getters.currentFile.status }}</span>
     </Lumino>
   </div>
@@ -170,14 +175,15 @@ export default {
     return {
       sourceFiles: require("./files").SourceFiles,
       sourceCounter: 0,
-      cursorPosition: { lineNumber: "", column: "" }
+      cursorPosition: { lineNumber: "", column: "" },
+      simulateProgress: 0
     };
   },
   computed: {
     ...mapGetters(["currentFile", "parseTimestamp"])
   },
   created() {
-    // this.addFileTab("Scratch");
+    this.addFileTab("Scratch");
     // this.addFileTab("LW");
     // this.addFileTab("Mux2_1");
     // this.addFileTab("DFlipFlop");
@@ -189,7 +195,7 @@ export default {
     // this.addFileTab("RAM");
     // this.addFileTab("PC");
     // this.addFileTab("Controller");
-    this.addFileTab("Simplify");
+    // this.addFileTab("Simplify");
     // this.addFileTab("Concatenation");
     // this.addFileTab("Bus");
     // this.addFileTab("ALU");
@@ -199,11 +205,14 @@ export default {
   mounted() {
     setTimeout(() => this.about(), 1500);
     workerInterface.worker.onmessage = event => {
-      console.log("App.vue: incoming message from worker: ", event.data);
       let result = event.data.payload;
       switch (event.data.type) {
         case "log":
-          this.writeLn(event.data.msg);
+          this.termWriteln(event.data.msg, event.data.ln);
+          break;
+        case "progress":
+          this.simulateProgress = Math.round((event.data.current / event.data.max) * 100);
+          this.onProgress(event.data.action, event.data.current, event.data.max);
           break;
         case "parseResult":
           console.log("App received parseResult", result);
@@ -215,15 +224,16 @@ export default {
           break;
         case "simulateResult":
           console.log("App received simulateResult", event.data.payload);
-          this.$store.commit("setSimulateResult", event.data.payload);
+          this.onSimulateResult(result);
+          break;
+        case "circuitResult":
+          console.log("App received circuitResult", event.data.payload);
+          this.onCircuitResult(result);
+
           break;
         default:
           console.log("App recieved unrecognized command from worker", event.data);
       }
-      // var simulateResult = event.data;
-      // this.termWriteln(
-      //   chalk.cyan.inverse(" DONE ") + "  Simulated successfully"
-      // );
     };
   },
   watch: {
@@ -255,12 +265,15 @@ export default {
         // if silent and autocompile
         if (parseResult.status == "pass" && this.$store.getters.currentFile.autoCompile)
           workerInterface.send({
-            command: "compile"
+            command: "compile",
+            filename: this.$store.state.currentFileTab
           });
       }
+      this.simulateProgress = 0;
     },
     onCompileResult(compileResult) {
       this.$store.commit("setCompileResult", compileResult);
+      if (compileResult.status == "fail") console.log(compileResult.e);
       if (!compileResult.silent) {
         if (compileResult.status == "fail")
           this.termWriteln(chalk.red("└── Compile exception: ") + compileResult.e.msg);
@@ -274,8 +287,53 @@ export default {
           this.termWriteln(chalk.green.inverse(" DONE ") + "  Compiled successfully");
         }
       }
+      // redraw the circuit if compilation passed and either autoredraw or nonsilent compile (ie pushed compile button)
+      if (
+        compileResult.status == "pass" &&
+        (this.$store.getters.currentFile.autoDraw || !compileResult.silent)
+      )
+        workerInterface.send({
+          command: "circuit",
+          filename: this.$store.state.currentFileTab
+        });
     },
-
+    onSimulateResult(simulateResult) {
+      this.$store.commit("setSimulateResult", simulateResult);
+      if (!simulateResult.silent) {
+        if (simulateResult.status == "fail")
+          this.termWriteln(chalk.bgRed(" ERROR ") + "  Simulation aborted");
+        else this.termWriteln(chalk.cyan.inverse(" DONE ") + "  Simulated successfully");
+      }
+    },
+    onCircuitResult(circuitResult) {
+      this.$store.commit("setCircuitResult", circuitResult);
+    },
+    compile(silent = false) {
+      if (!silent)
+        this.termWriteln(
+          chalk.bold.green("• Compiling: ") + chalk.yellow(this.$store.state.currentFileTab)
+        );
+      workerInterface.send({
+        command: "parseAndCompile",
+        filename: this.$store.state.currentFileTab,
+        code: this.$store.getters.currentFile.code,
+        silent
+      });
+    },
+    simulate() {
+      this.showTerminal = true;
+      this.termWriteln(
+        chalk.bold.cyan("• Simulating: ") + chalk.yellow(this.$store.getters.currentFile.name)
+      );
+      workerInterface.send({
+        command: "simulate",
+        filename: this.$store.state.currentFileTab,
+        silent: false
+      });
+    },
+    onProgress(action, current, max) {
+      console.log(action, Math.round((current / max) * 100) + "%");
+    },
     onChangeCursorPosition(pos) {
       this.cursorPosition = pos;
     },
@@ -295,6 +353,8 @@ export default {
         });
       }
       this.$store.commit("setCurrentFileTab", newSourceName);
+      console.log("addFileTab: ", sourceName);
+      // this.compile(true);
       // this.currentFileTab = newSourceName;
     },
 
@@ -347,52 +407,7 @@ export default {
     termWriteln(str, ln = true) {
       this.$refs.terminal.setContent(str, ln);
     },
-    compile() {
-      this.termWriteln(
-        chalk.bold.green("• Compiling: ") + chalk.yellow(this.$store.state.currentFileTab)
-      );
-      workerInterface.send({
-        command: "parseAndCompile",
-        filename: this.$store.state.currentFileTab,
-        code: this.$store.getters.currentFile.code,
-        silent: false
-      });
-    },
-    simulate() {
-      this.showTerminal = true;
-      this.termWriteln(
-        chalk.bold.cyan("• Simulating: ") + chalk.yellow(this.$store.getters.currentFile.name)
-      );
 
-      // vlgSimulator.send([
-      //   this.$store.state.evals_per_step,
-      //   this.$store.getters.currentFile.compileResult.gates,
-      //   this.$store.getters.currentFile.compileResult.parameters,
-      //   this.$store.getters.currentFile.compileResult.instances,
-      //   this.$store.getters.currentFile.walkResult.modules.find(
-      //     m => m.id == "Main"
-      //   ).clock
-      // ]);
-
-      // {        EVALS_PER_STEP: this.$store.state.evals_per_step,
-      // gates: this.$store.getters.currentFile.compileResult.gates,
-      // parameters: this.$store.getters.currentFile.compileResult.parameters,
-      // instances: this.$store.getters.currentFile.compileResult.instances,
-      // testClock: this.$store.getters.currentFile.walkResult.modules.find(
-      //   m => m.id == "Main"
-      // ).clock
-      // logger: this.termWriteln
-
-      // if (simulateResult) {
-      //   this.termWriteln(
-      //     chalk.cyan.inverse(" DONE ") + "  Simulated successfully"
-      //   );
-
-      //   this.$store.commit("setSimulateResult", simulateResult);
-      //   this.$store.commit("setStatus", "Simulation OK");
-      //   console.log("Simulation: ", simulateResult);
-      // } else this.termWriteln(chalk.bgRed(" ERROR ") + "  Simulation aborted");
-    },
     about() {
       this.termWriteln(chalk.bold.cyan("Logic2: A logic circuit simulator (v0.2 May 2021)"));
       this.termWriteln(chalk.yellow("https://github.com/dkilfoyle/logic2"));
@@ -414,6 +429,10 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+}
+
+.jp-statusbar {
+  background: #ffffff;
 }
 
 .skinny-scroll::-webkit-scrollbar {

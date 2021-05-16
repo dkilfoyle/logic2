@@ -7,7 +7,9 @@ const shortJoin = strs => {
 };
 
 const getLocalId = x => x.substr(x.lastIndexOf("_") + 1);
-const logger = () => {};
+const logger = msg => {
+  postMessage({ type: "log", msg, ln: true });
+};
 
 const evaluateSensitivities = (gates, always, namespace) => {
   return always.sensitivities.some(sens => {
@@ -29,9 +31,7 @@ const evaluateSensitivities = (gates, always, namespace) => {
 
 const evaluateStatementTree = (gates, s, namespace) => {
   if (s.type == "block") {
-    return s.statements.every(ss =>
-      evaluateStatementTree(gates, ss, namespace)
-    );
+    return s.statements.every(ss => evaluateStatementTree(gates, ss, namespace));
   } else if (s.type == "blocking_assignment") {
     try {
       s.lhs.setValue(gates, s.rhs.getValue(gates, namespace), namespace);
@@ -50,15 +50,12 @@ const evaluateStatementTree = (gates, s, namespace) => {
         pass = s.condition.getValue(gates, namespace) != 0;
         break;
       default:
-        throw new Error(
-          `evaluateStatementTree: invalid condition type ${s.condition}`
-        );
+        throw new Error(`evaluateStatementTree: invalid condition type ${s.condition}`);
     }
     if (pass) {
       return evaluateStatementTree(gates, s.thenBlock, namespace);
     } else {
-      if (s.elseBlock)
-        return evaluateStatementTree(gates, s.elseBlock, namespace);
+      if (s.elseBlock) return evaluateStatementTree(gates, s.elseBlock, namespace);
       else return true;
     }
   } else if (s.type == "case_statement") {
@@ -84,9 +81,10 @@ const evaluateStatementTree = (gates, s, namespace) => {
   }
 };
 
-const simulate = currentFile => {
-  const gates = currentFile.gates;
-  const instances = currentFile.instances;
+const simulate = (currentFile, progress = true) => {
+  const gates = { ...currentFile.compileResult.gates, ...currentFile.compileResult.parameters };
+  const instances = currentFile.compileResult.instances;
+  const gateArray = Object.values(currentFile.compileResult.gates);
 
   currentFile.simulateResult = {
     gates: {},
@@ -99,24 +97,20 @@ const simulate = currentFile => {
 
   // reset all gates to state = 0
   // TODO: should set state to 'x'??
-  gates.values().forEach(g => {
+  gateArray.forEach(g => {
     g.clear();
     currentFile.simulateResult.gates[g.id] = [];
   });
 
   // process each instances initial section to set initial gate or register states
-  let initialRes = instances.every(instance => {
+  let initialRes = Object.values(instances).every(instance => {
     return instance.initial
-      ? evaluateStatementTree(
-          gates,
-          instance.initial.statementTree,
-          instance.id
-        )
+      ? evaluateStatementTree(gates, instance.initial.statementTree, instance.id)
       : true;
   });
   if (!initialRes) return false;
 
-  const maxClock = currentFile.moduleDefinitions.Main.clock.reduce(
+  const maxClock = currentFile.parseResult.modules.Main.clock.reduce(
     (acc, val) => Math.max(val.time, acc),
     0
   );
@@ -125,11 +119,11 @@ const simulate = currentFile => {
 
   // run the clock
   for (let clock = 0; clock <= maxClock; clock++) {
+    if (progress)
+      postMessage({ type: "progress", action: "simulate", current: clock, max: maxClock });
     // store tick or tock
     if (gates["main_clock"])
-      gates["main_clock"].state.setValue(
-        ~gates["main_clock"].state.getValue() & 1
-      );
+      gates["main_clock"].state.setValue(~gates["main_clock"].state.getValue() & 1);
 
     currentFile.simulateResult.time.push(clock);
 
@@ -137,15 +131,12 @@ const simulate = currentFile => {
     // if (clock % Math.floor(maxClock / 20) == 0) logger(".", false);
 
     // assign control values if matching time point
-    let setupRes = currentFile.moduleDefinitions.Main.clock.every(c => {
+    let setupRes = currentFile.parseResult.modules.Main.clock.every(c => {
       return c.time == clock
         ? c.assignments.every(a => {
             // can only assign values to control types
             if (!gates["main_" + a.lhs.name].type == "control") {
-              logger(
-                "Can only assign simulation values to inputs of Main: " +
-                  a.lhs.name
-              );
+              logger("Can only assign simulation values to inputs of Main: " + a.lhs.name);
               console.log("Error: ", a.lhs.name);
               return false;
             }
@@ -180,7 +171,7 @@ const simulate = currentFile => {
 
     const updateGates = () => {
       let anyChanges = false;
-      gates.forEach(gate => {
+      gateArray.forEach(gate => {
         const oldValue = gate.getValue();
         let newValue;
         try {
@@ -208,16 +199,13 @@ const simulate = currentFile => {
     // };
 
     const evaluateAlways = () => {
-      instances.forEach(instance => {
+      Object.values(instances).forEach(instance => {
         instance.always.forEach(curAlways => {
-          const sensitivityTest = evaluateSensitivities(
-            gates,
-            curAlways,
-            instance.id
-          );
+          const sensitivityTest = evaluateSensitivities(gates, curAlways, instance.id);
 
           if (sensitivityTest) {
             const evalutateSuccess = evaluateStatementTree(
+              gates,
               curAlways.statementTree,
               instance.id
             );
@@ -249,28 +237,26 @@ const simulate = currentFile => {
     // console.log(`Clock = ${clock}, iterations = ${i}`);
 
     // and store gate results in currentFile.simulateResult
-    gates.forEach(g => {
-      currentFile.simulateResult.gates[g.id].push(
-        g.type == "array" ? g.getValues() : g.getValue()
-      );
+    gateArray.forEach(g => {
+      currentFile.simulateResult.gates[g.id].push(g.type == "array" ? g.getValues() : g.getValue());
     });
     currentFile.simulateResult.clock.push(clock % 2);
 
-    currentFile.moduleDefinitions.Main.clock.forEach((x, index, all) => {
+    currentFile.parseResult.modules.Main.clock.forEach((x, index, all) => {
       if (x.time != clock) return;
 
       const lineChar = index == all.length - 1 ? "└" : "├";
 
-      logger(`${lineChar}── Time ${clock.toString().padStart(3, "0")}: `) +
-        shortJoin(
-          x.assignments.map(a => a.lhs.toString() + "=" + a.rhs.toString())
-        ) +
-        " => " +
-        shortJoin(
-          instances.main.gates
-            .filter(gateId => gates[gateId].type == "response")
-            .map(o => getLocalId(o) + "=" + gates[o].state.getValue())
-        );
+      logger(
+        `${lineChar}── Time ${clock.toString().padStart(3, "0")}: ` +
+          shortJoin(x.assignments.map(a => a.lhs.toString() + "=" + a.rhs.toString())) +
+          " => " +
+          shortJoin(
+            instances.main.gate_ids
+              .filter(gateId => gates[gateId].type == "response")
+              .map(o => getLocalId(o) + "=" + gates[o].state.getValue())
+          )
+      );
     });
   }
 
@@ -279,7 +265,7 @@ const simulate = currentFile => {
   currentFile.simulateResult.maxTime =
     currentFile.simulateResult.time[currentFile.simulateResult.time.length - 1];
   currentFile.simulateResult.timestamp = Date.now();
-  currentFile.simulateResult.ready = true;
+  currentFile.simulateResult.status = "pass";
 };
 
 export default simulate;

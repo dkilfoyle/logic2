@@ -487,12 +487,14 @@ const createInstance = (moduleDefinitions, compileResult, parentNamespace, insta
               new Variable(namespace + "_" + instDef.id, connection.port.id + "-out", null),
               counter
             );
-            gates[newGate.id] = newGate; // push directly to gates as already had gates.push[...logicGates]
+            compileResult.gates[newGate.id] = newGate; // push directly to gates as already had gates.push[...logicGates]
             counter = counter + 1;
             newInstance.gate_ids.push(newGate.id);
           } else throw new Error("invalid output connection type");
         });
     });
+
+  // console.log(Object.keys(gates), Object.keys(compileResult.gates));
 
   // TODO: ? not necessary
   if (logicGateCount != Object.keys(logicGates).length) throw new Error();

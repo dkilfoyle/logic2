@@ -4,16 +4,10 @@
       <div class="gates-toolbar">
         <instance-crumbs owner="gates"></instance-crumbs>
         <div style="margin-left:auto;">
-          <button
-            class="button is-small is-rounded is-primary is-light"
-            @click="toggleStateFormat"
-          >
+          <button class="button is-small is-rounded is-primary is-light" @click="toggleStateFormat">
             {{ $store.state.stateFormat }}
           </button>
-          <button
-            class="button is-small is-rounded is-info is-light"
-            style="margin-left:5px"
-          >
+          <button class="button is-small is-rounded is-info is-light" style="margin-left:5px">
             t = {{ currentFile.selectedTime }}
           </button>
         </div>
@@ -30,13 +24,7 @@
           :has-detailed-visible="row => row.type == 'array'"
           :row-class="(row, index) => getRowClass(row)"
         >
-          <b-table-column
-            field="name"
-            label="Name"
-            sortable
-            v-slot="props"
-            width="20%"
-          >
+          <b-table-column field="name" label="Name" sortable v-slot="props" width="20%">
             <template v-if="showDetailIcon">
               {{ props.row.name }}
             </template>
@@ -46,17 +34,8 @@
               </a>
             </template></b-table-column
           >
-          <b-table-column
-            field="type"
-            label="Type"
-            v-slot="props"
-            sortable
-            width="5%"
-          >
-            <img
-              :src="require('@/assets/' + props.row.type + '.svg')"
-              class="gateicon"
-            />
+          <b-table-column field="type" label="Type" v-slot="props" sortable width="5%">
+            <img :src="require('@/assets/' + props.row.type + '.svg')" class="gateicon" />
           </b-table-column>
 
           <b-table-column field="state" label="State" numeric width="30%">
@@ -66,10 +45,7 @@
                   v-if="getTimeState(props.row.id) == 0"
                   src="@/assets/icons8-0-52.png"
                   class="stateicon"/>
-                <img
-                  v-else
-                  src="@/assets/icons8-number-1-48.png"
-                  class="stateicon"
+                <img v-else src="@/assets/icons8-number-1-48.png" class="stateicon"
               /></template>
               <template v-else>
                 {{
@@ -83,30 +59,19 @@
             >
           </b-table-column>
 
-          <b-table-column
-            field="bitsize"
-            label="BitSize"
-            v-slot="props"
-            numeric
-            width="5%"
-          >
+          <b-table-column field="bitsize" label="BitSize" v-slot="props" numeric width="5%">
             {{ props.row.state.bitArray.length }}
           </b-table-column>
 
           <template slot="detail" slot-scope="props">
             <template v-for="(item, index) in props.row.state">
               <tr
-                v-if="
-                  getTimeState(props.row.id, index) != 0 ||
-                    $store.state.memoryDumpHideZeros
-                "
+                v-if="getTimeState(props.row.id, index) != 0 || $store.state.memoryDumpHideZeros"
                 :key="index"
               >
                 <td></td>
                 <td>
-                  <span style="padding-left:15px"
-                    >{{ props.row.id }}[{{ index }}]</span
-                  >
+                  <span style="padding-left:15px">{{ props.row.id }}[{{ index }}]</span>
                 </td>
                 <td></td>
                 <td></td>
@@ -123,12 +88,7 @@
             >
           </template>
 
-          <b-table-column
-            field="inputs"
-            label="Inputs"
-            v-slot="props"
-            width="40%"
-          >
+          <b-table-column field="inputs" label="Inputs" v-slot="props" width="40%">
             {{ props.row.inputs.map(x => x.id).join(", ") }}
           </b-table-column>
         </b-table>
@@ -198,10 +158,7 @@ export default {
         if (this.$store.state.tableFollowsSchematic && this.selectedGateID) {
           // eslint-disable-next-line no-debugger
           let selectedGate = this.getGate(this.selectedGateID);
-          let topGates = [
-            this.selectedGateID,
-            ...selectedGate.inputs.map(input => input.id)
-          ];
+          let topGates = [this.selectedGateID, ...selectedGate.inputs.map(input => input.id)];
           // start off with the filteredinstance gates then remove selected gate and its inputs
           let followGates = this.filteredInstanceGate_ids.filter(
             gateid => !topGates.includes(gateid)
@@ -209,8 +166,7 @@ export default {
           // add the selectedgate and it's inputs back at the top
           followGates.unshift(...topGates);
           this.gates = followGates.map(g => this.getGate(g));
-        } else
-          this.gates = this.filteredInstanceGate_ids.map(g => this.getGate(g));
+        } else this.gates = this.filteredInstanceGate_ids.map(g => this.getGate(g));
       }
     },
     selectedInstanceID() {
@@ -228,11 +184,7 @@ export default {
     getRowClass(row) {
       if (!this.selectedGateID) return null;
       if (row.id == this.selectedGateID) return "has-background-danger-light";
-      if (
-        this.getGate(this.selectedGateID).inputs.some(
-          input => input.id == row.id
-        )
-      )
+      if (this.getGate(this.selectedGateID).inputs.some(input => input.id == row.id))
         return "has-background-info-light";
       return null;
     },
@@ -253,9 +205,7 @@ export default {
       }
       const x = this.$store.getters.selectedInstanceID.substring(
         0,
-        this.$store.getters.selectedInstanceID.indexOf("_" + node) +
-          node.length +
-          1
+        this.$store.getters.selectedInstanceID.indexOf("_" + node) + node.length + 1
       );
       this.$store.commit("setSelectedInstanceID", x);
     }

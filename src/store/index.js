@@ -6,6 +6,22 @@ Vue.use(Vuex);
 
 // const getLocalId = x => x.substr(x.lastIndexOf("_") + 1);
 const getNamespace = x => x.substr(0, x.lastIndexOf("_"));
+const newFileObject = (type, name, code) => {
+  return {
+    type,
+    name,
+    code,
+    parseResult: {},
+    compileResult: {},
+    simulateResult: {},
+    circuitResult: {},
+    selectedTime: 0,
+    selectedInstanceID: "main",
+    selectedGateID: null,
+    autoCompile: true,
+    autoDraw: true
+  };
+};
 
 export default new Vuex.Store({
   state: {
@@ -20,29 +36,23 @@ export default new Vuex.Store({
     memoryDumpCompact: false
   },
   getters: {
-    currentFile: state =>
-      state.currentFileTab != "" ? state.openFiles[state.currentFileTab] : {},
+    currentFile: state => (state.currentFileTab != "" ? state.openFiles[state.currentFileTab] : {}),
 
-    openEditorFiles: state =>
-      Object.values(state.openFiles).filter(file => file.type == "editor"),
+    openEditorFiles: state => Object.values(state.openFiles).filter(file => file.type == "editor"),
     openTruthTables: state =>
       Object.values(state.openFiles).filter(file => file.type == "truthtable"),
 
     isParsed: (state, getters) => {
-      return (
-        getters.currentFile && getters.currentFile.parseResult.status == "pass"
-      );
+      return getters.currentFile && getters.currentFile.parseResult.status == "pass";
     },
     isCompiled: (state, getters) => {
-      return (
-        getters.isParsed && getters.currentFile.compileResult.status == "pass"
-      );
+      return getters.isParsed && getters.currentFile.compileResult.status == "pass";
     },
     isSimulated: (state, getters) => {
-      return (
-        getters.isCompiled &&
-        getters.currentFile.simulateResult.status == "pass"
-      );
+      return getters.isCompiled && getters.currentFile.simulateResult.status == "pass";
+    },
+    isCircuited: (state, getters) => {
+      return getters.isCompiled && getters.currentFile.circuitResult.status == "pass";
     },
 
     parseStatus: (state, getters) => {
@@ -77,8 +87,7 @@ export default new Vuex.Store({
         : null;
     },
 
-    selectedInstanceID: (state, getters) =>
-      getters.currentFile.selectedInstanceID,
+    selectedInstanceID: (state, getters) => getters.currentFile.selectedInstanceID,
     selectedGateID: (state, getters) => getters.currentFile.selectedGateID,
 
     getAllInstances: (state, getters) =>
@@ -90,17 +99,12 @@ export default new Vuex.Store({
       const buildNode = id => {
         const instance = getters.getInstance(id); // instances.find(x => x.id == id);
         const res = {
-          text:
-            instance.id.slice(instance.id.lastIndexOf("_") + 1) +
-            "_" +
-            instance.module +
-            maxid,
+          text: instance.id.slice(instance.id.lastIndexOf("_") + 1) + "_" + instance.module + maxid,
           data: { id: instance.id }
         };
         maxid = maxid + 1;
         res.state = {};
-        if (getters.currentFile.selectedInstanceID.includes(id))
-          res.state = { expanded: true };
+        if (getters.currentFile.selectedInstanceID.includes(id)) res.state = { expanded: true };
         if (id == getters.currentFile.selectedInstanceID)
           res.state = { ...res.state, selected: true };
         if (instance.instances.length > 0)
@@ -135,9 +139,7 @@ export default new Vuex.Store({
         return getters.currentFile.parseResult.modules.Main.ports
           .filter(x => x.direction == "output")
           .map(x => "main_" + x.id);
-      return getters
-        .getInstance(id)
-        .output_ids.map(x => x.substr(0, x.indexOf("-out")));
+      return getters.getInstance(id).output_ids.map(x => x.substr(0, x.indexOf("-out")));
     },
     getInstanceGate_ids: (state, getters) => id => {
       if (!getters.isCompiled) return null;
@@ -164,26 +166,22 @@ export default new Vuex.Store({
     },
     getGateStateAtSelectedTime: (state, getters) => gateid => {
       if (!getters.isSimulated) return getters.getGate(gateid).getValue();
-      return getters.getGateStateAtTime(
-        gateid,
-        getters.currentFile.selectedTime
-      );
+      return getters.getGateStateAtTime(gateid, getters.currentFile.selectedTime);
     },
     getGatesStateAtSelectedTime: (state, getters) => {
       if (!getters.isSimulated) return {};
       const gates = getters.currentFile.simulateResult.gates;
       let res = {};
-      Object.keys(gates).forEach(
-        id => (res[id] = gates[id][getters.currentFile.selectedTime])
-      );
+      Object.keys(gates).forEach(id => (res[id] = gates[id][getters.currentFile.selectedTime]));
       return res;
     }
   },
   mutations: {
-    toggleAutoCompile(state) {
-      state.openFiles[state.currentFileTab].autoCompile = !state.openFiles[
-        state.currentFileTab
-      ].autoCompile;
+    setAutoCompile(state, payload) {
+      state.openFiles[state.currentFileTab].autoCompile = payload;
+    },
+    setAutoDraw(state, payload) {
+      state.openFiles[state.currentFileTab].autoDraw = payload;
     },
     setEvalsPerStep(state, payload) {
       state.evals_per_step = payload;
@@ -216,9 +214,7 @@ export default new Vuex.Store({
       state.openFiles[state.currentFileTab].selectedInstanceID = id;
     },
     setSelectedGateID(state, id) {
-      state.openFiles[state.currentFileTab].selectedInstanceID = id
-        ? getNamespace(id)
-        : "main";
+      state.openFiles[state.currentFileTab].selectedInstanceID = id ? getNamespace(id) : "main";
       state.openFiles[state.currentFileTab].selectedGateID = id;
     },
     setCurrentFileTab(state, payload) {
@@ -229,33 +225,20 @@ export default new Vuex.Store({
     },
 
     openFile(state, payload) {
-      Vue.set(state.openFiles, payload.newSourceName, {
-        type: "editor",
-        name: payload.newSourceName,
-        code: payload.code,
-        parseResult: {},
-        compileResult: {},
-        simulateResult: {},
-        selectedTime: 0,
-        selectedInstanceID: "main",
-        selectedGateID: null,
-        autoCompile: true
-      });
+      Vue.set(
+        state.openFiles,
+        payload.newSourceName,
+        newFileObject("editor", payload.newSourceName, payload.code)
+      );
     },
     openTruthTable(state, payload) {
-      Vue.set(state.openFiles, payload.newSourceName, {
-        type: "truthtable",
-        name: payload.newSourceName,
-        code: payload.code,
-        parseResult: {},
-        compileResult: {},
-        simulateResult: {},
-        selectedTime: 0,
-        selectedInstanceID: "main",
-        selectedGateID: null,
-        autoCompile: true
-      });
+      Vue.set(
+        state.openFiles,
+        payload.newSourceName,
+        newFileObject("truthtable", payload.newSourceName, payload.code)
+      );
     },
+
     closeFile(state, payload) {
       Vue.delete(state.openFiles, payload);
     },
@@ -268,6 +251,9 @@ export default new Vuex.Store({
     },
     setSimulateResult(state, payload) {
       state.openFiles[state.currentFileTab].simulateResult = payload;
+    },
+    setCircuitResult(state, payload) {
+      state.openFiles[state.currentFileTab].circuitResult = payload;
     },
 
     setSelectedTime(state, payload) {

@@ -25,7 +25,7 @@ class Listener extends vlgListener {
   // utils
 
   addSemanticError(node, msg, severity = "warning") {
-    console.log(node, msg);
+    // console.log(node, msg);
     var token;
     if (node instanceof CommonToken) {
       token = node;
@@ -33,6 +33,8 @@ class Listener extends vlgListener {
       token = node.symbol;
     } else if (node.start instanceof CommonToken) {
       token = node.start;
+    } else if (node.start) {
+      token = node;
     } else {
       throw new Error("node is not commontoken", node);
       // ? check if terminal node and if so use ctx.symbol.line
@@ -41,7 +43,7 @@ class Listener extends vlgListener {
       startLine: token.line,
       startColumn: token.column + 1,
       endLine: token.line,
-      endColumn: token.column + token.text.length + 1,
+      endColumn: token.column + 2 + (token.stop - token.start), //column + token.text.length + 1,
       msg,
       severity
     });
@@ -60,15 +62,11 @@ class Listener extends vlgListener {
   }
 
   isInput(id) {
-    return this.curModule.ports.some(
-      port => (port.direction == "input") & (port.id == id)
-    );
+    return this.curModule.ports.some(port => (port.direction == "input") & (port.id == id));
   }
 
   isOutput(id) {
-    return this.curModule.ports.some(
-      port => (port.direction == "output") & (port.id == id)
-    );
+    return this.curModule.ports.some(port => (port.direction == "output") & (port.id == id));
   }
 
   isWire(id) {
@@ -104,7 +102,7 @@ class Listener extends vlgListener {
       line: token.line,
       column: token.column,
       start: token.start,
-      end: token.end
+      stop: token.stop
     };
   }
 
@@ -232,8 +230,7 @@ class Listener extends vlgListener {
     const ids = this.valueStack.pop(); // identifier_list = array of variables
     const newRegs = [];
     ids.forEach(v => {
-      if (v.offsetType == "index")
-        throw new Error("invalid reg declaration arraydim");
+      if (v.offsetType == "index") throw new Error("invalid reg declaration arraydim");
       newRegs.push({
         id: v.name,
         arrayDim: v.offset
@@ -255,11 +252,7 @@ class Listener extends vlgListener {
 
   exitRegister_identifier(ctx) {
     this.valueStack.push(
-      new Variable(
-        null,
-        ctx.IDENTIFIER().getText(),
-        ctx.range() ? this.valueStack.pop() : null
-      )
+      new Variable(null, ctx.IDENTIFIER().getText(), ctx.range() ? this.valueStack.pop() : null)
     );
   }
 
@@ -340,9 +333,7 @@ class Listener extends vlgListener {
     //     `${newStatement.lhs.name} is not declared as type reg`
     //   );
     // else {
-    this.statementBlockStack[
-      this.statementBlockStack.length - 1
-    ].statements.push(newStatement);
+    this.statementBlockStack[this.statementBlockStack.length - 1].statements.push(newStatement);
     // console.log("Statement: ", strip(newStatement));
     // }
     console.groupEnd();
@@ -355,9 +346,7 @@ class Listener extends vlgListener {
       sourceStop: { column: ctx.stop.column, line: ctx.stop.line },
       text: ctx.string().getText()
     };
-    this.statementBlockStack[
-      this.statementBlockStack.length - 1
-    ].statements.push(newStatement);
+    this.statementBlockStack[this.statementBlockStack.length - 1].statements.push(newStatement);
   }
 
   enterConditional_statement(ctx) {
@@ -377,9 +366,7 @@ class Listener extends vlgListener {
       thenBlock: this.statementBlockStack.pop(),
       condition: this.expressionStack.pop()
     };
-    this.statementBlockStack[
-      this.statementBlockStack.length - 1
-    ].statements.push(newStatement);
+    this.statementBlockStack[this.statementBlockStack.length - 1].statements.push(newStatement);
     // console.log("Statement: ", strip(newStatement));
     console.groupEnd();
   }
@@ -403,14 +390,9 @@ class Listener extends vlgListener {
     };
 
     if (!this.isWireOrPortOrReg(newStatement.casevar))
-      this.addSemanticError(
-        ctx.casevar,
-        `Unknown case test variable ${newStatement.casevar.name}`
-      );
+      this.addSemanticError(ctx.casevar, `Unknown case test variable ${newStatement.casevar.name}`);
 
-    this.statementBlockStack[
-      this.statementBlockStack.length - 1
-    ].statements.push(newStatement);
+    this.statementBlockStack[this.statementBlockStack.length - 1].statements.push(newStatement);
     // console.log("Statement: ", strip(newStatement));
     console.groupEnd();
   }
@@ -571,9 +553,7 @@ class Listener extends vlgListener {
         return comp;
       })
       .reverse();
-    this.valueStack.push(
-      new Concatenation(this.expressionStack.pop(), components)
-    );
+    this.valueStack.push(new Concatenation(this.expressionStack.pop(), components));
   }
 
   exitRange() {
@@ -641,11 +621,7 @@ class Listener extends vlgListener {
               lhs,
               rhs
             });
-          else
-            this.addSemanticError(
-              x.lhs,
-              `'${x.lhs.text}' is not a valid main module input`
-            );
+          else this.addSemanticError(x.lhs, `'${x.lhs.text}' is not a valid main module input`);
         });
     }
     newClock.assignments.reverse();
@@ -666,10 +642,7 @@ class Listener extends vlgListener {
     // semantic error if the output is not a wire or module output
     if (!this.isWireOrOutput(gateid)) {
       const idctx = ctx.gateID;
-      this.addSemanticError(
-        idctx,
-        `'${gateid}' is not defined as a wire or module output`
-      );
+      this.addSemanticError(idctx, `'${gateid}' is not defined as a wire or module output`);
     }
     const gate = this.curModule.instantiations.find(x => x.id == gateid);
     if (!gate) {
@@ -709,10 +682,7 @@ class Listener extends vlgListener {
     // semantic error if the output is not a wire or module output
     if (!this.isWireOrOutput(gateOutput)) {
       const idctx = ctx.gateID;
-      this.addSemanticError(
-        idctx,
-        `'${gateOutput}' is not defined as a wire or module output`
-      );
+      this.addSemanticError(idctx, `'${gateOutput}' is not defined as a wire or module output`);
     }
 
     this.curModule.instantiations.push({
@@ -737,14 +707,8 @@ class Listener extends vlgListener {
 
   exitNet_assignment(ctx) {
     const lvalue = this.valueStack.pop();
-    if (
-      !this.isWireOrRegOrOutput(lvalue.name) &&
-      lvalue.type != "concatenation"
-    ) {
-      this.addSemanticError(
-        ctx.lvalue(),
-        `${lvalue.name} is not a wire or reg or output`
-      );
+    if (!this.isWireOrRegOrOutput(lvalue.name) && lvalue.type != "concatenation") {
+      this.addSemanticError(ctx.lvalue(), `${lvalue.name} is not a wire or reg or output`);
     } else {
       const expr = this.expressionStack.pop();
       this.curModule.netAssignments.push({
@@ -809,11 +773,13 @@ class Listener extends vlgListener {
           return {
             port: {
               id: x.portID.text,
-              sourceLocation: this.getTokenLocation(x.portID)
+              sourceLocation: this.getTokenLocation(x.portID),
+              token: this.getTokenLocation(x.portID)
             },
             value: {
               expr: this.expressionStack.pop(),
-              sourceLocation: this.getTokenLocation(x.value.children[0].start)
+              sourceLocation: this.getTokenLocation(x.value.children[0].start),
+              token: this.getTokenLocation(x.value.children[0].start)
             }
           };
         })
@@ -874,9 +840,7 @@ class Listener extends vlgListener {
 
     const instanceID = ctx.instanceID.text;
     const connections = this.valueStack.pop(); //ctx.module_connections_list().connections;
-    const params = ctx.params
-      ? ctx.params.params.map(() => this.expressionStack.pop())
-      : [];
+    const params = ctx.params ? ctx.params.params.map(() => this.expressionStack.pop()) : [];
 
     console.log(`Module ${moduleID} connections: `, connections);
 
@@ -884,14 +848,12 @@ class Listener extends vlgListener {
     connections.forEach(connection => {
       if (connection.port.index != undefined) {
         // ordered connections
-        connection.port.id = this.modules[moduleID].ports[
-          connection.port.index
-        ].id;
+        connection.port.id = this.modules[moduleID].ports[connection.port.index].id;
         return;
       }
       if (!this.isPortOf(connection.port.id, moduleID))
         this.addSemanticError(
-          connection.port.token,
+          connection.port.sourceLocation,
           `Invalid port: '${connection.port.id}' is not defined in module '${moduleID}'`
         );
 

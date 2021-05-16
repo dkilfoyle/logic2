@@ -13,8 +13,6 @@
 // import "d3-hwschematic/dist/d3-hwschematic.js";
 import "d3-hwschematic/dist/d3-hwschematic.css";
 
-// const getLocalID = x => x.substr(x.lastIndexOf("_") + 1);
-
 import UtilsMixin from "../mixins/utils";
 import { mapGetters } from "vuex";
 
@@ -29,13 +27,13 @@ import WireGateRenderer from "./renderers/wiregate.js";
 import RegGateRenderer from "./renderers/reggate.js";
 import ConstantGateRenderer from "./renderers/constantgate.js";
 import ArrayRenderer from "./renderers/array.js";
-// import { barData } from "./renderers/number.js";
 import Numeric from "../lib/Numeric";
-import Variable from "../lib/Variable.js";
 
 import { updateTable } from "./renderers/array.js";
 import { updateLeds } from "./renderers/leds.js";
 import { updateNumber } from "./renderers/number.js";
+
+// import workerInterface from "../lib/workerInterface.js";
 
 class Tooltip {
   constructor(root, getTextFn) {
@@ -68,7 +66,18 @@ export default {
 
   data() {
     return {
-      elkData: {},
+      elkData: {
+        id: "main",
+        hwMeta: { name: "main", maxId: 200 },
+        properties: {
+          "org.eclipse.elk.portConstraints": "FIXED_ORDER",
+          "org.eclipse.elk.layered.mergeEdges": 1
+        },
+        hideChildren: false,
+        ports: null,
+        children: [],
+        edges: []
+      },
       g: {},
       svg: null,
       tooltip: null,
@@ -86,22 +95,35 @@ export default {
       "currentFile",
       "isCompiled",
       "isSimulated",
+      "isCircuited",
       "getGatesStateAtSelectedTime"
     ]),
     compileStatus() {
       return this.isCompiled && this.currentFile.compileResult.timestamp;
     },
+    circuitStatus() {
+      return this.isCircuited && this.currentFile.circuitResult.timestamp;
+    },
     simulateStatus() {
       return (
         this.isSimulated &&
-        this.currentFile.simulateResult.timestamp +
-          this.currentFile.selectedTime
+        this.currentFile.simulateResult.timestamp + this.currentFile.selectedTime
       );
     }
   },
   watch: {
-    compileStatus(status) {
-      if (status) this.buildNetlist();
+    // compileStatus(status) {
+    //   console.log("Schematic compileStatusWatch ", status);
+    //   if (status)
+    //     workerInterface.send({
+    //       command: "circuit"
+    //     });
+    // },
+    circuitStatus(status) {
+      if (status) {
+        this.elkData = this.currentFile.circuitResult;
+        this.draw();
+      }
     },
     simulateStatus(status) {
       if (status) this.animateGates();
@@ -124,19 +146,14 @@ export default {
     this.g.nodeRenderers.registerCustomRenderer(new WireGateRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new RegGateRenderer(this.g));
     this.g.nodeRenderers.registerCustomRenderer(new ArrayRenderer(this.g));
-    this.g.nodeRenderers.registerCustomRenderer(
-      new ConstantGateRenderer(this.g)
-    );
+    this.g.nodeRenderers.registerCustomRenderer(new ConstantGateRenderer(this.g));
 
     var zoom = d3.zoom();
     zoom.on("zoom", this.onZoom);
     this.svg.call(zoom).on("dblclick.zoom", null);
 
     // replace d3hwschematic default tooltip
-    this.g.tooltip = new Tooltip(
-      document.getElementsByTagName("body")[0],
-      this.getEdgeTooltip
-    );
+    this.g.tooltip = new Tooltip(document.getElementsByTagName("body")[0], this.getEdgeTooltip);
 
     this.tooltip = d3
       .select("body")
@@ -152,7 +169,7 @@ export default {
       var COLOR_ON = "#00c853";
       var COLOR_OFF = "white";
 
-      this.getAllGates.forEach(gate => {
+      Object.values(this.getAllGates).forEach(gate => {
         switch (gate.type) {
           case "leds":
             updateLeds(
@@ -179,23 +196,16 @@ export default {
           case "sevenseg":
             // TODO: refactor in a d3 centric way
             ["a", "b", "c", "d", "e", "f", "g"].forEach((letter, i) => {
-              const element = document.getElementById(
-                gate.id + "_gate_seg" + letter
-              );
+              const element = document.getElementById(gate.id + "_gate_seg" + letter);
               if (element) {
                 element.classList.remove("segment-0");
                 element.classList.remove("segment-1");
-                element.classList.add(
-                  "segment-" + ((timestate[gate.id] >> i) % 2)
-                );
+                element.classList.add("segment-" + ((timestate[gate.id] >> i) % 2));
               }
             });
             break;
           case "number":
-            updateNumber(
-              d3.select(`#svgSchematic #${gate.id}_gate_NUMBER`),
-              timestate[gate.id]
-            );
+            updateNumber(d3.select(`#svgSchematic #${gate.id}_gate_NUMBER`), timestate[gate.id]);
             break;
           case "array":
             updateTable(
@@ -210,36 +220,25 @@ export default {
           case "response":
             d3.select(`#svgSchematic .${gate.id}_external`).attr(
               "class",
-              `node-external-port ${gate.id}_external external-${
-                timestate[gate.id] == 0 ? 0 : 1
-              }`
+              `node-external-port ${gate.id}_external external-${timestate[gate.id] == 0 ? 0 : 1}`
             );
             break;
         }
         if (gate.type == "splitter") {
           // animate splitter edges
-          d3.selectAll(`#svgSchematic .${gate.id}_link`).attr(
-            "class",
-            (d, i) => {
-              let val = new Numeric(timestate[gate.id], 16)._getValue(
-                gate.splitterSources[gate.splitterSources.length - 1 - i].offset
-              );
-              return `${gate.id}_link link-${
-                val === 0 ? 0 : typeof val == "string" ? "x" : 1
-              }`;
-            }
-          );
+          d3.selectAll(`#svgSchematic .${gate.id}_link`).attr("class", (d, i) => {
+            let val = new Numeric(timestate[gate.id], 16)._getValue(
+              gate.splitterSources[gate.splitterSources.length - 1 - i].offset
+            );
+            return `${gate.id}_link link-${val === 0 ? 0 : typeof val == "string" ? "x" : 1}`;
+          });
         }
         // animate edges
         else
           d3.selectAll(`#svgSchematic .${gate.id}_link`).attr(
             "class",
             `${gate.id}_link link-${
-              timestate[gate.id] === 0
-                ? 0
-                : typeof timestate[gate.id] == "string"
-                ? "x"
-                : 1
+              timestate[gate.id] === 0 ? 0 : typeof timestate[gate.id] == "string" ? "x" : 1
             }`
           );
       });
@@ -283,7 +282,7 @@ export default {
         // // stop resize if lumino has sent a fractional change in dimensions
         this.width = width - 10;
         this.height = height - 70;
-        this.buildNetlist();
+        this.draw();
       }
     },
     makeGlowFilter(id, color) {
@@ -322,7 +321,7 @@ export default {
       feMerge.append("feMergeNode").attr("in", "SourceGraphic");
     },
 
-    buildNetlist() {
+    draw() {
       // console.log(this.width, this.getAllGates, this.isCompiled);
       if (this.width == null || !this.getAllGates) return; // prevent building before properly sized
       if (!this.isCompiled) return;
@@ -330,24 +329,6 @@ export default {
 
       this.svg.attr("width", this.width);
       this.svg.attr("height", this.height);
-
-      this.elkData = {
-        id: "main",
-        hwMeta: { name: "main", maxId: 200 },
-        properties: {
-          "org.eclipse.elk.portConstraints": "FIXED_ORDER",
-          // "org.eclipse.elk.randomSeed": 0,
-          "org.eclipse.elk.layered.mergeEdges": 1
-        },
-        hideChildren: false,
-        ports: null,
-        children: [],
-        edges: []
-      };
-
-      // await here
-      this.buildInstance(this.elkData);
-      console.log("elkData: ", this.stripReactive(this.elkData));
 
       this.makeGlowFilter("glow-blue", "rgb(0,186,255)"); //rgb(0,186,255)
       this.makeGlowFilter("glow-red", "#da5c5c");
@@ -359,17 +340,13 @@ export default {
         // console.log("buildNetList bind data: ", this.elkData);
         Object.values(that.getAllInstances).forEach(instance =>
           instance.gate_ids.forEach(gateID => {
-            const node = this.g.root.select(
-              `.${gateID}_internal, .${gateID}_external`
-            );
+            const node = this.g.root.select(`.${gateID}_internal, .${gateID}_external`);
             node.on("mouseover", function(ev, d) {
               const id = d.id.substr(0, d.id.indexOf("_gate"));
               that.$store.commit("setSelectedGateID", id);
               node.style("filter", "url(#glow-red)");
               that.getGate(id).inputs.forEach(input => {
-                that.g.root
-                  .select(`.${input.id}_internal`)
-                  .style("filter", "url(#glow-blue)");
+                that.g.root.select(`.${input.id}_internal`).style("filter", "url(#glow-blue)");
               });
             });
             node.on("mouseout", function(ev, d) {
@@ -377,274 +354,11 @@ export default {
               that.$store.commit("setSelectedGateID", null);
               node.style("filter", "none");
               that.getGate(id).inputs.forEach(input => {
-                that.g.root
-                  .select(`.${input.id}_internal`)
-                  .style("filter", "none");
+                that.g.root.select(`.${input.id}_internal`).style("filter", "none");
               });
             });
           })
         );
-      });
-    },
-    async buildInstance(currentNet) {
-      const currentInstance = this.getInstance(currentNet.id);
-      // console.log(
-      //   "Building ",
-      //   currentInstance.id,
-      //   this.stripReactive(currentInstance)
-      // );
-
-      // build gates of this instance and edges for each of the gates inputs
-      // gate inputs might be another gate or an input port
-      currentInstance.gate_ids.forEach((gateId, gateCount) => {
-        const gate = this.getGate(gateId);
-
-        let metaVal;
-        switch (gate.type) {
-          case "array":
-            metaVal = gate.arraySize;
-            break;
-          case "concatenation":
-            metaVal = {
-              copynum: gate.copynum,
-              bitSize: gate.state.bitArray.length
-            };
-            break;
-          default:
-            metaVal = Object.assign(new Numeric(0, 0), gate.state).getValue();
-        }
-
-        const gateNet = {
-          id: gate.id + "_gate",
-          hwMeta: {
-            maxId: currentNet.hwMeta.maxId + 50 + gateCount,
-            cls: "Operator",
-            cssClass:
-              gate.type == "control" || gate.type == "response"
-                ? gate.id + "_external"
-                : gate.id + "_internal",
-            name:
-              gate.type == "control" ||
-              gate.type == "portbuffer" ||
-              gate.type == "response"
-                ? this.getLocalId(gate.id)
-                : gate.schematicName,
-            val: metaVal, //currentInstance.parameters, currentInstance.id),
-            bitSize: gate.bitSize, //currentInstance.parameters, currentInstance.id),
-            meta: gate.meta,
-            isExternalPort: gate.type == "control" || gate.type == "response"
-          },
-          properties: {
-            "org.eclipse.elk.portConstraints": "FIXED_ORDER",
-            // "org.eclipse.elk.randomSeed": 0,
-            "org.eclipse.elk.layered.mergeEdges": 1
-          },
-          hideChildren: true,
-          ports: []
-        };
-
-        // single output port unless response or splitter
-        if (["response", "splitter"].includes(gate.type) == false) {
-          // console.log("gate: ", gate);
-          gateNet.ports.push({
-            direction: "OUTPUT",
-            id: gate.id,
-            hwMeta: {
-              name: this.getLocalId(gate.id)
-            },
-            properties: { side: "EAST", portIndex: 0 }
-          });
-        }
-
-        const getInputPortDescription = (type, i) => {
-          if (type == "mux" && i == 0) return { side: "SOUTH", portIndex: 0 };
-          if ((type == "reg") | (gate.type == "array"))
-            return { side: "NORTH", portIndex: i };
-          if (type == "led") return { side: "SOUTH", portIndex: i };
-          if (type == "splitter") return { side: "WEST", portIndex: 20 };
-          if (type == "concatenation") return { side: "WEST", portIndex: 20 };
-          return { side: "WEST", portIndex: i };
-        };
-
-        // build input ports for this gate and the edges that connect from source to each input
-        gate.inputs.forEach((input, i) => {
-          let inputGate = this.getGate(input.id);
-
-          // let ports = null;
-          // if (gate.type == "concatenation")
-          //   ports = [...gateNet.ports].reverse();
-          // else ports = gateNet.ports;
-
-          gateNet.ports.push({
-            direction: "INPUT",
-            id: gate.id + "_input_" + i,
-            hwMeta: {
-              name: this.getLocalId(gate.id)
-            },
-            properties: getInputPortDescription(gate.type, i)
-          });
-
-          let inputSource, inputSourcePort;
-          switch (inputGate.type) {
-            case "portbuffer":
-              inputSource = inputGate.namespace;
-              inputSourcePort = input.id;
-              break;
-            case "splitter":
-              inputSource = input.id + "_gate";
-              inputSourcePort = input.id + "_splitPort_" + gate.name;
-              break;
-            default:
-              inputSource = input.id + "_gate";
-              inputSourcePort = input.id;
-          }
-
-          let gate2gate = {
-            id: input.id + "-" + gate.id + "_input_" + i,
-            type: "gate2gate",
-            source: inputSource,
-            sourcePort: inputSourcePort,
-            target: gate.id + "_gate",
-            targetPort: gate.id + "_input_" + i,
-            // hwMeta: { name: null, cssClass: gate.id + "_link" }
-            hwMeta: {
-              name:
-                input.id +
-                Object.assign(new Variable("", ""), input).getOffsetString(
-                  this.currentFile.compileResult.parameters,
-                  currentInstance.id
-                ),
-              cssClass: input.id + "_link"
-            }
-          };
-          currentNet.edges.push(gate2gate);
-          // console.log("-- g2g: ", gate2gate.id, this.stripReactive(gate2gate));
-        });
-
-        if (gate.type == "concatenation") {
-          gateNet.ports.reverse();
-        }
-
-        // splitter gate has multiple output ports of form gateid_splitPort_targetid
-        if (gate.type == "splitter") {
-          gate.splitterTargets.forEach((output, i) => {
-            gateNet.ports.push({
-              direction: "OUTPUT",
-              id: gate.id + "_splitPort_" + output.id,
-              hwMeta: {
-                name: this.getLocalId(gate.id)
-              },
-              properties: { side: "WEST", portIndex: i } // TODO: Why wrong height if side EAST
-            });
-          });
-        }
-
-        currentNet.children.push(gateNet);
-        // console.log("-- Gate: ", gate.id, this.stripReactive(gateNet));
-      });
-
-      // build any sub-instances
-      // build edges to connect currentNet mapped values to the sub-instance input ports
-      currentInstance.instance_ids.forEach(childInstanceID => {
-        const childInstance = this.getInstance(childInstanceID);
-        // console.log("-- childInstance: ", childInstanceID, childInstance);
-        const childNet = {
-          id: childInstanceID,
-          hwMeta: {
-            name: childInstanceID.slice(5), // remove the main_ from name
-            maxID: currentNet.hwMeta.maxId + 100
-          },
-          properties: {
-            // "org.eclipse.elk.portConstraints": "FREE"
-            "org.eclipse.elk.portConstraints": "FIXED_ORDER",
-            // "org.eclipse.elk.randomSeed": 0,
-            "org.eclipse.elk.layered.mergeEdges": 1
-          },
-          hideChildren: false,
-          ports: [],
-          children: [],
-          edges: []
-        };
-
-        childInstance.output_ids.forEach(output => {
-          // console.log(`---- Port Output: ${this.getLocalId(output)} = ${output}`);
-          // eslint-disable-next-line no-debugger
-          let port = {
-            id: output, // output will be in form {this.getNamespace}_{port}-out
-            hwMeta: { name: this.getLocalId(output).replace("-out", "") },
-            direction: "OUTPUT",
-            properties: { side: "EAST", portIndex: 0 }
-          };
-          childNet.ports.push(port);
-
-          // get the portbuffer gate for the output gate = output-out
-          const portGate = this.getGate(output);
-
-          let gate2output = {
-            id: output + "_" + portGate.inputs[0].id,
-            type: "gate2output",
-            source: portGate.inputs[0].id + "_gate",
-            sourcePort: portGate.inputs[0].id,
-            target: this.getNamespace(output),
-            targetPort: output,
-            hwMeta: {
-              name:
-                portGate.inputs[0].id +
-                Object.assign(
-                  new Variable("", ""),
-                  portGate.inputs[0]
-                ).getOffsetString(
-                  this.currentFile.compileResult.parameters,
-                  currentInstance.id
-                ),
-              cssClass: portGate.inputs[0].id + "_link"
-            }
-          };
-          childNet.edges.push(gate2output);
-          // console.log("gate2output: ", gate2output.id, gate2output);
-        });
-
-        // Build ports for childinstance and connect to currentinstance gates
-        childInstance.input_ids.forEach((input, i) => {
-          // console.log(`---- Port Input: ${this.getLocalId(input)} = ${input}`);
-          let port = {
-            id: input,
-            hwMeta: { name: this.getLocalId(input), level: 0 },
-            direction: "INPUT",
-            properties: { side: "WEST", portIndex: i + 1 }
-          };
-          childNet.ports.push(port);
-
-          // get the buffer gate for this port
-          const portGate = this.getGate(input);
-          const parent2input = {
-            id: portGate.inputs[0].id + "-" + input,
-            type: "parent2input",
-            hwMeta: {
-              name:
-                portGate.inputs[0].id +
-                Object.assign(
-                  new Variable("", ""),
-                  portGate.inputs[0]
-                ).getOffsetString(
-                  this.currentFile.compileResult.parameters,
-                  currentInstance.id
-                ),
-              cssClass: portGate.inputs[0].id + "_link"
-            },
-            source: currentInstance.input_ids.includes(portGate.inputs[0].id) // is the input to the port gate itself a port of the parent instance rather than a local gate
-              ? currentInstance.id
-              : portGate.inputs[0].id + "_gate", // TODO: source might be a gate or a port - ie a pass through, is this handled??
-            sourcePort: portGate.inputs[0].id,
-            target: this.getNamespace(input),
-            targetPort: input
-          };
-          currentNet.edges.push(parent2input);
-          // console.log("parent2input: ", parent2input.id, parent2input);
-        });
-
-        this.buildInstance(childNet); // add any child instances of this child
-        currentNet.children.push(childNet);
       });
     }
   }

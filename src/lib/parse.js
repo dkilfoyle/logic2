@@ -1,8 +1,6 @@
 import { parseToAST, walkAST } from "./vlgAntlrParser.js"; // build ast
 
-const parse = (currentFile, filename, code, silent = true) => {
-  currentFile.filename = filename;
-
+const parse = (currentFile, code, silent = true) => {
   const parseResult = parseToAST(code);
   const walkResult = walkAST(parseResult.ast);
   const errors = parseResult.errors.length + walkResult.errors.length;

@@ -23,10 +23,7 @@ export default {
         case "inputs":
           return [...this.getSelectedInstanceInput_ids];
         case "ports":
-          return [
-            ...this.getSelectedInstanceInput_ids,
-            ...this.getSelectedInstanceOutput_ids
-          ];
+          return [...this.getSelectedInstanceInput_ids, ...this.getSelectedInstanceOutput_ids];
       }
       return [];
     },

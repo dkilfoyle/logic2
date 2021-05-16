@@ -184,29 +184,34 @@ export default {
     },
     onEditorDidMount(editor) {
       editor.onDidChangeCursorPosition(e => this.$emit("onDidChangeCursorPosition", e.position));
+      console.log("onEditorDidMount ", this.name);
+      this.validate();
+    },
+    validate() {
+      console.log("validate ", this.name);
+      const text = this.editor.getModel().getValue();
+      workerInterface.send({
+        command: "parse",
+        silent: true,
+        filename: this.name,
+        code: text
+      });
     },
     onEditorWillMount() {
+      console.log("onEditorWillMount: ", this.name);
       const monaco = this.monaco;
       // const that = this;
 
       monaco.editor.onDidCreateModel(model => {
-        const validate = () => {
-          const text = model.getValue();
-          workerInterface.send({
-            command: "parse",
-            silent: true,
-            filename: "", //that.currentFile.filename,
-            code: text
-          });
-        };
-
         var handle = null;
+        console.log("onDidCreateModel ", this.name);
         model.onDidChangeContent(() => {
           clearTimeout(handle);
-          handle = setTimeout(() => validate(), 500);
+          console.log("onDidChangeContent", this.name);
+          handle = setTimeout(() => {
+            this.validate();
+          }, 500);
         });
-
-        validate(); // call once on first onDidCreateModel
       });
 
       monaco.languages.register({ id: "miniVerilog" });

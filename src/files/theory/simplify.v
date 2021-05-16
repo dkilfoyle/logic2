@@ -1,8 +1,6 @@
 // Example of simplification
 // From: https://www.allaboutcircuits.com/textbook/digital/chpt-7/circuit-simplification-examples/
 
-bla!!
-
 module Unsimplified (
   input a, b, c,
   output Q );

@@ -28,49 +28,24 @@
     <div class="dk-label">Options</div>
     <div class="dk-flex-col dk-gap-8 dk-pl-5">
       <b-checkbox v-model="autoCompile">Auto Compile</b-checkbox>
+      <b-checkbox v-model="autoDraw">Auto Draw</b-checkbox>
     </div>
 
     <div class="dk-label">Gate Filter</div>
     <div class="dk-flex-col dk-gap-8 dk-pl-5">
-      <b-radio v-model="showWhichGates" name="showWhichGates" native-value="all"
-        >All</b-radio
-      >
-      <b-radio
-        v-model="showWhichGates"
-        name="showWhichGates"
-        native-value="inputs"
-        >Inputs</b-radio
-      >
-      <b-radio
-        v-model="showWhichGates"
-        name="showWhichGates"
-        native-value="outputs"
+      <b-radio v-model="showWhichGates" name="showWhichGates" native-value="all">All</b-radio>
+      <b-radio v-model="showWhichGates" name="showWhichGates" native-value="inputs">Inputs</b-radio>
+      <b-radio v-model="showWhichGates" name="showWhichGates" native-value="outputs"
         >Outputs</b-radio
       >
-      <b-radio
-        v-model="showWhichGates"
-        name="showWhichGates"
-        native-value="ports"
-        >Ports</b-radio
-      >
-      <b-radio
-        v-model="showWhichGates"
-        name="showWhichGates"
-        native-value="wires"
-        >Wires</b-radio
-      >
+      <b-radio v-model="showWhichGates" name="showWhichGates" native-value="ports">Ports</b-radio>
+      <b-radio v-model="showWhichGates" name="showWhichGates" native-value="wires">Wires</b-radio>
     </div>
     <div class="dk-label">State Format</div>
     <div class="dk-flex-col dk-gap-8 dk-pl-5">
-      <b-radio v-model="stateFormat" name="stateFormat" native-value="logic"
-        >Logic</b-radio
-      >
-      <b-radio v-model="stateFormat" name="stateFormat" native-value="decimal"
-        >Decimal</b-radio
-      >
-      <b-radio v-model="stateFormat" name="stateFormat" native-value="binary"
-        >Binary</b-radio
-      >
+      <b-radio v-model="stateFormat" name="stateFormat" native-value="logic">Logic</b-radio>
+      <b-radio v-model="stateFormat" name="stateFormat" native-value="decimal">Decimal</b-radio>
+      <b-radio v-model="stateFormat" name="stateFormat" native-value="binary">Binary</b-radio>
     </div>
   </div>
 </template>
@@ -90,7 +65,15 @@ export default {
         return this.$store.getters.currentFile.autoCompile;
       },
       set(value) {
-        this.$store.commit("toggleAutoCompile", value);
+        this.$store.commit("setAutoCompile", value);
+      }
+    },
+    autoDraw: {
+      get() {
+        return this.$store.getters.currentFile.autoDraw;
+      },
+      set(value) {
+        this.$store.commit("setAutoDraw", value);
       }
     },
     tableFollowsSchematic: {
