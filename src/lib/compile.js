@@ -425,28 +425,19 @@ const createInstance = (moduleDefinitions, compileResult, parentNamespace, insta
     }
   });
 
-  compileResult.gates = {
-    ...gates,
-    ...logicGates,
-    ...inputGates,
-    ...outputGates
-  }; // for feedback loops need to process logic gates before inputs
-  gates = compileResult.gates;
+  // gates = compileResult.gates;
   // TODO: ? move pushing outputGatse to after module instantiation
 
   const isPortDirection = (portid, direction, moduleid) => {
     return moduleDefinitions[moduleid].ports.some(p => p.id == portid && p.direction == direction);
   };
 
-  const logicGateCount = Object.keys(logicGates).length;
-
-  // instantiate a module
+  // process input connection expressions to generate any necessary gates
+  // eg mymodule(.input1(~clk))
+  // will generate iconnect0 gate and return variable to it
   instanceModule.instantiations
     .filter(x => x.type == "instance")
     .forEach(instDef => {
-      // process input connection expressions to generate any necessary gates
-      // eg mymodule(.input1(~clk))
-      // will generate iconnect0 gate and return variable to it
       instDef.connections
         .filter(connection => isPortDirection(connection.port.id, "input", instDef.module))
         .forEach(connection => {
@@ -457,7 +448,19 @@ const createInstance = (moduleDefinitions, compileResult, parentNamespace, insta
             null
           );
         });
+    });
 
+  compileResult.gates = {
+    ...gates,
+    ...logicGates,
+    ...inputGates,
+    ...outputGates
+  }; // for feedback loops need to process logic gates before inputs
+
+  // instantiate a module
+  instanceModule.instantiations
+    .filter(x => x.type == "instance")
+    .forEach(instDef => {
       // recursively create the instance - generating all child isntance gates
       var childInstance = createInstance(moduleDefinitions, compileResult, namespace, instDef);
       newInstance.instance_ids.push(childInstance.id);
@@ -497,7 +500,7 @@ const createInstance = (moduleDefinitions, compileResult, parentNamespace, insta
   // console.log(Object.keys(gates), Object.keys(compileResult.gates));
 
   // TODO: ? not necessary
-  if (logicGateCount != Object.keys(logicGates).length) throw new Error();
+  // if (logicGateCount != Object.keys(logicGates).length) throw new Error();
 
   // gates.push(...logicGates.slice(logicGateCount));
 
