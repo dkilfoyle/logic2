@@ -1,4 +1,4 @@
-// Generated from c:\c\logic2\src\grammar\vlg.g4 by ANTLR 4.8
+// Generated from c:\code\logic2\src\grammar\vlg.g4 by ANTLR 4.8
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
 
@@ -368,6 +368,15 @@ vlgListener.prototype.enterMeta_assignment = function(ctx) {
 
 // Exit a parse tree produced by vlgParser#meta_assignment.
 vlgListener.prototype.exitMeta_assignment = function(ctx) {
+};
+
+
+// Enter a parse tree produced by vlgParser#instance_meta_assignment.
+vlgListener.prototype.enterInstance_meta_assignment = function(ctx) {
+};
+
+// Exit a parse tree produced by vlgParser#instance_meta_assignment.
+vlgListener.prototype.exitInstance_meta_assignment = function(ctx) {
 };
 
 

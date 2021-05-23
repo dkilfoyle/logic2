@@ -17,6 +17,11 @@ const buildNetInstance = (compileResult, currentNet) => {
   currentInstance.gate_ids.forEach((gateId, gateCount) => {
     const gate = compileResult.gates[gateId];
 
+    // wiregates are not rendered
+    // wiregate edges are rendered as a special case of gate input
+    // if gate input is a wiregate then source is the wiregate input
+    if (gate.type == "wiregate") return;
+
     let metaVal;
     switch (gate.type) {
       case "array":
@@ -90,6 +95,9 @@ const buildNetInstance = (compileResult, currentNet) => {
       //   ports = [...gateNet.ports].reverse();
       // else ports = gateNet.ports;
 
+      // eslint-disable-next-line no-debugger
+      // if (gate.id == "main_ctrlwrd1") debugger;
+
       gateNet.ports.push({
         direction: "INPUT",
         id: gate.id + "_input_" + i,
@@ -108,6 +116,13 @@ const buildNetInstance = (compileResult, currentNet) => {
         case "splitter":
           inputSource = input.id + "_gate";
           inputSourcePort = input.id + "_splitPort_" + gate.name;
+          break;
+        case "wiregate":
+          inputSource =
+            compileResult.gates[inputGate.inputs[0].id].type == "portbuffer"
+              ? inputGate.inputs[0].namespace
+              : inputGate.inputs[0].id + "_gate";
+          inputSourcePort = inputGate.inputs[0].id;
           break;
         default:
           inputSource = input.id + "_gate";
@@ -170,7 +185,7 @@ const buildNetInstance = (compileResult, currentNet) => {
         maxID: currentNet.hwMeta.maxId + 100
       },
       properties: {
-        // "org.eclipse.elk.portConstraints": "FREE"
+        // "org.eclipse.elk.portConstraints": "FIXED_ORDER"
         "org.eclipse.elk.portConstraints": "FIXED_ORDER",
         // "org.eclipse.elk.randomSeed": 0,
         "org.eclipse.elk.layered.mergeEdges": 1
@@ -184,22 +199,45 @@ const buildNetInstance = (compileResult, currentNet) => {
     childInstance.output_ids.forEach(output => {
       // console.log(`---- Port Output: ${this.getLocalId(output)} = ${output}`);
       // eslint-disable-next-line no-debugger
+      const portGate = compileResult.gates[output];
       let port = {
         id: output, // output will be in form {this.getNamespace}_{port}-out
         hwMeta: { name: getLocalID(output).replace("-out", "") },
         direction: "OUTPUT",
-        properties: { side: "EAST", portIndex: 0 }
+        properties: {
+          side: portGate.meta && portGate.meta.port ? portGate.meta.port : "EAST",
+          portIndex: 0
+        }
       };
       childNet.ports.push(port);
 
       // get the portbuffer gate for the output gate = output-out
-      const portGate = compileResult.gates[output];
+      const portGateInput0 = compileResult.gates[portGate.inputs[0].id];
+      const wireGateInput0 =
+        portGateInput0.type == "wiregate" ? compileResult.gates[portGateInput0.inputs[0].id] : null;
+
+      let source = null;
+      let sourcePort = null;
+      switch (true) {
+        case wireGateInput0 && wireGateInput0.type == "portbuffer":
+          source = wireGateInput0.namespace;
+          sourcePort = wireGateInput0.id;
+          break;
+        case wireGateInput0 && wireGateInput0.type != "portbuffer":
+          source = wireGateInput0.id + "_gate";
+          sourcePort = wireGateInput0.id;
+          break;
+        default:
+          source = portGate.inputs[0].id + "_gate";
+          sourcePort = portGate.inputs[0].id;
+          break;
+      }
 
       let gate2output = {
         id: output + "_" + portGate.inputs[0].id,
         type: "gate2output",
-        source: portGate.inputs[0].id + "_gate",
-        sourcePort: portGate.inputs[0].id,
+        source,
+        sourcePort,
         target: getNamespace(output),
         targetPort: output,
         hwMeta: {
@@ -219,16 +257,45 @@ const buildNetInstance = (compileResult, currentNet) => {
     // Build ports for childinstance and connect to currentinstance gates
     childInstance.input_ids.forEach((input, i) => {
       // console.log(`---- Port Input: ${this.getLocalId(input)} = ${input}`);
+      const portGate = compileResult.gates[input];
       let port = {
         id: input,
         hwMeta: { name: getLocalID(input), level: 0 },
         direction: "INPUT",
-        properties: { side: "WEST", portIndex: i + 1 }
+        properties: {
+          side: portGate.meta && portGate.meta.port ? portGate.meta.port : "WEST",
+          portIndex: i + 1
+        }
       };
       childNet.ports.push(port);
 
+      const portGateInput0 = compileResult.gates[portGate.inputs[0].id];
+      const wireGateInput0 =
+        portGateInput0.type == "wiregate" ? compileResult.gates[portGateInput0.inputs[0].id] : null;
+
+      let source = null;
+      let sourcePort = null;
+      switch (true) {
+        case currentInstance.input_ids.includes(portGate.inputs[0].id):
+          // parent port to child port
+          source = currentInstance.id;
+          sourcePort = portGate.inputs[0].id;
+          break;
+        case wireGateInput0 && wireGateInput0.type == "portbuffer":
+          source = wireGateInput0.namespace;
+          sourcePort = wireGateInput0.id;
+          break;
+        case wireGateInput0 && wireGateInput0.type != "portbuffer":
+          source = wireGateInput0.id + "_gate";
+          sourcePort = wireGateInput0.id;
+          break;
+        default:
+          source = portGate.inputs[0].id + "_gate";
+          sourcePort = portGate.inputs[0].id;
+          break;
+      }
+
       // get the buffer gate for this port
-      const portGate = compileResult.gates[input];
       const parent2input = {
         id: portGate.inputs[0].id + "-" + input,
         type: "parent2input",
@@ -241,10 +308,8 @@ const buildNetInstance = (compileResult, currentNet) => {
             ),
           cssClass: portGate.inputs[0].id + "_link"
         },
-        source: currentInstance.input_ids.includes(portGate.inputs[0].id) // is the input to the port gate itself a port of the parent instance rather than a local gate
-          ? currentInstance.id
-          : portGate.inputs[0].id + "_gate", // TODO: source might be a gate or a port - ie a pass through, is this handled??
-        sourcePort: portGate.inputs[0].id,
+        source,
+        sourcePort,
         target: getNamespace(input),
         targetPort: input
       };

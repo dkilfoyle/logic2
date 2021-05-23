@@ -9,7 +9,7 @@ const loadedFiles = {};
 // const log = (msg, data) => postMessage({ type: "log", msg, data });
 
 addEventListener("message", event => {
-  console.log("Worker received message", event.data);
+  // console.log("Worker received message", event.data);
   const filename = event.data.filename;
   if (!filename) throw new Error("worker message listener needs filename");
   if (!loadedFiles[filename]) loadedFiles[filename] = { filename };

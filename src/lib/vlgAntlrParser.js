@@ -167,7 +167,8 @@ class Listener extends vlgListener {
       instantiations: [],
       netAssignments: [],
       clock: [],
-      display: []
+      display: [],
+      meta: {}
     };
     console.groupCollapsed("enterModule: Main ");
   }
@@ -640,11 +641,16 @@ class Listener extends vlgListener {
     const metastring = ctx.metastring.getText().slice(1, -1);
     const gateid = ctx.gateID.text;
     // semantic error if the output is not a wire or module output
-    if (!this.isWireOrOutput(gateid)) {
+    if (!this.isWireOrPort(gateid)) {
       const idctx = ctx.gateID;
-      this.addSemanticError(idctx, `'${gateid}' is not defined as a wire or module output`);
+      this.addSemanticError(idctx, `'${gateid}' is not defined as a wire or module port`);
     }
-    const gate = this.curModule.instantiations.find(x => x.id == gateid);
+    let gate = null;
+    if (this.isPort(gateid)) {
+      gate = this.curModule.ports.find(x => x.id == gateid);
+    } else if (this.isWire(gateid) || this.isReg(gateid)) {
+      gate = this.curModule.instantiations.find(x => x.id == gateid);
+    }
     if (!gate) {
       const idctx = ctx.gateID;
       this.addSemanticError(idctx, `'${gateid}' is not instantiated yet`);
@@ -656,6 +662,19 @@ class Listener extends vlgListener {
         const msctx = ctx.metastring;
         this.addSemanticError(msctx, `Unable to parse metastring`);
       }
+    }
+  }
+
+  exitInstance_meta_assignment(ctx) {
+    const metastring = ctx.metastring.getText().slice(1, -1);
+    const gateid = ctx.gateID.getText().slice(1, -1);
+
+    try {
+      this.curModule.meta[gateid] = JSON.parse(metastring);
+    } catch (e) {
+      console.log(e, metastring);
+      const msctx = ctx.metastring;
+      this.addSemanticError(msctx, `Unable to parse metastring`);
     }
   }
 

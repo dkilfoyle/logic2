@@ -184,11 +184,11 @@ export default {
     },
     onEditorDidMount(editor) {
       editor.onDidChangeCursorPosition(e => this.$emit("onDidChangeCursorPosition", e.position));
-      console.log("onEditorDidMount ", this.name);
+      // console.log("onEditorDidMount ", this.name);
       this.validate();
     },
     validate() {
-      console.log("validate ", this.name);
+      // console.log("validate ", this.name);
       const text = this.editor.getModel().getValue();
       workerInterface.send({
         command: "parse",
@@ -198,16 +198,16 @@ export default {
       });
     },
     onEditorWillMount() {
-      console.log("onEditorWillMount: ", this.name);
+      // console.log("onEditorWillMount: ", this.name);
       const monaco = this.monaco;
       // const that = this;
 
       monaco.editor.onDidCreateModel(model => {
         var handle = null;
-        console.log("onDidCreateModel ", this.name);
+        // console.log("onDidCreateModel ", this.name);
         model.onDidChangeContent(() => {
           clearTimeout(handle);
-          console.log("onDidChangeContent", this.name);
+          // console.log("onDidChangeContent", this.name);
           handle = setTimeout(() => {
             this.validate();
           }, 500);

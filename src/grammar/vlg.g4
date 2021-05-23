@@ -14,8 +14,8 @@ modules: module* module_main EOF;
 /* Module declaration ============================================== */
 
 module_main:
-	'module' MAIN module_parameter? (module_ports)? ';' module_item* test_bench? display_bench?
-		'endmodule';
+	'module' MAIN module_parameter? (module_ports)? ';' module_item* instance_meta_assignment*
+		test_bench? display_bench? 'endmodule';
 
 MAIN: 'Main';
 
@@ -83,9 +83,7 @@ simple_identifier_list: IDENTIFIER (',' IDENTIFIER)*;
 // 3. Instantiations ==============================================  
 
 module_instantiation:
-	moduleID = IDENTIFIER  (
-		params = parameter_value_assignment
-	)?  instanceID = IDENTIFIER (
+	moduleID = IDENTIFIER (params = parameter_value_assignment)? instanceID = IDENTIFIER (
 		named_module_connections_list
 		| ordered_module_connections_list
 	) ';';
@@ -126,6 +124,9 @@ net_assignment: 'assign' lvalue '=' expr ';';
 
 meta_assignment:
 	'$meta' '(' gateID = IDENTIFIER ',' metastring = string ')' ';';
+
+instance_meta_assignment:
+	'$imeta' '(' gateID = string ',' metastring = string ')' ';';
 
 // expr // For gate assign only : NEG expr # negateExpr | expr binary_gate_op expr # binaryExpr |
 // '(' expr ')' # parenExpr | IDENTIFIER # idExpr;

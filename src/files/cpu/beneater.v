@@ -332,6 +332,12 @@ module Main (
 
   CPU cpu(.clkin(clock), .res(res));
 
+  $imeta('main_cpu_alu_A',   '{"port":"NORTH"}' );
+  $imeta('main_cpu_alu_B',   '{"port":"SOUTH"}' );
+  $imeta('main_cpu_alu_res', '{"port":"WEST"}'  );
+  $imeta('main_cpu_regA_Q',  '{"port":"SOUTH"}' );
+  $imeta('main_cpu_regB_Q',  '{"port":"NORTH"}' );
+
   test begin
     #100;
     #200;

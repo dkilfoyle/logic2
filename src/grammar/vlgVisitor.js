@@ -1,4 +1,4 @@
-// Generated from c:\c\logic2\src\grammar\vlg.g4 by ANTLR 4.8
+// Generated from c:\code\logic2\src\grammar\vlg.g4 by ANTLR 4.8
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
 
@@ -248,6 +248,12 @@ vlgVisitor.prototype.visitNet_assignment = function(ctx) {
 
 // Visit a parse tree produced by vlgParser#meta_assignment.
 vlgVisitor.prototype.visitMeta_assignment = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by vlgParser#instance_meta_assignment.
+vlgVisitor.prototype.visitInstance_meta_assignment = function(ctx) {
   return this.visitChildren(ctx);
 };
 

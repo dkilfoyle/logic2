@@ -127,6 +127,7 @@ const createInstance = (moduleDefinitions, compileResult, parentNamespace, insta
         port.direction == "input" ? "control" : "response",
         gateBitSizesID[port.id]
       );
+      if (port.meta) newGate.meta = port.meta;
       if (port.direction == "input") inputGates[newGate.id] = newGate;
       else outputGates[newGate.id] = newGate;
       newInstance.gate_ids.push(newGate.id);
@@ -141,6 +142,7 @@ const createInstance = (moduleDefinitions, compileResult, parentNamespace, insta
       "portbuffer",
       gateBitSizesID[port.id]
     );
+    if (port.meta) portGate.meta = port.meta;
     // console.log("-- port: ", port.id, ", gate: ", portGate.id);
 
     // connect the input port buffer gate's input to the mapped parent value in the instanceDeclaration parameters
@@ -197,7 +199,7 @@ const createInstance = (moduleDefinitions, compileResult, parentNamespace, insta
     .forEach(gateDef => {
       let newGate = null;
       if (gateDef.gateType == "response") {
-        newGate = outputGates[gateDef.id];
+        newGate = outputGates[namespace + "_" + gateDef.id];
         newGate.inputs = gateDef.inputs.map(x => x.instance(namespace));
         return;
       }
@@ -641,6 +643,10 @@ const compile = (currentFile, silent = true) => {
 
   currentFile.parseResult.modules["Main"].display.forEach(d => {
     currentFile.compileResult.gates[d.id].displayType = d.type;
+  });
+
+  Object.entries(currentFile.parseResult.modules["Main"].meta).forEach(([key, value]) => {
+    currentFile.compileResult.gates[key].meta = value;
   });
 
   // console.log("Instances: ", currentFile.instances);

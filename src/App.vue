@@ -183,7 +183,7 @@ export default {
     ...mapGetters(["currentFile", "parseTimestamp"])
   },
   created() {
-    this.addFileTab("Scratch");
+    // this.addFileTab("Scratch");
     // this.addFileTab("LW");
     // this.addFileTab("Mux2_1");
     // this.addFileTab("DFlipFlop");
@@ -194,11 +194,13 @@ export default {
     // this.addFileTab("TriBuff");
     // this.addFileTab("RAM");
     // this.addFileTab("PC");
-    // this.addFileTab("Controller");
+    this.addFileTab("Controller");
     // this.addFileTab("Simplify");
     // this.addFileTab("Concatenation");
     // this.addFileTab("Bus");
     // this.addFileTab("ALU");
+    // this.addFileTab("ALU2");
+    // this.addFileTab("FullAdder");
     // this.addFileTab("Register");
     // this.addFileTab("DFlipFlopPC");
   },
@@ -215,19 +217,19 @@ export default {
           this.onProgress(event.data.action, event.data.current, event.data.max);
           break;
         case "parseResult":
-          console.log("App received parseResult", result);
+          // console.log("App received parseResult", result);
           this.onParseResult(result);
           break;
         case "compileResult":
-          console.log("App received compileResult", result);
+          // console.log("App received compileResult", result);
           this.onCompileResult(result);
           break;
         case "simulateResult":
-          console.log("App received simulateResult", event.data.payload);
+          // console.log("App received simulateResult", result);
           this.onSimulateResult(result);
           break;
         case "circuitResult":
-          console.log("App received circuitResult", event.data.payload);
+          // console.log("App received circuitResult", result);
           this.onCircuitResult(result);
 
           break;
@@ -353,7 +355,7 @@ export default {
         });
       }
       this.$store.commit("setCurrentFileTab", newSourceName);
-      console.log("addFileTab: ", sourceName);
+      // console.log("addFileTab: ", sourceName);
       // this.compile(true);
       // this.currentFileTab = newSourceName;
     },
